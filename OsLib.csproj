@@ -6,7 +6,7 @@
 		<Version>2.2</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<Description>Handling of files and system calls</Description>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<NoWarn>$(NoWarn);CS1591</NoWarn>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<PackageTags>RaiSystem, RaiNetDrive, EscapeMode, OsType, Os, RaiFile, TextFile, CsvFile, TmpFile</PackageTags>
@@ -16,7 +16,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-		<PackageReleaseNotes>Version for net8.0, also adds class Path /w operator/</PackageReleaseNotes>
+		<PackageReleaseNotes>Version for net10.0, also adds class Path /w operator/</PackageReleaseNotes>
 		<PackageIcon>hardcastle.png</PackageIcon>
 	</PropertyGroup>
 
@@ -25,7 +25,6 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="RunProcessAsTask" Version="1.2.4" />
 		<None Include="hardcastle.png" Pack="true" PackagePath="" />
-		<PackageReference Include="xunit" Version="2.9.2" />
 	</ItemGroup>
 
 </Project>
