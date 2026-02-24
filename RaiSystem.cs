@@ -10,8 +10,14 @@ using RunProcessAsTask; // https://github.com/jamesmanning/RunProcessAsTask
 
 namespace OsLib		// aka OsLibCore
 {
+	/// <summary>
+	/// Helpers for running shell commands.
+	/// </summary>
 	public static class ShellHelper
 	{
+		/// <summary>
+		/// Run a command via /bin/bash and return standard output.
+		/// </summary>
 		public static string Bash(this string cmd)
 		{
 			var escapedArgs = cmd.Replace("\"", "\\\"");
@@ -33,7 +39,10 @@ namespace OsLib		// aka OsLibCore
 			return result;
 		}
 	}
-    public class RaiSystem
+	/// <summary>
+	/// Run external processes with optional output capture.
+	/// </summary>
+	public class RaiSystem
 	{
 		string command = null;
 		string param = null;
@@ -47,7 +56,8 @@ namespace OsLib		// aka OsLibCore
 				return p.StartInfo.EnvironmentVariables[environmentVariable];
 			}
 		}
-		/// <summary>Exec for apps that don't want console output
+		/// <summary>
+		/// Execute a command and capture standard output and error.
 		/// </summary>
 		/// <param name="msg">returns output of called program</param>
 		/// <returns>0 if ok</returns>
@@ -74,7 +84,9 @@ namespace OsLib		// aka OsLibCore
 			msg.TrimEnd();
 			return ExitCode;
 		}
-		/// <summary>Exec for console apps</summary>
+		/// <summary>
+		/// Execute a command, optionally waiting for it to exit.
+		/// </summary>
 		/// <param name="wait">waits for the process to exit</param>
 		/// <returns>null or process</returns>
 		/// <remarks>RsbSystem instance keeps the result in member ExitCode if wait==true</remarks>
@@ -101,6 +113,9 @@ namespace OsLib		// aka OsLibCore
 			}
 			//return null;
 		}
+		/// <summary>
+		/// Execute a command asynchronously.
+		/// </summary>
 		public async Task<ProcessResults> Start()
 		{
 			var results = await ProcessEx.RunAsync(command, param);
@@ -130,6 +145,9 @@ namespace OsLib		// aka OsLibCore
 			param = p;
 		}
 	}
+	/// <summary>
+	/// Windows network drive mount helper.
+	/// </summary>
 	public class RaiNetDrive : RaiSystem
 	{
 		/// <summary></summary>
