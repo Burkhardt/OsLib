@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
+
 /*
  *	based on RsbFile (C++ version from 1991, C# version 2005)
  */
@@ -17,14 +18,10 @@ namespace OsLib     // aka OsLibCore
 {
 	public enum EscapeMode { noEsc, blankEsc, paramEsc, backslashed };
 	public enum OsType { UNIX, Windows };
-	/// <remarks> 
-	/// 2021-07-05: OsLib now works with different CloudStorage providers, not only Dropbox
-	/// Dropbox still works (personal and business accounts)
-	/// OneDrive is also supported now
-	/// look for the following variables to set your prefenrences
-	/// - dropboxType
-	/// - cloudStorageType
-	/// </remarks>
+	/// <summary>
+	/// Provides OS-aware environment and path utilities, including platform detection,
+	/// home/temp directory discovery, separator normalization, and cloud-root lookup.
+	/// </summary>
 	public class Os
 	{
 		public static string HomeDir
@@ -32,7 +29,26 @@ namespace OsLib     // aka OsLibCore
 			get
 			{
 				if (homeDir == null)
-					homeDir = Environment.GetEnvironmentVariable("HOME") ?? "";
+				{
+					if (Type == OsType.Windows)
+					{
+						homeDir = Environment.GetEnvironmentVariable("USERPROFILE");
+						if (string.IsNullOrEmpty(homeDir))
+						{
+							var homeDrive = Environment.GetEnvironmentVariable("HOMEDRIVE");
+							var homePath = Environment.GetEnvironmentVariable("HOMEPATH");
+							if (!string.IsNullOrEmpty(homeDrive) && !string.IsNullOrEmpty(homePath))
+								homeDir = homeDrive + homePath;
+						}
+					}
+					else
+					{
+						homeDir = Environment.GetEnvironmentVariable("HOME");
+					}
+
+					if (string.IsNullOrEmpty(homeDir))
+						homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? "";
+				}
 				return homeDir;
 			}
 		}
@@ -42,7 +58,9 @@ namespace OsLib     // aka OsLibCore
 			get
 			{
 				if (type == null)
-					type = Os.DIRSEPERATOR == "/" ? OsType.UNIX : OsType.Windows;
+					type = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
+						? OsType.Windows
+						: OsType.UNIX;
 				return (OsType)type;
 			}
 		}
@@ -57,13 +75,13 @@ namespace OsLib     // aka OsLibCore
 			}
 		}
 		private static string tempDir = null;
-		public static string LocalBackupDir = "~/Backup/";   // needs to be a directory that is not on any kind of remote or synchronized dir
-		public static string FindDropboxCommand = @"c:\bin\FindDropbox.exe";
-		public static string NewSubscriberCommand = @"c:\bin\newsub.exe";
+		public static string LocalBackupDirUnix = "~/Backup/";   // needs to be a directory that is not on any kind of remote or synchronized dir
+		public static string FindDropboxCommandWin = @"c:\bin\FindDropbox.exe";
+		public static string NewSubscriberCommandWin = @"c:\bin\newsub.exe";
 		private static string cloudStorageRootDir = null;
-		private static string localDropboxFile = @"c:\bin\localDropbox.txt";
+		private static string localDropboxFileWin = @"c:\bin\localDropbox.txt";
 		private static string localDropboxFileUnix = "~/.dropbox/info.json";    // 2024-07-05: still ok for Dropbox v202.4.5551 which is beta for macOS Sonoma 14.5
-		enum CloudStorageType { dropbox, onedrive };
+		enum CloudStorageType { dropbox, onedrive, gdrive, icloud };
 		enum DropboxType { personal, business };
 		private static DropboxType dropboxType = DropboxType.personal;
 		private static CloudStorageType cloudStorageType = CloudStorageType.dropbox; // loudStorageType.onedrive; => not that easy with OneDrive; use Ms Graph API
@@ -107,20 +125,20 @@ namespace OsLib     // aka OsLibCore
 					#region Windows
 					else
 					{
-						if (!File.Exists(FindDropboxCommand) && !File.Exists(localDropboxFile))
-							throw new FileNotFoundException("Missing external command to locate dropbox using " + FindDropboxCommand, new FileNotFoundException());
+						if (!File.Exists(FindDropboxCommandWin) && !File.Exists(localDropboxFileWin))
+							throw new FileNotFoundException("Missing external command to locate dropbox using " + FindDropboxCommandWin, new FileNotFoundException());
 						try
 						{
 							string result;
-							var call = new RaiSystem(Os.FindDropboxCommand);
+							var call = new RaiSystem(Os.FindDropboxCommandWin);
 							if (call.Exec(out result) == 0)
 							{
 								if (result.Contains("Exception") && result.Contains("Access") && result.Contains("denied"))
-									throw new IOException("the running process is not allowed to access " + Os.FindDropboxCommand, new Exception(result));
+									throw new IOException("the running process is not allowed to access " + Os.FindDropboxCommandWin, new Exception(result));
 								result = result.Trim();
 								if (string.IsNullOrEmpty(result))
 								{
-									var dropboxLocationFile = new TextFile(localDropboxFile);
+									var dropboxLocationFile = new TextFile(localDropboxFileWin);
 									if (!string.IsNullOrEmpty(dropboxLocationFile[0]) && dropboxLocationFile[0].Contains("ropbox"))
 										result = dropboxLocationFile[0];
 								}
@@ -129,9 +147,9 @@ namespace OsLib     // aka OsLibCore
 						}
 						catch (Exception)
 						{
-							if (File.Exists(localDropboxFile))
+							if (File.Exists(localDropboxFileWin))
 							{
-								cloudStorageRootDir = new TextFile(localDropboxFile)[0];
+								cloudStorageRootDir = new TextFile(localDropboxFileWin)[0];
 								if (!cloudStorageRootDir.EndsWith(Os.DIRSEPERATOR))
 									cloudStorageRootDir = Os.NormSeperator(cloudStorageRootDir + Os.DIRSEPERATOR);
 							}
@@ -147,7 +165,7 @@ namespace OsLib     // aka OsLibCore
 			get
 			{
 				if (dIRSEPERATOR == null)
-					dIRSEPERATOR = System.IO.Path.Combine("1", "2").Substring(1, 1);
+					dIRSEPERATOR = System.IO.Path.DirectorySeparatorChar.ToString();
 				return dIRSEPERATOR;
 			}
 		}
@@ -180,12 +198,30 @@ namespace OsLib     // aka OsLibCore
 		}
 		public static string winInternal(string fullname)
 		{  // every / is replaced by a \ in the copy
-			#region UNIX version
 			char dirChar = Os.DIRSEPERATOR[0];
-			#endregion
-			if (fullname != null)
+			if (fullname != null && dirChar != '/') 
 				fullname = fullname.Replace('/', dirChar); //fullname = fullname.Replace('/', '\\');
 			return fullname;
+		}
+		/// <summary>
+		/// Use NormPath when a new path is created, not for internal functions that use the Os context
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns>Path adjusted to the operating system the code is currently running on</returns>
+		/// <remarks>It is probably fair to assume that the use of unix conventions for paths are standard throughout the code. If the system runs on Windows, NormPath will adjust the path accordingly.</remarks>
+		public static string NormPath(string path)
+		{
+			switch (Os.type)
+			{
+				case OsType.Windows:    // most of the time this means that the path has to get converted
+										// check if the path is already in unix format, no : no \
+					if (path != null && !path.Contains(':') && !path.Contains('\\'))
+						return path;
+					if (path != null)
+						path = path.Replace('/', DIRSEPERATOR[0]);
+					break;
+			}
+			return path;
 		}
 		public static string Escape(string s, EscapeMode mode)
 		{
@@ -323,7 +359,7 @@ namespace OsLib     // aka OsLibCore
 		{
 			Path = s[^1] == Os.DIRSEPERATOR[0] ? s : s + Os.DIRSEPERATOR;
 		}
-		/// <summary>
+
 		/// <summary>
 		/// Constructor that takes a RaiFile object; uses its Path and ignores Name and Ext.
 		/// </summary>
@@ -331,6 +367,7 @@ namespace OsLib     // aka OsLibCore
 		{
 			path = f;
 			path.Name = string.Empty;
+			path.Ext = string.Empty;
 		}
 		public override string ToString() => Path;
 	}
@@ -423,14 +460,14 @@ namespace OsLib     // aka OsLibCore
 		/// <returns></returns>
 		public bool Exists()
 		{
-			return File.Exists(Os.winInternal(FullName));
+			return File.Exists(FullName);
 		}
 		/// <summary>
 		/// Remove this file from the file system.
 		/// </summary>
 		public int rm() // removes file from the file system 
 		{
-			var name = Os.winInternal(FullName);
+			var name = FullName;
 			if (File.Exists(name))
 			{
 				File.Delete(name);
@@ -541,17 +578,17 @@ namespace OsLib     // aka OsLibCore
 		/// <returns>0 if everything went well</returns>
 		public int cp(RaiFile from)
 		{
-			var oldname = Os.winInternal(from.FullName);
-			var newname = Os.winInternal(FullName);
-			
-			if (oldname == newname) // make sure from and this do not point to the same file
+			var src = from.FullName;
+			var dest = FullName;
+
+			if (src == dest) // make sure from and this do not point to the same file
 				return 0;
 
 			rm(); // make sure it's really gone before we go ahead; awaits Vanishing
-			File.Copy(oldname, newname, true);  // overwrite if exists (which should never happen since we just removed it)
+			File.Copy(src, dest, true);  // overwrite if exists (which should never happen since we just removed it)
 			#region double check if file has moved
 			if (Cloud)
-				return awaitFileMaterializing(newname);
+				return awaitFileMaterializing(dest);
 			#endregion
 			return 0;
 		}
@@ -696,8 +733,9 @@ namespace OsLib     // aka OsLibCore
 		public void rmdir(int depth = 0, bool deleteFiles = false)
 		{
 			if (Path == string.Empty)
-				return;		// no directory given => nothing to delete
-			if (Directory.EnumerateFileSystemEntries(Path).Any() && depth > 0) {
+				return;     // no directory given => nothing to delete
+			if (Directory.EnumerateFileSystemEntries(Path).Any() && depth > 0)
+			{
 				if (deleteFiles)
 				{
 					foreach (var file in Directory.EnumerateFiles(Path))
@@ -706,7 +744,7 @@ namespace OsLib     // aka OsLibCore
 				foreach (var subdir in Directory.EnumerateDirectories(Path))
 					new RaiFile(new RaiPath(subdir).Path).rmdir(depth - 1, deleteFiles);
 			}
-			Directory.Delete(Path);	// directory may still be not empty here (if deleteFile == false) => throws exception
+			Directory.Delete(Path); // directory may still be not empty here (if deleteFile == false) => throws exception
 			if (Path.ToLower().Contains("dropbox"))
 				awaitDirVanishing(Path);
 		}
@@ -730,11 +768,11 @@ namespace OsLib     // aka OsLibCore
 			mkdir(Path);
 		}
 		/// <summary>Create a directory if it does not exist yet</summary>
-		/// <param name="dirname"></param>
+		/// <param name="dirname">if not given current directory is used</param>
 		/// <returns>DirectoryInfo structure; contains properties Exists and CreationDate</returns>
 		public static DirectoryInfo mkdir(string dirname)
 		{
-			dirname = Os.winInternal(string.IsNullOrEmpty(dirname) ? Directory.GetCurrentDirectory() : dirname);
+			dirname = string.IsNullOrEmpty(dirname) ? Directory.GetCurrentDirectory() : dirname;
 			var dir = new DirectoryInfo(dirname);
 			if (!dir.Exists)  // TODO problems with network drives, i.e. IservSetting.RemoteRootDir
 			{
@@ -756,7 +794,7 @@ namespace OsLib     // aka OsLibCore
 			inFolder.Path = inFolder.Path + inFolder.Name;
 			inFolder.mv(file);
 			file.Ext = file.Ext + ".zip";
-			File.Delete(file.FullName);   // delete any pre-existing file
+			file.rm();   // delete any pre-existing file
 			try
 			{
 				ZipFile.CreateFromDirectory(inFolder.Path, file.FullName);
@@ -836,18 +874,14 @@ namespace OsLib     // aka OsLibCore
 			try
 			{
 				RaiFile dest;
-				string destName;
 				foreach (var destDir in destDirs)
 				{
 					dest = new RaiFile(FullName)
 					{
 						Path = destDir
 					};
-					destName = dest.FullName;
 					dest.mkdir();
-					if (File.Exists(destName))
-						File.Delete(destName);
-					File.Copy(FullName, destName);
+					dest.cp(this);
 				}
 			}
 			catch (Exception)
@@ -867,7 +901,7 @@ namespace OsLib     // aka OsLibCore
 			var backupFile = new RaiFile(FullName);
 			var idx = (backupFile.Path.Length > 2 && backupFile.Path[1] == ':') ? 3 : 0;     // works as expected for c:/123 or c:\123, but not for c:123
 			var s = backupFile.Path.Substring(idx);
-			backupFile.Path = (Os.LocalBackupDir + s).Replace("Dropbox/", "").Replace("dropbox/", "");   // eliminates Dropbox for LocalBackupDir to avoid ensure
+			backupFile.Path = (Os.LocalBackupDirUnix + s).Replace("Dropbox/", "").Replace("dropbox/", "");   // eliminates Dropbox for LocalBackupDir to avoid ensure
 			mkdir(backupFile.Path);
 			backupFile.Name = backupFile.Name + " " + DateTimeOffset.UtcNow.ToString(Os.DATEFORMAT);
 			backupFile.Ext = Ext;
@@ -928,6 +962,7 @@ namespace OsLib     // aka OsLibCore
 	}
 	public class TextFile : RaiFile
 	{
+		public int mv(TextFile src, bool replace = false, bool keepBackup = false) => mv((RaiFile)src, replace, keepBackup);
 		/// <summary>
 		/// holds info if anything has changed in memory since last read
 		/// </summary>
@@ -1027,6 +1062,7 @@ namespace OsLib     // aka OsLibCore
 	/// </summary>
 	public class CsvFile : TextFile
 	{  //UndefinedNumber and IsNumber now in DataImage, Extensions.cs
+		public int mv(CsvFile src, bool replace = false, bool keepBackup = false) => mv((RaiFile)src, replace, keepBackup);
 		private char[] fieldSplitter;
 		private bool replaceBlanks = false;
 		private Dictionary<string, int> Idx = new Dictionary<string, int>();
@@ -1190,6 +1226,7 @@ namespace OsLib     // aka OsLibCore
 			text.Append("");
 			text.Save();
 		}
+		public int mv(TmpFile src, bool replace = false, bool keepBackup = false) => mv((RaiFile)src, replace, keepBackup);
 		/// <summary>
 		/// a file in the TempDir, located usually on the fastest drive of the system (SSD or RAM-Disk)
 		/// </summary>
@@ -1210,6 +1247,7 @@ namespace OsLib     // aka OsLibCore
 	/// </summary>
 	public class CanonicalFile : RaiFile
 	{
+		public int mv(CanonicalFile src, bool replace = false, bool keepBackup = false) => mv((RaiFile)src, replace, keepBackup);
 		/// <summary>
 		/// A CononicalFile is a file that is inside a directory based on its own name.
 		/// </summary>
@@ -1227,17 +1265,15 @@ namespace OsLib     // aka OsLibCore
 			if (DirList[^1] != Name)
 			{
 				Path = (new RaiPath(Path) / Name).Path;     // add directory same as Name to path
-				mkdir();				
+				mkdir();
 				if (!Exists()) // no file at the final destination yet				
 				{
 					if (!from.Exists()) // no file at the source yet, not even an empty one
 					{
-						from.create(); 	// create an empty file at the supposed source
-						mv(from);			// move the file to the new location following the CanonicalFile convention
+						from.create();  // create an empty file at the supposed source
+						mv(from, replace: false, keepBackup: false);            // move using base mv rules
 					}
-				}				
-				if (!Exists())
-					throw new Exception($"Creating/copying {fullName} to {FullName} not successful");
+				}
 			}
 			#endregion
 		}
