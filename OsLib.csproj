@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-		<Version>2.3.1</Version>
+		<Version>3.0.0</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-		<PackageReleaseNotes>Version for net10.0, also adds class Path /w operator/</PackageReleaseNotes>
+		<PackageReleaseNotes>Major architecture milestone: adds ImageFile/ImageTreeFile and image-focused file model classes for structured media storage. Uses ItemId terminology for image identity.</PackageReleaseNotes>
 		<PackageIcon>hardcastle.png</PackageIcon>
 	</PropertyGroup>
 
@@ -27,6 +27,11 @@
 		<PackageReference Include="RunProcessAsTask" Version="1.2.4" />
 		<None Include="hardcastle.png" Pack="true" PackagePath="" />
 		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Remove="OsLib.Tests/**/*.cs" />
+		<None Remove="OsLib.Tests/**" />
 	</ItemGroup>
 
 </Project>

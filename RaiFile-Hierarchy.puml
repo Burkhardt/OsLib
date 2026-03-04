@@ -1,0 +1,141 @@
+@startuml
+
+skinparam classAttributeIconSize 0
+show fields
+show methods
+
+title OsLib RaiFile Hierarchy
+
+interface IPathConventionFile {
+  +ConventionName : PathConventionType
+  +ApplyPathConvention()
+}
+
+enum PathConventionType {
+  CanonicalByName
+  ItemIdTree
+}
+
+class RaiPath {
+  +Path : string
+  +operator /(self : RaiPath, subDir : string) : RaiPath
+}
+
+class CanonicalPath {
+  +RootPath : string
+  +FileStem : string
+  +Apply()
+}
+
+class ItemTreePath {
+  +RootPath : string
+  +ItemId : string
+  +Topdir : string
+  +Subdir : string
+  +Apply()
+}
+
+class RaiFile {
+  +Cloud : bool
+  +Name : string
+  +Ext : string
+  +Path : string
+  +NameWithExtension : string
+  +FullName : string
+  +DirList : string[]
+  +Exists() : bool
+  +rm() : int
+  +mv(from : RaiFile, replace : bool, keepBackup : bool) : int
+  +cp(from : RaiFile) : int
+  +mkdir()
+  +rmdir(depth : int, deleteFiles : bool)
+  +backup(copy : bool) : string
+}
+
+class TextFile {
+  +Changed : bool
+  +Lines : List~string~
+  +this[i : int] : string
+  +Read() : List~string~
+  +Save(backup : bool)
+  +Append(line : string)
+  +Insert(beforeLine : int, line : string)
+  +Delete(line : int)
+  +Sort(reverse : bool)
+}
+
+class CsvFile {
+  +Read(externalFieldNames : string, replaceBlanks : bool) : int
+  +FieldNames() : string[]
+  +Objects() : List~JObject~
+  +Object(idx : int) : JObject
+  +ToJsonFile(destFileName : string)
+}
+
+class TmpFile {
+  +create()
+}
+
+class CanonicalFile {
+  +ConventionName : PathConventionType
+  +ApplyPathConvention()
+  +CanonicalFile(fullName : string, defaultExt : string = "json")
+}
+
+class ImageFile {
+  +NoImageNumber : int
+  +ItemId : string
+  +NameExt : string
+  +ImageNumber : int
+  +TileTemplate : string
+  +TileNumber : string
+  +Color : ColorInfo
+  +ShortName : string
+  +SetImageNumber(s : string)
+  +ExtendToFirstExistingFile(extensions : string, colorInfo : ColorInfo) : bool
+}
+
+class ImageTreeFile {
+  +ConventionName : PathConventionType
+  +ApplyPathConvention()
+  +Topdir : string
+  +Subdir : string
+  +TopdirRoot : string
+  +SubdirRoot : string
+  +ItemId : string
+  +Path : string
+  +CopyTo(destDirs : string[]) : bool
+}
+
+note right of CanonicalFile
+  Canonical-by-name convention:
+  file is stored in folder named like the file stem.
+  Example: /Root/AfricaStage.pit -> /Root/AfricaStage/AfricaStage.pit
+  Convention is enforced in constructor.
+end note
+
+note right of ImageTreeFile
+  Tree-by-ItemId convention:
+  path segments derived from ItemId prefixes
+  (Topdir: first 3, Subdir: first 6).
+  Convention is enforced via ItemId/Path setters.
+end note
+
+CanonicalFile ..> TmpFile : uses
+CanonicalFile ..> RaiPath : uses
+CanonicalFile ..> CanonicalPath : uses
+CanonicalFile ..|> IPathConventionFile
+ImageTreeFile ..|> IPathConventionFile
+ImageTreeFile ..> ItemTreePath : uses
+
+RaiPath <|-- CanonicalPath
+RaiPath <|-- ItemTreePath
+
+RaiFile <|-- TextFile
+TextFile <|-- CsvFile
+RaiFile <|-- TmpFile
+RaiFile <|-- CanonicalFile
+RaiFile <|-- ImageFile
+ImageFile <|-- ImageTreeFile
+
+@enduml

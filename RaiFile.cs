@@ -357,6 +357,11 @@ namespace OsLib     // aka OsLibCore
 		/// <param name="s">if value of s does not end with a directory separator, one will be added</param>
 		public RaiPath(string s)
 		{
+			if (string.IsNullOrEmpty(s))
+			{
+				Path = string.Empty;
+				return;
+			}
 			Path = s[^1] == Os.DIRSEPERATOR[0] ? s : s + Os.DIRSEPERATOR;
 		}
 
@@ -1238,44 +1243,6 @@ namespace OsLib     // aka OsLibCore
 			//this.Path = Os.TempDir; // ImageServer needs to have access if this library is used from within an IIS app
 			if (ext != null)
 				this.Ext = ext;
-		}
-	}
-	/// <summary>
-	/// Organizes the file into a directory based on its own name.
-	/// For example, a file ./123456.json will be moved to ./123456/123456.json
-	/// only checked in constructor, not in later operations like Path or Name changes
-	/// </summary>
-	public class CanonicalFile : RaiFile
-	{
-		public int mv(CanonicalFile src, bool replace = false, bool keepBackup = false) => mv((RaiFile)src, replace, keepBackup);
-		/// <summary>
-		/// A CononicalFile is a file that is inside a directory based on its own name.
-		/// </summary>
-		/// <param name="fullName">i.e. ~/StorageDir/AfricaStage/AfricaStage.pit or ~/StorageDir/AfricaStage.pit or ~/StorageDir/AfricaStage/</param>
-		/// <param name="defaultExt">optional parameter if fullName doesn't come with an extension</param>
-		/// <exception cref="Exception"></exception>
-		public CanonicalFile(string fullName, string defaultExt = "json") : base(fullName)
-		{
-			// Create a directory based on the file name
-			var from = new TmpFile(fullName, ext: defaultExt);
-			from.mkdir();
-			Name = string.IsNullOrEmpty(from.Name) ? from.DirList[^1] : from.Name;
-			Ext = string.IsNullOrEmpty(from.Ext) ? defaultExt : from.Ext;
-			#region access file system and create directory if convention of canonicaFile is not met
-			if (DirList[^1] != Name)
-			{
-				Path = (new RaiPath(Path) / Name).Path;     // add directory same as Name to path
-				mkdir();
-				if (!Exists()) // no file at the final destination yet				
-				{
-					if (!from.Exists()) // no file at the source yet, not even an empty one
-					{
-						from.create();  // create an empty file at the supposed source
-						mv(from, replace: false, keepBackup: false);            // move using base mv rules
-					}
-				}
-			}
-			#endregion
 		}
 	}
 } //namespace OsLib

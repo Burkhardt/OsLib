@@ -4,6 +4,12 @@
 
 _formerly_ __OsLibCore__
 
+## 3.0.0
+
+- Adds `ImageFile` and `ImageTreeFile` as first-class OsLib types for image-oriented naming and tree-based storage paths.
+- Uses `ItemId` terminology for image identity in the new image file model.
+- This major version marks an architectural expansion: OsLib now includes structured media path semantics, not only generic OS/file helpers.
+
 ## namespace 
 
 OsLib
@@ -59,6 +65,25 @@ OsLib
 </details>
 
 <details>
+<summary>CanonicalPath: RaiPath convention where folder name equals file stem.</summary>
+
+- CanonicalPath: `RootPath`, `FileStem`, `Apply`
+</details>
+
+<details>
+<summary>ItemTreePath: RaiPath convention with partition folders from ItemId prefixes.</summary>
+
+- ItemTreePath: `RootPath`, `ItemId`, `Topdir`, `Subdir`, `Apply`
+</details>
+
+<details>
+<summary>PathConventionType and IPathConventionFile: Shared path-convention contract for convention-aware files.</summary>
+
+- PathConventionType: `CanonicalByName`, `ItemIdTree`
+- IPathConventionFile: `ConventionName`, `ApplyPathConvention`
+</details>
+
+<details>
 <summary>TextFile: Text file with cached line operations and save support.</summary>
 
 - TextFile: `Read`, `Save`, `Append`, `Delete`
@@ -83,6 +108,24 @@ OsLib
 </details>
 
 <details>
+<summary>ColorInfo: Lightweight image color descriptor.</summary>
+
+- ColorInfo: `Code`, `Name`, `Count`
+</details>
+
+<details>
+<summary>ImageFile: Image-oriented filename parser and composer.</summary>
+
+- ImageFile: `ItemId`, `NameExt`, `ImageNumber`, `TileTemplate`, `TileNumber`, `ExtendToFirstExistingFile`
+</details>
+
+<details>
+<summary>ImageTreeFile: ImageFile with tree-based storage path conventions.</summary>
+
+- ImageTreeFile: `Topdir`, `Subdir`, tree-aware `Path`
+</details>
+
+<details>
 <summary>ShellHelper: Helpers for running shell commands.</summary>
 
 - ShellHelper: `Bash`
@@ -92,6 +135,18 @@ OsLib
 
 https://www.nuget.org/packages/OsLibCore/
 
+## diagram
+
+- Source: [RaiFile-Hierarchy.puml](RaiFile-Hierarchy.puml)
+- CLI render (if PlantUML is installed): `plantuml RaiFile-Hierarchy.puml`
+- VS Code: open the `.puml` file and use a PlantUML preview/render extension.
+
+## detailed api
+
+- Foldable class and method-level documentation: [API.md](API.md)
+
 ## unit tests
 
-Check out JsonPitSolution for unit tests and usage of OsLib and other packages.
+- Local unit tests are in [OsLib.Tests](OsLib.Tests).
+- Run from repository root: `dotnet test`
+- Additional integration/usage tests still exist across JsonPitSolution.
