@@ -4,6 +4,34 @@ namespace OsLib.Tests;
 
 public class PathConventionsTests
 {
+    private static RaiPath NewTestRoot()
+    {
+        var guidSegment = Guid.NewGuid().ToString("N");
+        return new RaiPath(Os.TempDir) / "oslib-tests" / guidSegment;
+    }
+
+    private static void EnsureDir(RaiPath path)
+    {
+        RaiFile.mkdir(path.Path);
+    }
+
+    private static void CleanupDir(RaiPath path)
+    {
+        var root = new RaiFile(path.Path);
+        try
+        {
+            root.rmdir(depth: 8, deleteFiles: true);
+        }
+        catch
+        {
+        }
+    }
+
+    private static string FileAt(RaiPath path, string nameWithExt)
+    {
+        return new RaiFile(path.Path + nameWithExt).FullName;
+    }
+
     [Fact]
     public void ItemTreePath_BuildsPartitionedPath_FromItemId()
     {
@@ -14,6 +42,28 @@ public class PathConventionsTests
         Assert.Equal("123", sut.Topdir);
         Assert.Equal("123456", sut.Subdir);
         Assert.Equal(new RaiPath(root + "123/123456/").Path, sut.Path);
+    }
+
+    [Fact]
+    public void RaiPath_Mkdir_CreatesDirectory_ForPathCompositionStyle()
+    {
+        var root = NewTestRoot();
+        var nested = root / "AfricaStage" / "configs";
+
+        try
+        {
+            nested.mkdir();
+
+            var probe = new TextFile(FileAt(nested, "probe.txt"));
+            probe.Append("ok");
+            probe.Save();
+
+            Assert.True(new RaiFile(probe.FullName).Exists());
+        }
+        finally
+        {
+            CleanupDir(root);
+        }
     }
 
     [Fact]
@@ -56,55 +106,57 @@ public class PathConventionsTests
     [Fact]
     public void CanonicalFile_ConstructedFromFlatFile_CanonicalizesPathAndCreatesDestination()
     {
-        var root = Path.Combine(Path.GetTempPath(), "oslib-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(root);
+        var root = NewTestRoot();
+        EnsureDir(root);
         try
         {
-            var input = Path.Combine(root, "AfricaStage.pit");
+            var input = FileAt(root, "AfricaStage.pit");
             var sut = new CanonicalFile(input);
+            var concatenatedPath = root / "AfricaStage";
 
             Assert.Equal("AfricaStage", sut.Name);
             Assert.Equal("pit", sut.Ext);
-            Assert.Equal(new RaiPath(Path.Combine(root, "AfricaStage")).Path, sut.Path);
-            Assert.Equal(Path.Combine(root, "AfricaStage", "AfricaStage.pit"), sut.FullName);
-            Assert.True(File.Exists(sut.FullName));
+            Assert.Equal(concatenatedPath.Path, sut.Path);
+            Assert.Equal(FileAt(concatenatedPath, "AfricaStage.pit"), sut.FullName);
+            Assert.True(new RaiFile(sut.FullName).Exists());
         }
         finally
         {
-            if (Directory.Exists(root))
-                Directory.Delete(root, true);
+            CleanupDir(root);
         }
     }
 
     [Fact]
     public void CanonicalFile_WithoutExtension_UsesDefaultExtension()
     {
-        var root = Path.Combine(Path.GetTempPath(), "oslib-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(root);
+        var root = NewTestRoot();
+        EnsureDir(root);
         try
         {
-            var input = Path.Combine(root, "NoExt");
+            var input = FileAt(root, "NoExt");
             var sut = new CanonicalFile(input);
+            var concatenatedPath = root / "NoExt";
 
             Assert.Equal("json", sut.Ext);
-            Assert.Equal(Path.Combine(root, "NoExt", "NoExt.json"), sut.FullName);
-            Assert.True(File.Exists(sut.FullName));
+            Assert.Equal(FileAt(concatenatedPath, "NoExt.json"), sut.FullName);
+            Assert.True(new RaiFile(sut.FullName).Exists());
         }
         finally
         {
-            if (Directory.Exists(root))
-                Directory.Delete(root, true);
+            CleanupDir(root);
         }
     }
 
     [Fact]
     public void CanonicalFile_AlreadyCanonical_StaysCanonical()
     {
-        var root = Path.Combine(Path.GetTempPath(), "oslib-tests", Guid.NewGuid().ToString("N"));
-        var canonicalDir = Path.Combine(root, "Canon");
-        Directory.CreateDirectory(canonicalDir);
-        var canonicalFile = Path.Combine(canonicalDir, "Canon.txt");
-        File.WriteAllText(canonicalFile, "x");
+        var root = NewTestRoot();
+        var canonicalDir = root / "Canon";
+        EnsureDir(canonicalDir);
+        var canonicalFile = FileAt(canonicalDir, "Canon.txt");
+        var seedFile = new TextFile(canonicalFile);
+        seedFile.Append("x");
+        seedFile.Save();
 
         try
         {
@@ -113,12 +165,11 @@ public class PathConventionsTests
             Assert.Equal("Canon", sut.Name);
             Assert.Equal("txt", sut.Ext);
             Assert.Equal(canonicalFile, sut.FullName);
-            Assert.True(File.Exists(sut.FullName));
+            Assert.True(new RaiFile(sut.FullName).Exists());
         }
         finally
         {
-            if (Directory.Exists(root))
-                Directory.Delete(root, true);
+            CleanupDir(root);
         }
     }
 
@@ -171,14 +222,14 @@ public class PathConventionsTests
     [Fact]
     public void ConventionName_ReportsExpectedEnumForImplementations()
     {
-        var canonical = new CanonicalFile(Path.Combine(Path.GetTempPath(), "oslib-tests", Guid.NewGuid().ToString("N"), "File.pit"));
+        var root = NewTestRoot();
+        EnsureDir(root);
+        var canonical = new CanonicalFile(FileAt(root, "File.pit"));
         var image = new ImageTreeFile("123456_01.jpg", "/tmp/storage/", null, null);
 
         Assert.Equal(PathConventionType.CanonicalByName, canonical.ConventionName);
         Assert.Equal(PathConventionType.ItemIdTree, image.ConventionName);
 
-        var root = new RaiFile(canonical.Path).Path;
-        if (Directory.Exists(root))
-            Directory.Delete(root, true);
+        CleanupDir(root);
     }
 }

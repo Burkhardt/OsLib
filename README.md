@@ -61,7 +61,7 @@ OsLib
 <details>
 <summary>RaiPath: Represents a directory path and enforces a trailing directory separator.</summary>
 
-- RaiPath: `Path`, `/` operator
+- RaiPath: `Path`, `/` operator, `mkdir`
 </details>
 
 <details>
@@ -98,7 +98,7 @@ OsLib
 <details>
 <summary>TmpFile: Temporary file wrapper.</summary>
 
-- TmpFile: `create`
+- TmpFile: `create` (creates missing parent directories via `TextFile.Save`/`RaiFile.mkdir`)
 </details>
 
 <details>

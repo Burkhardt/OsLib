@@ -49,6 +49,11 @@ This document provides a detailed, foldable API overview.
 
 		- Builds a new `RaiPath` by adding one segment plus separator.
 		</details>
+	- <details>
+		<summary>mkdir(): create the directory represented by this path.</summary>
+
+		- Delegates to `RaiFile.mkdir()` so chained composition like `new RaiPath(root) / "AfricaStage"` can materialize directly.
+		</details>
 	</details>
 
 - <details>
@@ -117,6 +122,16 @@ This document provides a detailed, foldable API overview.
 		<summary>ToJsonFile(dest): export CSV to JSON array file.</summary>
 
 		- Serializes current tabular content as JSON text.
+		</details>
+	</details>
+
+- <details>
+	<summary>TmpFile: temporary file wrapper on top of RaiFile.</summary>
+
+	- <details>
+		<summary>create(): create file and ensure missing parent directories.</summary>
+
+		- Uses `TextFile.Save()` internally, which calls `RaiFile.mkdir()` before writing.
 		</details>
 	</details>
 

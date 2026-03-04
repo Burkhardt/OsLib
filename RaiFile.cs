@@ -374,6 +374,7 @@ namespace OsLib     // aka OsLibCore
 			path.Name = string.Empty;
 			path.Ext = string.Empty;
 		}
+		public void mkdir() => new RaiFile(Path).mkdir();
 		public override string ToString() => Path;
 	}
 	/// <summary>
@@ -1225,6 +1226,10 @@ namespace OsLib     // aka OsLibCore
 	}
 	public class TmpFile : RaiFile
 	{
+		/// <summary>
+		/// Creates the temporary file on disk and ensures missing parent directories are created.
+		/// Implementation delegates to <see cref="TextFile.Save(bool)"/>, which calls <see cref="RaiFile.mkdir()"/>.
+		/// </summary>
 		public void create()
 		{
 			var text = new TextFile(FullName);
