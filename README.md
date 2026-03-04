@@ -150,3 +150,12 @@ https://www.nuget.org/packages/OsLibCore/
 - Local unit tests are in [OsLib.Tests](OsLib.Tests).
 - Run from repository root: `dotnet test`
 - Additional integration/usage tests still exist across JsonPitSolution.
+
+## nuget publish automation
+
+- GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
+- Trigger: push a version tag in format `v*` (example: `v3.0.0`)
+- Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
+- Required GitHub repository secret: `NUGET_API_KEY`
+- Typical release command:
+	- `git tag -a v3.0.0 -m "v3.0.0" && git push origin v3.0.0`

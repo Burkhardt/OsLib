@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-		<Version>3.0.0</Version>
+		<Version>3.0.1</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
