@@ -175,7 +175,7 @@ This document provides a detailed, foldable API overview.
 	- <details>
 		<summary>PathConventionType: supported convention kinds.</summary>
 
-		- Values: `CanonicalByName`, `ItemIdTree`.
+		- Values: `CanonicalByName`, `ItemIdTree3x3`, `ItemIdTree8x2`.
 		</details>
 	- <details>
 		<summary>IPathConventionFile: convention-aware file behavior.</summary>
@@ -214,69 +214,7 @@ This document provides a detailed, foldable API overview.
 		</details>
 	</details>
 
-## image-oriented model
+## architecture note
 
-- <details>
-	<summary>ColorInfo: lightweight image color descriptor.</summary>
-
-	- <details>
-		<summary>Code / Name / Count: color code, display name, frequency.</summary>
-
-		- `Code` validates hex color input.
-		</details>
-	</details>
-
-- <details>
-	<summary>ItemTreePath: ItemId-derived partitioning path convention.</summary>
-
-	- <details>
-		<summary>RootPath / ItemId / Topdir / Subdir: tree partition inputs and outputs.</summary>
-
-		- `Topdir` is first 3 chars, `Subdir` first 6 chars of `ItemId`.
-		</details>
-	- <details>
-		<summary>Apply(): rebuild partitioned path.</summary>
-
-		- Composes final path as `RootPath/Topdir/Subdir/`.
-		</details>
-	</details>
-
-- <details>
-	<summary>ImageFile: image filename parser/composer.</summary>
-
-	- <details>
-		<summary>ItemId / NameExt / ImageNumber / TileTemplate / TileNumber / Color.</summary>
-
-		- Represents image naming components and derived filename semantics.
-		</details>
-	- <details>
-		<summary>Parse(): decode file naming scheme into model fields.</summary>
-
-		- Interprets naming conventions, color segments, and tile suffix patterns.
-		</details>
-	- <details>
-		<summary>ExtendToFirstExistingFile(extensions, colorInfo): resolve first existing file variant.</summary>
-
-		- Searches by extension and optional color to update current image descriptor.
-		</details>
-	</details>
-
-- <details>
-	<summary>ImageTreeFile: ImageFile with ItemId-tree storage convention.</summary>
-
-	- <details>
-		<summary>ConventionName: reports `ItemIdTree`.</summary>
-
-		- Identifies active path convention.
-		</details>
-	- <details>
-		<summary>Topdir / Subdir / TopdirRoot / SubdirRoot.</summary>
-
-		- Exposes partitioned path components derived from `ItemId`.
-		</details>
-	- <details>
-		<summary>ApplyPathConvention(): enforce ItemTreePath-based location.</summary>
-
-		- Recomputes and applies tree path from current `ItemId`.
-		</details>
-	</details>
+- Image-domain classes are intentionally maintained in a dedicated image package.
+- OsLib remains responsible for generic file/path/process foundations and shared contracts.

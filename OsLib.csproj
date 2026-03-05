@@ -17,7 +17,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-		<PackageReleaseNotes>Major architecture milestone: adds ImageFile/ImageTreeFile and image-focused file model classes for structured media storage. Uses ItemId terminology for image identity.</PackageReleaseNotes>
+		<PackageReleaseNotes>Refocused OsLib on generic OS/file foundations and shared path-convention contracts.</PackageReleaseNotes>
 		<PackageIcon>hardcastle.png</PackageIcon>
 	</PropertyGroup>
 

@@ -33,18 +33,6 @@ public class PathConventionsTests
     }
 
     [Fact]
-    public void ItemTreePath_BuildsPartitionedPath_FromItemId()
-    {
-        var root = new RaiPath("/tmp/storage/").Path;
-        var sut = new ItemTreePath(root, "12345678");
-
-        Assert.Equal(root, sut.RootPath);
-        Assert.Equal("123", sut.Topdir);
-        Assert.Equal("123456", sut.Subdir);
-        Assert.Equal(new RaiPath(root + "123/123456/").Path, sut.Path);
-    }
-
-    [Fact]
     public void RaiPath_Mkdir_CreatesDirectory_ForPathCompositionStyle()
     {
         var root = NewTestRoot();
@@ -67,27 +55,6 @@ public class PathConventionsTests
     }
 
     [Fact]
-    public void ItemTreePath_NormalizesRoot_WhenRootAlreadyContainsSegments()
-    {
-        var rootWithSegments = new RaiPath("/tmp/storage/123/123456/").Path;
-        var sut = new ItemTreePath(rootWithSegments, "12345678");
-
-        Assert.Equal(new RaiPath("/tmp/storage/").Path, sut.RootPath);
-        Assert.Equal(new RaiPath("/tmp/storage/123/123456/").Path, sut.Path);
-    }
-
-    [Fact]
-    public void ItemTreePath_Uses_C0N_ForConTopdir()
-    {
-        var root = new RaiPath("/tmp/storage/").Path;
-        var sut = new ItemTreePath(root, "con12345");
-
-        Assert.Equal("C0N", sut.Topdir);
-        Assert.Equal("con123", sut.Subdir);
-        Assert.Equal(new RaiPath(root + "C0N/con123/").Path, sut.Path);
-    }
-
-    [Fact]
     public void CanonicalPath_Appends_FileStem_Folder()
     {
         var root = new RaiPath("/tmp/storage/").Path;
@@ -100,7 +67,8 @@ public class PathConventionsTests
     public void PathConventionType_Contains_ExpectedMembers()
     {
         Assert.Contains(PathConventionType.CanonicalByName, Enum.GetValues<PathConventionType>());
-        Assert.Contains(PathConventionType.ItemIdTree, Enum.GetValues<PathConventionType>());
+        Assert.Contains(PathConventionType.ItemIdTree3x3, Enum.GetValues<PathConventionType>());
+        Assert.Contains(PathConventionType.ItemIdTree8x2, Enum.GetValues<PathConventionType>());
     }
 
     [Fact]
@@ -174,61 +142,13 @@ public class PathConventionsTests
     }
 
     [Fact]
-    public void ImageTreeFile_ConstructedFromFlatPath_PartitionsByItemId()
-    {
-        var root = new RaiPath("/tmp/storage/").Path;
-        var sut = new ImageTreeFile("123456_01.jpg", root, null, null);
-
-        Assert.Equal("123456", sut.ItemId);
-        Assert.Equal("123", sut.Topdir);
-        Assert.Equal("123456", sut.Subdir);
-        Assert.Equal(new RaiPath(root + "123/123456/").Path, sut.Path);
-    }
-
-    [Fact]
-    public void ImageTreeFile_SetItemId_RebuildsTreePath()
-    {
-        var root = new RaiPath("/tmp/storage/").Path;
-        var sut = new ImageTreeFile("123456_01.jpg", root, null, null);
-
-        sut.ItemId = "654321";
-
-        Assert.Equal("654", sut.Topdir);
-        Assert.Equal("654321", sut.Subdir);
-        Assert.Equal(new RaiPath(root + "654/654321/").Path, sut.Path);
-    }
-
-    [Fact]
-    public void ImageTreeFile_SetPathWithEmbeddedSegments_NormalizesToRoot()
-    {
-        var sut = new ImageTreeFile("123456_01.jpg", "/tmp/storage/123/123456/", null, null);
-
-        Assert.Equal(new RaiPath("/tmp/storage/123/123456/").Path, sut.Path);
-        Assert.Equal(new RaiPath("/tmp/storage/").Path, sut.TopdirRoot);
-    }
-
-    [Fact]
-    public void ImageTreeFile_ApplyPathConvention_UsesCurrentItemId()
-    {
-        var sut = new ImageTreeFile("abc999_01.jpg", "/tmp/base/", null, null);
-
-        sut.ApplyPathConvention();
-
-        Assert.Equal("abc", sut.Topdir);
-        Assert.Equal("abc999", sut.Subdir);
-        Assert.Equal(new RaiPath("/tmp/base/abc/abc999/").Path, sut.Path);
-    }
-
-    [Fact]
-    public void ConventionName_ReportsExpectedEnumForImplementations()
+    public void ConventionName_ReportsExpectedEnumForCanonicalFile()
     {
         var root = NewTestRoot();
         EnsureDir(root);
         var canonical = new CanonicalFile(FileAt(root, "File.pit"));
-        var image = new ImageTreeFile("123456_01.jpg", "/tmp/storage/", null, null);
 
         Assert.Equal(PathConventionType.CanonicalByName, canonical.ConventionName);
-        Assert.Equal(PathConventionType.ItemIdTree, image.ConventionName);
 
         CleanupDir(root);
     }

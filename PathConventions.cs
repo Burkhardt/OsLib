@@ -6,7 +6,8 @@ namespace OsLib
 	public enum PathConventionType
 	{
 		CanonicalByName,
-		ItemIdTree
+		ItemIdTree3x3,
+		ItemIdTree8x2
 	}
 
 	public interface IPathConventionFile
