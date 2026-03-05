@@ -52,7 +52,7 @@ This document provides a detailed, foldable API overview.
 	- <details>
 		<summary>mkdir(): create the directory represented by this path.</summary>
 
-		- Delegates to `RaiFile.mkdir()` so chained composition like `new RaiPath(root) / "AfricaStage"` can materialize directly.
+		- Delegates to `RaiFile.mkdir()` so chained composition like `new RaiPath(root) / "ProjectRoot"` can materialize directly.
 		</details>
 	</details>
 
