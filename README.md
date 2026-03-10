@@ -42,7 +42,7 @@ OsLib
 <details>
 <summary>Os: Platform helpers for paths, escaping, and cloud storage root discovery.</summary>
 
-- Os: `CloudStorageRoot`, `HomeDir`, `TempDir`, `Escape`, `NormSeperator`
+- Os: `CloudStorageRoot`, `GetCloudStorageRoots`, `GetPreferredCloudStorageRoot`, `GetCloudDiscoveryReport`, `HomeDir`, `TempDir`, `Escape`, `NormSeperator`
 </details>
 
 <details>
@@ -119,6 +119,7 @@ https://www.nuget.org/packages/OsLibCore/
 ## detailed api
 
 - Foldable class and method-level documentation: [API.md](API.md)
+- Cloud root discovery setup and options: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
 
 ## unit tests
 

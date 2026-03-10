@@ -55,6 +55,32 @@ public class PathConventionsTests
     }
 
     [Fact]
+    public void RaiPath_Rmdir_RemovesDirectoryTree()
+    {
+        var root = NewTestRoot();
+        var nested = root / "cleanup" / "deep";
+
+        try
+        {
+            nested.mkdir();
+            var probe = new TextFile(FileAt(nested, "probe.txt"));
+            probe.Append("ok");
+            probe.Save();
+
+            root.rmdir(depth: 8, deleteFiles: true);
+
+            Assert.False(Directory.Exists(root.Path));
+        }
+        finally
+        {
+            if (Directory.Exists(root.Path))
+            {
+                CleanupDir(root);
+            }
+        }
+    }
+
+    [Fact]
     public void CanonicalPath_Appends_FileStem_Folder()
     {
         var root = new RaiPath("/tmp/storage/").Path;
