@@ -26,6 +26,7 @@ namespace OsLib
 		};
 
 		private static Dictionary<CloudStorageType, string> cloudRootsCache;
+		private static bool isDiscoveringCloudRoots;
 
 		/// <summary>
 		/// Preferred cloud storage root based on configured precedence.
@@ -41,9 +42,43 @@ namespace OsLib
 		{
 			if (refresh || cloudRootsCache == null)
 			{
-				cloudRootsCache = DiscoverCloudStorageRoots();
+				if (isDiscoveringCloudRoots)
+					return new Dictionary<CloudStorageType, string>(cloudRootsCache ?? new Dictionary<CloudStorageType, string>());
+
+				try
+				{
+					isDiscoveringCloudRoots = true;
+					cloudRootsCache = DiscoverCloudStorageRoots();
+				}
+				finally
+				{
+					isDiscoveringCloudRoots = false;
+				}
 			}
 			return new Dictionary<CloudStorageType, string>(cloudRootsCache);
+		}
+
+		internal static bool IsCloudPath(string candidatePath)
+		{
+			var normalizedCandidate = NormalizePathForComparison(candidatePath);
+			if (string.IsNullOrWhiteSpace(normalizedCandidate) || IsDropboxMetadataPath(normalizedCandidate))
+				return false;
+
+			if (isDiscoveringCloudRoots)
+				return false;
+
+			foreach (var root in GetCloudStorageRoots().Values)
+			{
+				var normalizedRoot = NormalizePathForComparison(root);
+				if (string.IsNullOrWhiteSpace(normalizedRoot))
+					continue;
+
+				if (normalizedCandidate.Equals(normalizedRoot, StringComparison.OrdinalIgnoreCase) ||
+					normalizedCandidate.StartsWith(normalizedRoot + DIRSEPERATOR, StringComparison.OrdinalIgnoreCase))
+					return true;
+			}
+
+			return false;
 		}
 
 		/// <summary>
@@ -81,6 +116,7 @@ namespace OsLib
 		public static void ResetCloudStorageCache()
 		{
 			cloudRootsCache = null;
+			isDiscoveringCloudRoots = false;
 		}
 
 		/// <summary>
@@ -166,7 +202,10 @@ namespace OsLib
 		{
 			var configured = Environment.GetEnvironmentVariable("OSLIB_CLOUD_CONFIG");
 			if (!string.IsNullOrWhiteSpace(configured))
+			{
 				yield return ExpandPath(configured);
+				yield break;
+			}
 
 			if (Type == OsType.Windows)
 			{
@@ -240,6 +279,9 @@ namespace OsLib
 			TryAddRoot(roots, CloudStorageType.OneDrive, "~/OneDrive - Personal");
 			TryAddRoot(roots, CloudStorageType.OneDrive, "~/Library/CloudStorage/OneDrive");
 
+			foreach (var path in SafeEnumerateDirectories(HomeDir, "OneDrive*"))
+				TryAddRoot(roots, CloudStorageType.OneDrive, path);
+
 			foreach (var path in SafeEnumerateDirectories(new RaiFile("~/Library/CloudStorage/").Path, "OneDrive*"))
 				TryAddRoot(roots, CloudStorageType.OneDrive, path);
 		}
@@ -300,6 +342,23 @@ namespace OsLib
 			if (expanded.StartsWith("~/", StringComparison.Ordinal))
 				expanded = HomeDir + expanded.Substring(1);
 			return expanded;
+		}
+
+		private static string NormalizePathForComparison(string value)
+		{
+			var expanded = ExpandPath(value);
+			if (string.IsNullOrWhiteSpace(expanded))
+				return null;
+
+			var normalized = NormSeperator(expanded).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+			return normalized;
+		}
+
+		private static bool IsDropboxMetadataPath(string normalizedPath)
+		{
+			var marker = DIRSEPERATOR + ".dropbox";
+			return normalizedPath.EndsWith(marker, StringComparison.OrdinalIgnoreCase) ||
+				normalizedPath.Contains(marker + DIRSEPERATOR, StringComparison.OrdinalIgnoreCase);
 		}
 
 		private static IEnumerable<string> SafeEnumerateDirectories(string path, string pattern)

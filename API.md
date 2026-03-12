@@ -7,16 +7,43 @@ This document provides a detailed, foldable API overview.
 - <details>
 	<summary>Os: OS-aware environment and path utilities.</summary>
 
-	- Responsibilities: platform detection, home/temp discovery, separator and escaping helpers.
+	- Responsibilities: platform detection, home/temp discovery, separator and escaping helpers, and provider-based cloud discovery.
 	- <details>
 		<summary>HomeDir: user home directory detection (Windows/Unix).</summary>
 
 		- Returns the current user's home directory with cross-platform fallback behavior.
 		</details>
 	- <details>
-		<summary>CloudStorageRoot: cloud root discovery (Dropbox/OneDrive scenarios).</summary>
+		<summary>CloudStorageRoot: preferred discovered cloud root by default provider order.</summary>
 
-		- Attempts to resolve cloud root path depending on platform and available metadata.
+		- Uses GoogleDrive, ICloud, Dropbox, then OneDrive, and throws if nothing is configured or discovered.
+		</details>
+	- <details>
+		<summary>GetCloudStorageRoots(refresh): discover all available provider roots.</summary>
+
+		- Applies precedence in this order: environment override, explicit/default INI configuration, then OS-specific probing.
+		- On Ubuntu and other Linux setups, callers should prefer `OSLIB_CLOUD_ROOT_GOOGLEDRIVE` or `OSLIB_CLOUD_CONFIG` for stable Google Drive mounts.
+		</details>
+	- <details>
+		<summary>GetCloudStorageRoot(provider, refresh): return one provider root or null.</summary>
+
+		- Useful when callers need a specific provider instead of the default preferred order.
+		</details>
+	- <details>
+		<summary>GetPreferredCloudStorageRoot(order): resolve a custom provider precedence.</summary>
+
+		- Returns the first available provider root from the supplied order.
+		</details>
+	- <details>
+		<summary>ResetCloudStorageCache(): force re-discovery after environment or config changes.</summary>
+
+		- Clears cached provider roots so later lookups observe updated machine state.
+		</details>
+	- <details>
+		<summary>GetCloudDiscoveryReport(refresh): readable diagnostics for all providers.</summary>
+
+		- Lists each provider and the resolved root or a not-found marker.
+		- This is the recommended startup diagnostic for Ubuntu development environments with mounted Google Drive paths.
 		</details>
 	- <details>
 		<summary>NormPath(path): normalize path to current OS conventions.</summary>
@@ -59,7 +86,7 @@ This document provides a detailed, foldable API overview.
 - <details>
 	<summary>RaiFile: generic file and directory utility.</summary>
 
-	- Responsibilities: parse/compose file identity, IO operations, cloud-aware waiting semantics.
+	- Responsibilities: parse/compose file identity, IO operations, and cloud-aware waiting semantics based on discovered provider roots.
 	- <details>
 		<summary>Name / Ext / Path / FullName: core file identity properties.</summary>
 

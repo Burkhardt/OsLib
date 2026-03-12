@@ -4,7 +4,7 @@
 
 _formerly_ __OsLibCore__
 
-## 3.0.0
+## 3.2.1
 
 - Strengthens generic path-convention contracts and canonical file organization support.
 - Keeps OsLib focused on reusable OS/file foundations for public package consumers.
@@ -40,9 +40,9 @@ OsLib
 </details>
 
 <details>
-<summary>Os: Platform helpers for paths, escaping, and cloud storage root discovery.</summary>
+<summary>Os: Platform helpers for paths, escaping, and provider-based cloud storage discovery.</summary>
 
-- Os: `CloudStorageRoot`, `GetCloudStorageRoots`, `GetPreferredCloudStorageRoot`, `GetCloudDiscoveryReport`, `HomeDir`, `TempDir`, `Escape`, `NormSeperator`
+- Os: `CloudStorageRoot`, `GetCloudStorageRoots`, `GetCloudStorageRoot`, `GetPreferredCloudStorageRoot`, `ResetCloudStorageCache`, `GetCloudDiscoveryReport`, `HomeDir`, `TempDir`, `Escape`, `NormSeperator`
 </details>
 
 <details>
@@ -119,7 +119,8 @@ https://www.nuget.org/packages/OsLibCore/
 ## detailed api
 
 - Foldable class and method-level documentation: [API.md](API.md)
-- Cloud root discovery setup and options: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
+- Cloud root discovery setup, provider precedence, and cloud-aware IO behavior: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
+- Ubuntu/Mzansi guidance: prefer `OSLIB_CLOUD_ROOT_GOOGLEDRIVE` or `OSLIB_CLOUD_CONFIG` over probe-only discovery for stable Google Drive roots across C# and Python packages.
 
 ## unit tests
 
@@ -130,8 +131,8 @@ https://www.nuget.org/packages/OsLibCore/
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.0.0`)
+- Trigger: push a version tag in format `v*` (example: `v3.2.1`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.0.0 -m "v3.0.0" && git push origin v3.0.0`
+	- `git tag -a v3.2.1 -m "v3.2.1" && git push origin v3.2.1`

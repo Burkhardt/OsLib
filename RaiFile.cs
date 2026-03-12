@@ -372,8 +372,7 @@ namespace OsLib     // aka OsLibCore
 
 		private void UpdateCloudFlag()
 		{
-			var lowercase = path.ToLower();
-			Cloud = lowercase.Contains(".dropbox") ? false : lowercase.Contains("dropbox") || lowercase.Contains("onedrive") || lowercase.Contains("cloudstorage");    // sets Ensure also for files inside local .dropbox folder 
+			Cloud = Os.IsCloudPath(path);
 		}
 
 		public virtual string FullName

@@ -20,6 +20,7 @@ Current behavior:
 - Cross-provider discovery with deterministic precedence
 - Explicit overrides via environment variables
 - Optional INI configuration file support
+- RaiFile cloud-aware IO waits follow discovered provider roots, including Google Drive and iCloud
 
 ## Public API
 
@@ -111,7 +112,7 @@ macOS / Linux:
 Windows:
 - `%APPDATA%\OsLib\cloudstorage.ini`
 
-`OSLIB_CLOUD_CONFIG` takes precedence over default locations.
+`OSLIB_CLOUD_CONFIG` takes precedence over default locations and is used as the sole config file candidate when set.
 
 ## OS-Specific Probing
 
@@ -143,6 +144,30 @@ Note:
 - Linux cloud setups are often mount-based (`rclone`, FUSE, distro-specific tools).
 - For reliable Linux behavior across setups, use env overrides or INI config.
 
+### Ubuntu Recommendation
+
+For Ubuntu development machines, especially when Google Drive is mounted through `rclone`, GNOME integration, or another user-specific path, do not rely on probe-only behavior.
+
+Recommended setup for Mzansi and related local development:
+
+```bash
+export OSLIB_CLOUD_ROOT_GOOGLEDRIVE="$HOME/GoogleDrive-Mzansi"
+```
+
+If the mount path differs by machine, keep the same variable name and only change the value:
+
+```bash
+export OSLIB_CLOUD_ROOT_GOOGLEDRIVE="$HOME/cloud/mzansi-gdrive"
+```
+
+Equivalent `cloudstorage.ini` entry:
+
+```ini
+googledrive=/home/me/GoogleDrive-Mzansi
+```
+
+This is the preferred approach for Ubuntu-based development of Mzansi and the upcoming Python `OsLib`, `RaiUtils`, and `JsonPit` packages because it keeps the cloud-root contract deterministic across languages and machines.
+
 ## Recommended Setup Strategy
 
 For production stability:
@@ -150,6 +175,27 @@ For production stability:
 2. Keep an INI file for machine-local fallback and readability.
 3. Use `GetCloudDiscoveryReport()` during startup diagnostics.
 4. Call `ResetCloudStorageCache()` after changing env/config at runtime.
+
+## Cloud-Aware File IO
+
+`RaiFile` now treats a path as cloud-backed when it is inside one of the discovered provider roots.
+
+This matters for file operations that wait for cloud-synced directories or files to materialize or vanish.
+
+Practical consequence:
+- A custom Google Drive root on Ubuntu, configured through `OSLIB_CLOUD_ROOT_GOOGLEDRIVE` or `cloudstorage.ini`, participates in the same cloud-aware IO behavior as Dropbox and OneDrive.
+
+## Cross-Language Convention
+
+If multiple libraries in the same environment need cloud-root discovery, they should share the same environment variable and INI key contract.
+
+Recommended shared convention for C# and Python packages:
+- Use `OSLIB_CLOUD_ROOT_GOOGLEDRIVE` for Google Drive overrides.
+- Use `OSLIB_CLOUD_CONFIG` for an explicit machine-local config file.
+- Use the same INI keys: `dropbox`, `onedrive`, `googledrive` or `google_drive`, `icloud` or `icloud_drive`.
+- Apply the same precedence: environment override, explicit INI file, default INI locations, then OS-specific probing.
+
+That keeps `OsLib`, `RaiUtils`, and `JsonPit` aligned whether the caller is .NET or Python.
 
 ## Testing Guidance
 
@@ -164,3 +210,5 @@ Integration tests:
 - macOS with all 4 providers present
 - Windows with OneDrive + Google Drive + Dropbox/iCloud where installed
 - Ubuntu with mounted providers (`rclone` or native clients)
+
+For Ubuntu integration tests, prefer a configured Google Drive mount path over home-directory probe assumptions, and verify both discovery and `RaiFile` cloud-aware IO behavior under that mounted root.

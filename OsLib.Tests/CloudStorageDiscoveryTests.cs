@@ -2,6 +2,7 @@ using OsLib;
 
 namespace OsLib.Tests;
 
+[Collection("CloudStorageEnvironment")]
 public class CloudStorageDiscoveryTests
 {
     [Fact]

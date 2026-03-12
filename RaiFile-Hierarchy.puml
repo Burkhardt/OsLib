@@ -1,4 +1,4 @@
-@startuml
+Context: I have four separate C# library repos: OsLib, RaiUtils, RaiImage, and JsonPit. I’m moving JsonPit tests into the JsonPit repo and using the parent JsonPitSolution repo as the cross-library integration workspace. Renaming the parent repo is deferred until after that migration. Help me with...@startuml
 
 skinparam classAttributeIconSize 0
 show fields

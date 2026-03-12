@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-		<Version>3.2.0</Version>
+		<Version>3.2.1</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-		<PackageReleaseNotes>Refocused OsLib on generic OS/file foundations and shared path-convention contracts.</PackageReleaseNotes>
+		<PackageReleaseNotes>3.2.1 adds provider-root-aware cloud IO behavior and Ubuntu-friendly Google Drive discovery guidance.</PackageReleaseNotes>
 		<PackageIcon>hardcastle.png</PackageIcon>
 	</PropertyGroup>
 
