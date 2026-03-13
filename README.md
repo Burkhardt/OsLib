@@ -4,10 +4,10 @@
 
 _formerly_ __OsLibCore__
 
-## 3.2.1
+## 3.3.0
 
-- Strengthens generic path-convention contracts and canonical file organization support.
-- Keeps OsLib focused on reusable OS/file foundations for public package consumers.
+- Introduces `Os.Config` and `osconfig.json` as the reusable typed configuration model for OsLib.
+- Moves cloud roots, backup policy, and configurable directories into a shared config contract while keeping provider probing and caching.
 
 ## namespace 
 
@@ -137,11 +137,15 @@ https://www.nuget.org/packages/OsLibCore/
 - Run from repository root: `dotnet test`
 - Additional integration/usage tests still exist across JsonPitSolution.
 
+## release notes
+
+- Current release notes: [RELEASE_NOTES_3.3.0.md](RELEASE_NOTES_3.3.0.md)
+
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.2.1`)
+- Trigger: push a version tag in format `v*` (example: `v3.3.0`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.2.1 -m "v3.2.1" && git push origin v3.2.1`
+	- `git tag -a v3.3.0 -m "v3.3.0" && git push origin v3.3.0`

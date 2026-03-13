@@ -52,6 +52,32 @@ class RaiFile {
   +backup(copy : bool) : string
 }
 
+abstract class "ConfigFile<TData>" as ConfigFile {
+  +Data : TData
+  +Load() : TData
+}
+
+class CloudModel {
+  +DropboxRoot : RaiPath
+  +OneDriveRoot : RaiPath
+  +GoogleDriveRoot : RaiPath
+  +ICloudRoot : RaiPath
+  +GetRoot(provider : CloudStorageType) : RaiPath
+}
+
+class OsConfigModel {
+  +HomeDir : RaiPath
+  +TempDir : RaiPath
+  +LocalBackupDir : RaiPath
+  +DefaultCloudOrder : List~CloudStorageType~
+  +Cloud : CloudModel
+  +GetCloudDirPath(provider : CloudStorageType) : RaiPath
+}
+
+class OsConfigFile {
+  +Persist()
+}
+
 class TextFile {
   +Changed : bool
   +Lines : List~string~
@@ -121,12 +147,19 @@ note right of ImageTreeFile
   Convention is enforced via ItemId/Path setters.
 end note
 
+note right of OsConfigFile
+  Reusable typed JSON config file built on RaiFile.
+  OsLib uses it for Os.Config and osconfig.json.
+end note
+
 CanonicalFile ..> TmpFile : uses
 CanonicalFile ..> RaiPath : uses
 CanonicalFile ..> CanonicalPath : uses
 CanonicalFile ..|> IPathConventionFile
 ImageTreeFile ..|> IPathConventionFile
 ImageTreeFile ..> ItemTreePath : uses
+ConfigFile ..> RaiPath : stores paths
+OsConfigModel --> CloudModel : contains
 
 RaiPath <|-- CanonicalPath
 RaiPath <|-- ItemTreePath
@@ -135,6 +168,8 @@ RaiFile <|-- TextFile
 TextFile <|-- CsvFile
 RaiFile <|-- TmpFile
 RaiFile <|-- CanonicalFile
+RaiFile <|-- ConfigFile
+ConfigFile <|-- OsConfigFile
 RaiFile <|-- ImageFile
 ImageFile <|-- ImageTreeFile
 
