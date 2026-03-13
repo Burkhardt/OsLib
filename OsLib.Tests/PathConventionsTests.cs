@@ -7,7 +7,7 @@ public class PathConventionsTests
     private static RaiPath NewTestRoot()
     {
         var guidSegment = Guid.NewGuid().ToString("N");
-        return new RaiPath(Os.TempDir) / "oslib-tests" / guidSegment;
+        return new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "path-conventions" / guidSegment;
     }
 
     private static void EnsureDir(RaiPath path)

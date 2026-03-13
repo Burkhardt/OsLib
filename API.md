@@ -21,8 +21,22 @@ This document provides a detailed, foldable API overview.
 	- <details>
 		<summary>GetCloudStorageRoots(refresh): discover all available provider roots.</summary>
 
-		- Applies precedence in this order: environment override, explicit/default INI configuration, then OS-specific probing.
-		- On Ubuntu and other Linux setups, callers should prefer `OSLIB_CLOUD_ROOT_GOOGLEDRIVE` or `OSLIB_CLOUD_CONFIG` for stable Google Drive mounts.
+		- Applies precedence in this order: `Os.Config` values first, then OS-specific probing.
+		- The default configuration file is `~/.config/RAIkeep/osconfig.json` on macOS and Linux, and `%APPDATA%\RAIkeep\osconfig.json` on Windows.
+		- On Ubuntu and other Linux setups with custom mounts, callers should edit `cloud.googledrive` or the other `cloud.*` entries directly in config.
+		</details>
+	- <details>
+		<summary>Config / LoadConfig(refresh): typed `OsConfigModel` access.</summary>
+
+		- `Config` exposes the reusable `OsConfigFile` wrapper.
+		- `LoadConfig()` restores the typed object from JSON, while `LoadConfig(refresh: true)` forces a reload.
+		- The config object includes `HomeDir`, `TempDir`, `LocalBackupDir`, `DefaultCloudOrder`, and nested `Cloud` settings, plus convenience cloud path accessors.
+		</details>
+	- <details>
+		<summary>GetDefaultConfigPath() / GetDefaultCloudConfigPath(): config file helpers.</summary>
+
+		- `GetDefaultConfigPath()` resolves the active `osconfig.json` path.
+		- `GetDefaultCloudConfigPath()` remains only as an obsolete compatibility alias.
 		</details>
 	- <details>
 		<summary>GetCloudStorageRoot(provider, refresh): return one provider root or null.</summary>
@@ -37,7 +51,7 @@ This document provides a detailed, foldable API overview.
 	- <details>
 		<summary>ResetCloudStorageCache(): force re-discovery after environment or config changes.</summary>
 
-		- Clears cached provider roots so later lookups observe updated machine state.
+		- Clears cached provider roots so later lookups observe updated config or machine state.
 		</details>
 	- <details>
 		<summary>GetCloudDiscoveryReport(refresh): readable diagnostics for all providers.</summary>
@@ -105,7 +119,7 @@ This document provides a detailed, foldable API overview.
 	- <details>
 		<summary>backup(copy): create dated backup file.</summary>
 
-		- Creates a timestamped backup in the resolved local backup location; `Os.LocalBackupDir` avoids discovered cloud roots and can be overridden with `OSLIB_LOCAL_BACKUP_DIR`.
+		- Creates a timestamped backup in the resolved local backup location; `Os.LocalBackupDir` avoids discovered cloud roots and can be configured in `osconfig.json`.
 		</details>
 	</details>
 
@@ -191,6 +205,29 @@ This document provides a detailed, foldable API overview.
 		<summary>Start(): async process execution.</summary>
 
 		- Uses `RunProcessAsTask` to run command asynchronously.
+		</details>
+	</details>
+
+- <details>
+	<summary>CliCommand and tool wrappers: reusable typed command launchers.</summary>
+
+	- Responsibilities: executable resolution, package-manager install/update hints, and `RaiSystem`-backed execution.
+	- <details>
+		<summary>CliCommand: base abstraction for local CLI tools.</summary>
+
+		- Resolves a working executable from candidate names or explicit paths.
+		- Exposes sync/async execution through `Run(...)` and `RunAsync(...)`.
+		</details>
+	- <details>
+		<summary>CurlCommand / ZipCommand / SevenZipCommand: generic command wrappers.</summary>
+
+		- Provide install/update hints per OS and, for 7-Zip, alternate executable probing.
+		</details>
+	- <details>
+		<summary>RCloneCommand: typed wrapper for `rclone` subcommands.</summary>
+
+		- Supports optional explicit command-path configuration.
+		- Provides `BuildArguments`, `RunSubcommand`, and `RunSubcommandAsync` for higher-level cloud tooling.
 		</details>
 	</details>
 

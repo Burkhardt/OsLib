@@ -20,9 +20,9 @@ namespace OsLib.Tests
 
 		private static string CreateTempDir()
 		{
-			var root = Path.Combine(Path.GetTempPath(), "OsLibTests", Guid.NewGuid().ToString("N")) + Path.DirectorySeparatorChar;
-			Directory.CreateDirectory(root);
-			return root;
+			var root = new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "core" / Guid.NewGuid().ToString("N");
+			root.mkdir();
+			return root.Path;
 		}
 
 		private static string CreateExecutableScript(string root, string scriptName, string content)
@@ -43,11 +43,21 @@ namespace OsLib.Tests
 		public void Os_Type_UsesRuntimePlatformDetection()
 		{
 			ResetOsCaches();
-			var expected = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
+			var expected = OperatingSystem.IsWindows()
 				? OsType.Windows
-				: OsType.UNIX;
+				: OperatingSystem.IsMacOS()
+					? OsType.MacOS
+					: OsType.Ubuntu;
 
 			Assert.Equal(expected, Os.Type);
+		}
+
+		[Fact]
+		public void Os_IsUnixLike_IsTrueForNonWindowsPlatforms()
+		{
+			ResetOsCaches();
+
+			Assert.Equal(!OperatingSystem.IsWindows(), Os.IsUnixLike);
 		}
 
 		[Fact]
@@ -87,7 +97,7 @@ namespace OsLib.Tests
 		[Fact]
 		public void Os_HomeDir_UsesHomeVariable_OnUnix()
 		{
-			if (Os.Type != OsType.UNIX)
+			if (!Os.IsUnixLike)
 				return;
 
 			var oldHome = Environment.GetEnvironmentVariable("HOME");
@@ -309,7 +319,7 @@ namespace OsLib.Tests
 		{
 			string command;
 			string args;
-			if (Os.Type == OsType.UNIX)
+			if (Os.IsUnixLike)
 			{
 				command = "/bin/echo";
 				args = "hello";
@@ -415,10 +425,36 @@ namespace OsLib.Tests
 		[Fact]
 		public void ShellHelper_Bash_RunsCommand_OnUnix()
 		{
-			if (Os.Type != OsType.UNIX)
+			if (!Os.IsUnixLike)
 				return;
 			var result = "echo hello".Bash();
 			Assert.Contains("hello", result);
+		}
+
+		private static bool IsUbuntuRuntime()
+		{
+			try
+			{
+				const string osRelease = "/etc/os-release";
+				if (!File.Exists(osRelease))
+					return false;
+
+				foreach (var line in File.ReadAllLines(osRelease))
+				{
+					if (!line.StartsWith("ID=", StringComparison.OrdinalIgnoreCase) &&
+						!line.StartsWith("ID_LIKE=", StringComparison.OrdinalIgnoreCase))
+						continue;
+
+					var value = line.Substring(line.IndexOf('=') + 1).Trim().Trim('"');
+					if (value.Contains("ubuntu", StringComparison.OrdinalIgnoreCase))
+						return true;
+				}
+			}
+			catch
+			{
+			}
+
+			return false;
 		}
 	}
 }

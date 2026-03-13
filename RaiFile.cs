@@ -17,7 +17,7 @@ using Newtonsoft.Json.Serialization;
 namespace OsLib     // aka OsLibCore
 {
 	public enum EscapeMode { noEsc, blankEsc, paramEsc, backslashed };
-	public enum OsType { UNIX, Windows };
+	public enum OsType { Windows, MacOS, Ubuntu };
 	public enum CloudStorageType { Dropbox, OneDrive, GoogleDrive, ICloud };
 	/// <summary>
 	/// Provides OS-aware environment and path utilities, including platform detection,
@@ -31,24 +31,10 @@ namespace OsLib     // aka OsLibCore
 			{
 				if (homeDir == null)
 				{
-					if (Type == OsType.Windows)
-					{
-						homeDir = Environment.GetEnvironmentVariable("USERPROFILE");
-						if (string.IsNullOrEmpty(homeDir))
-						{
-							var homeDrive = Environment.GetEnvironmentVariable("HOMEDRIVE");
-							var homePath = Environment.GetEnvironmentVariable("HOMEPATH");
-							if (!string.IsNullOrEmpty(homeDrive) && !string.IsNullOrEmpty(homePath))
-								homeDir = homeDrive + homePath;
-						}
-					}
-					else
-					{
-						homeDir = Environment.GetEnvironmentVariable("HOME");
-					}
-
-					if (string.IsNullOrEmpty(homeDir))
-						homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? "";
+					var configured = Config.Data.HomeDir?.Path?.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+					homeDir = string.IsNullOrWhiteSpace(configured)
+						? ResolveSystemHomeDir().TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar)
+						: configured;
 				}
 				return homeDir;
 			}
@@ -59,19 +45,24 @@ namespace OsLib     // aka OsLibCore
 			get
 			{
 				if (type == null)
-					type = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
-						? OsType.Windows
-						: OsType.UNIX;
+					type = DetectOsType();
 				return (OsType)type;
 			}
 		}
+		public static bool IsUnixLike => Type != OsType.Windows;
+		public static bool IsLinuxLike => Type == OsType.Ubuntu;
 		private static OsType? type = null;
 		public static string TempDir
 		{
 			get
 			{
 				if (tempDir == null)
-					tempDir = System.IO.Path.GetTempPath();
+				{
+					var configured = Config.Data.TempDir?.Path;
+					tempDir = string.IsNullOrWhiteSpace(configured)
+						? ResolveSystemTempDir()
+						: configured;
+				}
 				return tempDir;
 			}
 		}
@@ -81,7 +72,7 @@ namespace OsLib     // aka OsLibCore
 			get
 			{
 				if (localBackupDir == null)
-					localBackupDir = ResolveLocalBackupDir();
+					localBackupDir = ResolveConfiguredOrDefaultLocalBackupDir();
 				return localBackupDir;
 			}
 		}
@@ -127,7 +118,7 @@ namespace OsLib     // aka OsLibCore
 		public static string winInternal(string fullname)
 		{  // every / is replaced by a \ in the copy
 			char dirChar = Os.DIRSEPERATOR[0];
-			if (fullname != null && dirChar != '/') 
+			if (fullname != null && dirChar != '/')
 				fullname = fullname.Replace('/', dirChar); //fullname = fullname.Replace('/', '\\');
 			return fullname;
 		}
@@ -170,8 +161,54 @@ namespace OsLib     // aka OsLibCore
 
 		private static string localBackupDir = null;
 
-		private static string ResolveLocalBackupDir()
+		internal static string ResolveSystemHomeDir()
 		{
+			var resolved = string.Empty;
+			if (Type == OsType.Windows)
+			{
+				resolved = Environment.GetEnvironmentVariable("USERPROFILE");
+				if (string.IsNullOrEmpty(resolved))
+				{
+					var homeDrive = Environment.GetEnvironmentVariable("HOMEDRIVE");
+					var homePath = Environment.GetEnvironmentVariable("HOMEPATH");
+					if (!string.IsNullOrEmpty(homeDrive) && !string.IsNullOrEmpty(homePath))
+						resolved = homeDrive + homePath;
+				}
+			}
+			else
+			{
+				resolved = Environment.GetEnvironmentVariable("HOME");
+			}
+
+			if (string.IsNullOrEmpty(resolved))
+				resolved = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty;
+
+			return resolved;
+		}
+
+		internal static string ResolveSystemTempDir()
+		{
+			return System.IO.Path.GetTempPath();
+		}
+
+		internal static string ResolveSystemLocalBackupDir()
+		{
+			foreach (var candidate in GetLocalBackupDirCandidates())
+			{
+				var normalized = NormalizeBackupDirectoryCandidate(candidate);
+				if (!string.IsNullOrWhiteSpace(normalized))
+					return normalized;
+			}
+
+			return new RaiPath(Path.Combine(ResolveSystemTempDir(), "OsLib", "Backup")).Path;
+		}
+
+		private static string ResolveConfiguredOrDefaultLocalBackupDir()
+		{
+			var configured = Config.Data.LocalBackupDir?.Path;
+			if (!string.IsNullOrWhiteSpace(configured) && !IsCloudPath(configured))
+				return configured;
+
 			foreach (var candidate in GetLocalBackupDirCandidates())
 			{
 				var normalized = NormalizeBackupDirectoryCandidate(candidate);
@@ -179,15 +216,11 @@ namespace OsLib     // aka OsLibCore
 					return normalized;
 			}
 
-			return new RaiPath(Path.Combine(TempDir, "OsLib", "Backup")).Path;
+			return ResolveSystemLocalBackupDir();
 		}
 
 		private static IEnumerable<string> GetLocalBackupDirCandidates()
 		{
-			var overridePath = Environment.GetEnvironmentVariable("OSLIB_LOCAL_BACKUP_DIR");
-			if (!string.IsNullOrWhiteSpace(overridePath))
-				yield return overridePath;
-
 			var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 			if (!string.IsNullOrWhiteSpace(localAppData))
 				yield return Path.Combine(localAppData, "OsLib", "Backup");
@@ -205,7 +238,7 @@ namespace OsLib     // aka OsLibCore
 				yield return "~/Backup";
 			}
 
-			yield return Path.Combine(TempDir, "OsLib", "Backup");
+			yield return Path.Combine(ResolveSystemTempDir(), "OsLib", "Backup");
 		}
 
 		private static string NormalizeBackupDirectoryCandidate(string candidate)
@@ -218,6 +251,46 @@ namespace OsLib     // aka OsLibCore
 				expanded = $"{HomeDir}{expanded.Substring(1)}";
 
 			return new RaiPath(expanded).Path;
+		}
+
+		private static OsType DetectOsType()
+		{
+			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+				return OsType.Windows;
+
+			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+				return OsType.MacOS;
+
+			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
+				return OsType.Ubuntu;
+
+			return OsType.Ubuntu;
+		}
+
+		private static bool IsUbuntuRuntime()
+		{
+			try
+			{
+				const string osRelease = "/etc/os-release";
+				if (!File.Exists(osRelease))
+					return false;
+
+				foreach (var line in File.ReadAllLines(osRelease))
+				{
+					if (!line.StartsWith("ID=", StringComparison.OrdinalIgnoreCase) &&
+						!line.StartsWith("ID_LIKE=", StringComparison.OrdinalIgnoreCase))
+						continue;
+
+					var value = line.Substring(line.IndexOf('=') + 1).Trim().Trim('"');
+					if (value.Contains("ubuntu", StringComparison.OrdinalIgnoreCase))
+						return true;
+				}
+			}
+			catch
+			{
+			}
+
+			return false;
 		}
 	}
 

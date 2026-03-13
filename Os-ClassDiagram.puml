@@ -30,8 +30,9 @@ show circle
 
 together {
 	enum OsType << (E,#f59e0b) >> {
-		UNIX
 		Windows
+		MacOS
+		Ubuntu
 	}
 	enum CloudStorageType << (E,#f59e0b) >> {
 		Dropbox
@@ -55,23 +56,77 @@ together {
 	}
 }
 
+abstract class "ConfigFile<TData>" as ConfigFile << (C,#14b8a6) >> {
+	+ Data : TData
+	--
+	+ Load() : TData
+	# CreateDefaultData() : TData
+	# NormalizeData(data : TData) : TData
+	# Save() : void
+	~ SetFullName(fullName : string) : void
+}
+
+class CloudModel << (C,#14b8a6) >> {
+	+ DropboxRoot : RaiPath
+	+ OneDriveRoot : RaiPath
+	+ GoogleDriveRoot : RaiPath
+	+ ICloudRoot : RaiPath
+	+ Roots : IReadOnlyDictionary<CloudStorageType, RaiPath>
+	--
+	+ GetRoot(provider : CloudStorageType) : RaiPath
+	~ SetRoot(provider : CloudStorageType, value : string) : void
+	~ MergeMissingDiscoveredRoots(discoveredRoots : IReadOnlyDictionary<CloudStorageType, string>) : bool
+	~ Clone() : CloudModel
+	~ Normalize() : void
+}
+
+class OsConfigModel << (C,#14b8a6) >> {
+	+ HomeDir : RaiPath
+	+ TempDir : RaiPath
+	+ LocalBackupDir : RaiPath
+	+ DefaultCloudOrder : List<CloudStorageType>
+	+ Cloud : CloudModel
+	+ DropboxPath : RaiPath
+	+ OneDrivePath : RaiPath
+	+ GooglePath : RaiPath
+	+ ICloudPath : RaiPath
+	+ CloudDirPaths : IReadOnlyDictionary<CloudStorageType, RaiPath>
+	--
+	+ GetCloudDirPath(provider : CloudStorageType) : RaiPath
+	~ Clone() : OsConfigModel
+	~ Normalize() : void
+}
+
+class OsConfigFile << (C,#14b8a6) >> {
+	--
+	# CreateDefaultData() : OsConfigModel
+	# NormalizeData(data : OsConfigModel) : OsConfigModel
+	~ Persist() : void
+}
+
 class Os << (C,#14b8a6) >> {
 	-{static} homeDir : string
 	-{static} type : OsType?
 	-{static} tempDir : string
+	-{static} localBackupDir : string
 	-{static} dIRSEPERATOR : string
-	-{static} DefaultCloudOrder : CloudStorageType[]
-	-{static} EnvVarByProvider : Dictionary<CloudStorageType, string>
+	-{static} config : OsConfigFile
 	-{static} cloudRootsCache : Dictionary<CloudStorageType, string>
 	-{static} isDiscoveringCloudRoots : bool
+	-{static} isInitializingConfig : bool
+	-{static} CloudDiscoveryGuidePath : string
+	-{static} DefaultConfigFileName : string
 	==
 	+{static} DIRSEPERATOR : string
 	+{static} ESCAPECHAR : string
 	+{static} DATEFORMAT : string
 	+{static} Type : OsType
+	+{static} IsUnixLike : bool
+	+{static} IsLinuxLike : bool
 	+{static} HomeDir : string
 	+{static} LocalBackupDir : string
 	+{static} TempDir : string
+	+{static} Config : OsConfigFile
 	+{static} CloudStorageRoot : string
 	--
 	+{static} ParseDateTime(datetimeInDATEFORMAT : string) : DateTimeOffset
@@ -81,16 +136,22 @@ class Os << (C,#14b8a6) >> {
 	+{static} NormPath(path : string) : string
 	+{static} Escape(s : string, mode : EscapeMode) : string
 	+{static} NormSeperator(s : string) : string
+	+{static} LoadConfig(refresh : bool = false) : OsConfigModel
 	+{static} GetCloudStorageRoots(refresh : bool = false) : IReadOnlyDictionary<CloudStorageType, string>
 	+{static} GetPreferredCloudStorageRoot(preferredOrder : CloudStorageType[]) : string
 	+{static} GetCloudStorageRoot(provider : CloudStorageType, refresh : bool = false) : string
 	+{static} ResetCloudStorageCache() : void
 	+{static} GetCloudDiscoveryReport(refresh : bool = false) : string
+	+{static} GetCloudStorageSetupGuidance() : string
+	+{static} GetDefaultConfigPath() : string
+	+{static} GetDefaultCloudConfigPath() : string
 	==
+	-{static} CreateDefaultCloudOrder() : IReadOnlyList<CloudStorageType>
+	-{static} InvalidateConfiguredPathCaches() : void
+	-{static} NormalizeConfigPath(path : string) : string
 	-{static} DiscoverCloudStorageRoots() : Dictionary<CloudStorageType, string>
-	-{static} ApplyEnvironmentOverrides(roots : Dictionary<CloudStorageType, string>) : void
-	-{static} ApplyIniConfiguration(roots : Dictionary<CloudStorageType, string>) : void
-	-{static} GetCloudConfigCandidates() : IEnumerable<string>
+	-{static} PersistDiscoveredCloudRoots(roots : IReadOnlyDictionary<CloudStorageType, string>) : void
+	-{static} ApplyConfiguration(roots : Dictionary<CloudStorageType, string>, cloudConfig : CloudModel) : void
 	-{static} ApplyProviderProbes(roots : Dictionary<CloudStorageType, string>) : void
 	-{static} ProbeDropbox(roots : Dictionary<CloudStorageType, string>) : void
 	-{static} GetDropboxInfoFileCandidates() : IEnumerable<string>
@@ -107,6 +168,12 @@ class Os << (C,#14b8a6) >> {
 
 Os ..> OsType : uses
 Os ..> CloudStorageType : uses
+ConfigFile <|-- OsConfigFile
+OsConfigFile --> OsConfigModel : stores
+OsConfigModel --> CloudModel : contains
+CloudModel ..> CloudStorageType : keyed by
+Os ..> OsConfigFile : config wrapper
+Os ..> OsConfigModel : loads
 
 note bottom of Os
 	`Os` is a partial class 

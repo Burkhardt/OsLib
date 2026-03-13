@@ -1,178 +1,191 @@
-using OsLib;
+using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace OsLib.Tests;
 
 [Collection("CloudStorageEnvironment")]
 public class CloudStorageDiscoveryTests
 {
-    [Fact]
-    public void GetCloudStorageRoots_UsesEnvironmentOverrides()
-    {
-        var root = NewTestRoot();
-        Directory.CreateDirectory(root.Path);
+	[Fact]
+	public void GetCloudStorageRoots_UsesConfiguredRoots()
+	{
+		var root = OsTestEnvironment.NewTestRoot("cloud-discovery");
+		using var env = new OsTestEnvironment(root);
 
-        var dropbox = (root / "DropboxRoot").Path;
-        var oneDrive = (root / "OneDriveRoot").Path;
-        var googleDrive = (root / "GoogleDriveRoot").Path;
-        var iCloud = (root / "ICloudRoot").Path;
+		var dropbox = (root / "DropboxRoot").Path;
+		var oneDrive = (root / "OneDriveRoot").Path;
+		var googleDrive = (root / "GoogleDriveRoot").Path;
+		var iCloud = (root / "ICloudRoot").Path;
 
-        Directory.CreateDirectory(dropbox);
-        Directory.CreateDirectory(oneDrive);
-        Directory.CreateDirectory(googleDrive);
-        Directory.CreateDirectory(iCloud);
+		Directory.CreateDirectory(dropbox);
+		Directory.CreateDirectory(oneDrive);
+		Directory.CreateDirectory(googleDrive);
+		Directory.CreateDirectory(iCloud);
+		env.WriteConfig(dropbox: dropbox, oneDrive: oneDrive, googleDrive: googleDrive, iCloud: iCloud);
 
-        var env = new EnvScope(new Dictionary<string, string?>
-        {
-            ["OSLIB_CLOUD_ROOT_DROPBOX"] = dropbox,
-            ["OSLIB_CLOUD_ROOT_ONEDRIVE"] = oneDrive,
-            ["OSLIB_CLOUD_ROOT_GOOGLEDRIVE"] = googleDrive,
-            ["OSLIB_CLOUD_ROOT_ICLOUD"] = iCloud,
-            ["OSLIB_CLOUD_CONFIG"] = null
-        });
+		var roots = Os.GetCloudStorageRoots(refresh: true);
 
-        try
-        {
-            Os.ResetCloudStorageCache();
-            var roots = Os.GetCloudStorageRoots(refresh: true);
+		Assert.Equal(new RaiPath(dropbox).Path, roots[CloudStorageType.Dropbox]);
+		Assert.Equal(new RaiPath(oneDrive).Path, roots[CloudStorageType.OneDrive]);
+		Assert.Equal(new RaiPath(googleDrive).Path, roots[CloudStorageType.GoogleDrive]);
+		Assert.Equal(new RaiPath(iCloud).Path, roots[CloudStorageType.ICloud]);
+	}
 
-            Assert.Equal(new RaiPath(dropbox).Path, roots[CloudStorageType.Dropbox]);
-            Assert.Equal(new RaiPath(oneDrive).Path, roots[CloudStorageType.OneDrive]);
-            Assert.Equal(new RaiPath(googleDrive).Path, roots[CloudStorageType.GoogleDrive]);
-            Assert.Equal(new RaiPath(iCloud).Path, roots[CloudStorageType.ICloud]);
-        }
-        finally
-        {
-            env.Dispose();
-            Cleanup(root);
-        }
-    }
+	[Fact]
+	public void GetPreferredCloudStorageRoot_RespectsPreferredOrder()
+	{
+		var root = OsTestEnvironment.NewTestRoot("cloud-discovery");
+		using var env = new OsTestEnvironment(root);
 
-    [Fact]
-    public void GetPreferredCloudStorageRoot_RespectsPreferredOrder()
-    {
-        var root = NewTestRoot();
-        Directory.CreateDirectory(root.Path);
+		var dropbox = (root / "DropboxRoot").Path;
+		var googleDrive = (root / "GoogleDriveRoot").Path;
+		Directory.CreateDirectory(dropbox);
+		Directory.CreateDirectory(googleDrive);
+		env.WriteConfig(dropbox: dropbox, googleDrive: googleDrive);
 
-        var dropbox = (root / "DropboxRoot").Path;
-        var googleDrive = (root / "GoogleDriveRoot").Path;
-        Directory.CreateDirectory(dropbox);
-        Directory.CreateDirectory(googleDrive);
+		var preferredDropbox = Os.GetPreferredCloudStorageRoot(CloudStorageType.Dropbox, CloudStorageType.GoogleDrive);
+		var preferredGoogle = Os.GetPreferredCloudStorageRoot(CloudStorageType.GoogleDrive, CloudStorageType.Dropbox);
 
-        var env = new EnvScope(new Dictionary<string, string?>
-        {
-            ["OSLIB_CLOUD_ROOT_DROPBOX"] = dropbox,
-            ["OSLIB_CLOUD_ROOT_GOOGLEDRIVE"] = googleDrive,
-            ["OSLIB_CLOUD_ROOT_ONEDRIVE"] = null,
-            ["OSLIB_CLOUD_ROOT_ICLOUD"] = null,
-            ["OSLIB_CLOUD_CONFIG"] = null
-        });
+		Assert.Equal(new RaiPath(dropbox).Path, preferredDropbox);
+		Assert.Equal(new RaiPath(googleDrive).Path, preferredGoogle);
+	}
 
-        try
-        {
-            Os.ResetCloudStorageCache();
+	[Fact]
+	public void LoadConfig_LoadsConfiguredJsonConfiguration()
+	{
+		var root = OsTestEnvironment.NewTestRoot("cloud-discovery");
+		using var env = new OsTestEnvironment(root);
 
-            var preferredDropbox = Os.GetPreferredCloudStorageRoot(CloudStorageType.Dropbox, CloudStorageType.GoogleDrive);
-            var preferredGoogle = Os.GetPreferredCloudStorageRoot(CloudStorageType.GoogleDrive, CloudStorageType.Dropbox);
+		var googleDrive = (root / "GoogleDriveIni").Path;
+		var iCloud = (root / "ICloudIni").Path;
+		Directory.CreateDirectory(googleDrive);
+		Directory.CreateDirectory(iCloud);
+		env.WriteConfig(googleDrive: googleDrive, iCloud: iCloud);
 
-            Assert.Equal(new RaiPath(dropbox).Path, preferredDropbox);
-            Assert.Equal(new RaiPath(googleDrive).Path, preferredGoogle);
-        }
-        finally
-        {
-            env.Dispose();
-            Cleanup(root);
-        }
-    }
+		var config = Os.LoadConfig(refresh: true);
 
-    [Fact]
-    public void GetCloudStorageRoots_LoadsIniConfiguration()
-    {
-        var root = NewTestRoot();
-        Directory.CreateDirectory(root.Path);
+		Assert.Equal(new RaiPath(googleDrive).Path, config.GooglePath!.Path);
+		Assert.Equal(new RaiPath(iCloud).Path, config.ICloudPath!.Path);
+		Assert.Equal(new RaiPath(googleDrive).Path, config.GetCloudDirPath(CloudStorageType.GoogleDrive)!.Path);
+		Assert.Equal(new RaiPath(iCloud).Path, config.CloudDirPaths[CloudStorageType.ICloud].Path);
+	}
 
-        var googleDrive = (root / "GoogleDriveIni").Path;
-        var iCloud = (root / "ICloudIni").Path;
-        Directory.CreateDirectory(googleDrive);
-        Directory.CreateDirectory(iCloud);
+	[Fact]
+	public void GetCloudStorageRoots_LoadsDefaultUserConfigLocation()
+	{
+		if (!Os.IsUnixLike)
+			return;
 
-        var iniFile = new RaiFile((root / "cfg").Path + "cloudstorage.ini");
-        RaiFile.mkdir(iniFile.Path);
-        File.WriteAllLines(iniFile.FullName,
-        [
-            "# oslib cloud configuration",
-            $"googledrive={googleDrive}",
-            $"icloud={iCloud}"
-        ]);
+		var root = OsTestEnvironment.NewTestRoot("cloud-discovery");
+		using var env = new OsTestEnvironment(root);
 
-        var env = new EnvScope(new Dictionary<string, string?>
-        {
-            ["OSLIB_CLOUD_CONFIG"] = iniFile.FullName,
-            ["OSLIB_CLOUD_ROOT_DROPBOX"] = null,
-            ["OSLIB_CLOUD_ROOT_ONEDRIVE"] = null,
-            ["OSLIB_CLOUD_ROOT_GOOGLEDRIVE"] = null,
-            ["OSLIB_CLOUD_ROOT_ICLOUD"] = null
-        });
+		var googleDrive = (root / "GoogleDriveDefaultIni").Path;
+		Directory.CreateDirectory(googleDrive);
+		env.WriteConfig(googleDrive: googleDrive);
 
-        try
-        {
-            Os.ResetCloudStorageCache();
-            var roots = Os.GetCloudStorageRoots(refresh: true);
+		var config = Os.LoadConfig(refresh: true);
 
-            Assert.Equal(new RaiPath(googleDrive).Path, roots[CloudStorageType.GoogleDrive]);
-            Assert.Equal(new RaiPath(iCloud).Path, roots[CloudStorageType.ICloud]);
-        }
-        finally
-        {
-            env.Dispose();
-            Cleanup(root);
-        }
-    }
+		Assert.Equal(new RaiPath(googleDrive).Path, config.GooglePath!.Path);
+	}
 
-    [Fact]
-    public void GetCloudDiscoveryReport_IncludesProviderLines()
-    {
-        var report = Os.GetCloudDiscoveryReport(refresh: true);
+	[Fact]
+	public void LoadConfig_AutoCreatesDefaultUserConfigFile_WhenMissing()
+	{
+		if (!Os.IsUnixLike)
+			return;
 
-        Assert.Contains("Dropbox", report);
-        Assert.Contains("OneDrive", report);
-        Assert.Contains("GoogleDrive", report);
-        Assert.Contains("ICloud", report);
-    }
+		var root = OsTestEnvironment.NewTestRoot("cloud-discovery");
+		using var env = new OsTestEnvironment(root);
 
-    private static RaiPath NewTestRoot()
-    {
-        return new RaiPath(Os.TempDir) / "oslib-tests" / "cloud-discovery" / Guid.NewGuid().ToString("N");
-    }
+		var googleDrive = new RaiPath(env.Home) / "GoogleDrive";
+		Directory.CreateDirectory(googleDrive.Path);
+		env.DeleteConfig();
 
-    private static void Cleanup(RaiPath root)
-    {
-        try
-        {
-            if (Directory.Exists(root.Path))
-                new RaiFile(root.Path).rmdir(depth: 10, deleteFiles: true);
-        }
-        catch
-        {
-        }
-    }
+		var config = Os.LoadConfig(refresh: true);
+		var configPath = Os.GetDefaultConfigPath();
 
-    private sealed class EnvScope : IDisposable
-    {
-        private readonly Dictionary<string, string?> _before = new();
+		Assert.True(File.Exists(configPath));
+		Assert.Equal(new RaiPath(googleDrive.Path).Path, config.GooglePath!.Path);
 
-        public EnvScope(Dictionary<string, string?> vars)
-        {
-            foreach (var kvp in vars)
-            {
-                _before[kvp.Key] = Environment.GetEnvironmentVariable(kvp.Key);
-                Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
-            }
-        }
+		var configJson = JObject.Parse(File.ReadAllText(configPath));
+		Assert.Equal(new RaiPath(env.Home).Path, configJson["homeDir"]!.ToString());
+		Assert.Equal(string.Empty, configJson["cloud"]!["dropbox"]!.ToString());
+		Assert.Equal(string.Empty, configJson["cloud"]!["onedrive"]!.ToString());
+		Assert.Equal(new RaiPath(googleDrive.Path).Path, configJson["cloud"]!["googledrive"]!.ToString());
+		Assert.Equal(string.Empty, configJson["cloud"]!["icloud"]!.ToString());
+	}
 
-        public void Dispose()
-        {
-            foreach (var kvp in _before)
-                Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
-        }
-    }
+	[Fact]
+	public void GetCloudStorageRoots_DoesNotOverwriteExistingDefaultUserConfigFile()
+	{
+		if (!Os.IsUnixLike)
+			return;
+
+		var root = OsTestEnvironment.NewTestRoot("cloud-discovery");
+		using var env = new OsTestEnvironment(root);
+
+		var googleDrive = new RaiPath(env.Home) / "GoogleDriveExistingConfig";
+		Directory.CreateDirectory(googleDrive.Path);
+		env.WriteConfig(googleDrive: "/manual/path/");
+
+		_ = Os.GetCloudStorageRoots(refresh: true);
+
+		var config = JObject.Parse(File.ReadAllText(Os.GetDefaultConfigPath()));
+		Assert.Equal("/manual/path/", config["cloud"]!["googledrive"]!.ToString());
+		Assert.DoesNotContain(new RaiPath(googleDrive.Path).Path, File.ReadAllText(Os.GetDefaultConfigPath()));
+	}
+
+	[Fact]
+	public void GetCloudDiscoveryReport_IncludesProviderLines()
+	{
+		var report = Os.GetCloudDiscoveryReport(refresh: true);
+
+		Assert.Contains("Dropbox", report);
+		Assert.Contains("OneDrive", report);
+		Assert.Contains("GoogleDrive", report);
+		Assert.Contains("ICloud", report);
+	}
+
+	[Fact]
+	public void GetMacGoogleDriveProbeTarget_PrefersMyDrive_WhenPresent()
+	{
+		var root = OsTestEnvironment.NewTestRoot("cloud-discovery");
+		root.mkdir();
+
+		var container = root / "GoogleDrive-rainer.burkhardt@gmail.com";
+		var myDrive = container / "My Drive";
+		Directory.CreateDirectory(myDrive.Path);
+
+		try
+		{
+			var resolved = Os.GetMacGoogleDriveProbeTarget(container.Path);
+
+			Assert.Equal(myDrive.Path, resolved);
+		}
+		finally
+		{
+			OsTestEnvironment.Cleanup(root);
+		}
+	}
+
+	[Fact]
+	public void GetMacGoogleDriveProbeTarget_FallsBackToContainer_WhenMyDriveIsMissing()
+	{
+		var root = OsTestEnvironment.NewTestRoot("cloud-discovery");
+		root.mkdir();
+
+		var container = root / "GoogleDrive-rainer.burkhardt@gmail.com";
+		Directory.CreateDirectory(container.Path);
+
+		try
+		{
+			var resolved = Os.GetMacGoogleDriveProbeTarget(container.Path);
+
+			Assert.Equal(container.Path, resolved);
+		}
+		finally
+		{
+			OsTestEnvironment.Cleanup(root);
+		}
+	}
 }

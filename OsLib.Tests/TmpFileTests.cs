@@ -7,7 +7,7 @@ public class TmpFileTests
     private static RaiPath NewTestRoot()
     {
         var guidSegment = Guid.NewGuid().ToString("N");
-        return new RaiPath(Os.TempDir) / "oslib-tests" / "tmpfile" / guidSegment;
+        return new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "tmpfile" / guidSegment;
     }
 
     private static void CleanupDir(RaiPath path)

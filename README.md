@@ -106,6 +106,13 @@ OsLib
 - ShellHelper: `Bash`
 </details>
 
+<details>
+<summary>CliCommand and tool wrappers: executable discovery, install hints, and process execution.</summary>
+
+- CliCommand: `IsAvailable`, `TryResolveExecutable`, `Run`, `RunAsync`, `GetInstallCommand`, `GetUpdateCommand`
+- Built-in wrappers: `CurlCommand`, `ZipCommand`, `SevenZipCommand`, `RCloneCommand`
+</details>
+
 ## nuget
 
 https://www.nuget.org/packages/OsLibCore/
@@ -120,8 +127,9 @@ https://www.nuget.org/packages/OsLibCore/
 
 - Foldable class and method-level documentation: [API.md](API.md)
 - Cloud root discovery setup, provider precedence, and cloud-aware IO behavior: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
-- Local backup placement: `Os.LocalBackupDir` resolves an OS-local, non-cloud directory and can be overridden with `OSLIB_LOCAL_BACKUP_DIR`.
-- Ubuntu/Mzansi guidance: prefer `OSLIB_CLOUD_ROOT_GOOGLEDRIVE` or `OSLIB_CLOUD_CONFIG` over probe-only discovery for stable Google Drive roots across C# and Python packages.
+- CLI command hierarchy and external tool wrappers: [../CliCommand-Hierarchy.puml](../CliCommand-Hierarchy.puml)
+- Local backup placement: `Os.LocalBackupDir` resolves an OS-local, non-cloud directory and can be configured in `osconfig.json`.
+- Ubuntu/Mzansi guidance: prefer explicit `cloud.*` entries in `osconfig.json` over probe-only discovery for stable Google Drive roots across machines.
 
 ## unit tests
 

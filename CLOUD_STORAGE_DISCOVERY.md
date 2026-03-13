@@ -1,6 +1,6 @@
 # Cloud Storage Discovery
 
-OsLib now uses a provider-based discovery model for cloud roots.
+OsLib now resolves cloud roots through `Os.Config`, backed by a JSON config file that is created on demand and refreshed into an in-memory cache.
 
 Supported providers:
 - `Dropbox`
@@ -8,111 +8,76 @@ Supported providers:
 - `GoogleDrive`
 - `ICloud`
 
-## Hard-Break Notes
+## Current Model
 
-The legacy Dropbox-only discovery flow has been removed.
+The active configuration file is `osconfig.json`.
 
-Removed behavior:
-- External command dependency (`FindDropbox.exe`)
-- Legacy Dropbox-only fields and fallback chain
+Default locations:
+- macOS / Linux: `~/.config/RAIkeep/osconfig.json`
+- Windows: `%APPDATA%\RAIkeep\osconfig.json`
 
-Current behavior:
-- Cross-provider discovery with deterministic precedence
-- Explicit overrides via environment variables
-- Optional INI configuration file support
-- RaiFile cloud-aware IO waits follow discovered provider roots, including Google Drive and iCloud
+`Os.Config` wraps that file through `OsConfigFile`, and `Os.LoadConfig()` returns the typed `OsConfigModel`.
+
+The config is broader than cloud-only state. It can hold:
+- `homeDir`
+- `tempDir`
+- `localBackupDir`
+- `defaultCloudOrder`
+- `cloud.dropbox`
+- `cloud.onedrive`
+- `cloud.googledrive`
+- `cloud.icloud`
 
 ## Public API
 
 In `Os`:
-- `CloudStorageRoot`: returns preferred root by default order
-- `GetCloudStorageRoots(bool refresh = false)`: returns all discovered roots
-- `GetCloudStorageRoot(CloudStorageType provider, bool refresh = false)`: returns one provider root
-- `GetPreferredCloudStorageRoot(params CloudStorageType[] preferredOrder)`: custom precedence
-- `ResetCloudStorageCache()`: clears cache for re-discovery
-- `GetCloudDiscoveryReport(bool refresh = false)`: readable diagnostics output
+- `Config`: the reusable `OsConfigFile` wrapper
+- `LoadConfig(bool refresh = false)`: load or reload the typed `OsConfigModel`
+- `GetDefaultConfigPath()`: resolve the platform-specific config file path
+- `GetCloudStorageRoots(bool refresh = false)`: return all effective provider roots
+- `GetCloudStorageRoot(CloudStorageType provider, bool refresh = false)`: return one provider root
+- `GetPreferredCloudStorageRoot(params CloudStorageType[] preferredOrder)`: resolve a custom provider order
+- `CloudStorageRoot`: resolve the preferred provider root by default order
+- `ResetCloudStorageCache()`: clear the effective root cache
+- `GetCloudDiscoveryReport(bool refresh = false)`: emit readable diagnostics
+- `GetCloudStorageSetupGuidance()`: emit a short setup hint that points here
 
-Default preferred order when resolving `CloudStorageRoot`:
+Default preferred order:
 1. `GoogleDrive`
 2. `ICloud`
 3. `Dropbox`
 4. `OneDrive`
 
-If none is found, `CloudStorageRoot` throws `DirectoryNotFoundException` with setup guidance.
-
-## Discovery Precedence
+## Discovery Order
 
 For each provider, OsLib resolves roots in this order:
-1. Environment variable override
-2. INI configuration file
-3. OS/provider-specific probing
+1. configured value from `Os.Config`
+2. OS/provider-specific probing
 
 First valid existing directory wins per provider.
 
-## Environment Variables
+Discovered provider roots are merged back into `osconfig.json` only when the corresponding config entry is currently empty. That keeps the file useful as durable machine-local state without overwriting explicit user choices.
 
-Provider root overrides:
-- `OSLIB_CLOUD_ROOT_DROPBOX`
-- `OSLIB_CLOUD_ROOT_ONEDRIVE`
-- `OSLIB_CLOUD_ROOT_GOOGLEDRIVE`
-- `OSLIB_CLOUD_ROOT_ICLOUD`
+## JSON Format
 
-Config file override:
-- `OSLIB_CLOUD_CONFIG` (full path to `cloudstorage.ini`)
+Example `osconfig.json`:
 
-Examples:
-
-```bash
-export OSLIB_CLOUD_ROOT_GOOGLEDRIVE="$HOME/Library/CloudStorage/GoogleDrive-myaccount"
-export OSLIB_CLOUD_ROOT_ICLOUD="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
+```json
+{
+	"homeDir": "/Users/me",
+	"tempDir": "/var/folders/.../T/",
+	"localBackupDir": "/Users/me/Library/Application Support/OsLib/Backup/",
+	"defaultCloudOrder": ["GoogleDrive", "ICloud", "Dropbox", "OneDrive"],
+	"cloud": {
+		"dropbox": "/Users/me/Library/CloudStorage/Dropbox/",
+		"onedrive": "/Users/me/Library/CloudStorage/OneDrive-Contoso/",
+		"googledrive": "/Users/me/Library/CloudStorage/GoogleDrive-me@example.com/My Drive/",
+		"icloud": "/Users/me/Library/Mobile Documents/com~apple~CloudDocs/"
+	}
+}
 ```
 
-PowerShell:
-
-```powershell
-$env:OSLIB_CLOUD_ROOT_ONEDRIVE = "C:\Users\me\OneDrive"
-$env:OSLIB_CLOUD_CONFIG = "C:\Users\me\AppData\Roaming\OsLib\cloudstorage.ini"
-```
-
-CMD:
-
-```cmd
-set OSLIB_CLOUD_ROOT_DROPBOX=C:\Users\me\Dropbox
-set OSLIB_CLOUD_ROOT_GOOGLEDRIVE=C:\Users\me\Google Drive
-```
-
-## INI Configuration
-
-Format: key-value pairs, one per line.
-- Supports comments with `#` or `;`
-- Keys are case-insensitive
-
-Allowed keys:
-- `dropbox`
-- `onedrive`
-- `googledrive` (or `google_drive`)
-- `icloud` (or `icloud_drive`)
-
-Example `cloudstorage.ini`:
-
-```ini
-# OsLib cloud roots
-dropbox=/Users/me/Library/CloudStorage/Dropbox
-onedrive=/Users/me/Library/CloudStorage/OneDrive-Contoso
-googledrive=/Users/me/Library/CloudStorage/GoogleDrive-me@example.com
-icloud=/Users/me/Library/Mobile Documents/com~apple~CloudDocs
-```
-
-Default config lookup paths:
-
-macOS / Linux:
-- `~/.config/oslib/cloudstorage.ini`
-- `~/.oslib/cloudstorage.ini`
-
-Windows:
-- `%APPDATA%\OsLib\cloudstorage.ini`
-
-`OSLIB_CLOUD_CONFIG` takes precedence over default locations and is used as the sole config file candidate when set.
+The cloud section remains intentionally simple so other tools and languages can share it easily.
 
 ## OS-Specific Probing
 
@@ -120,15 +85,15 @@ Windows:
 
 Probes include:
 - Dropbox: `~/.dropbox/info.json`, `~/Dropbox`, `~/Library/CloudStorage/Dropbox`
-- OneDrive: env vars + `~/OneDrive*`, `~/Library/CloudStorage/OneDrive*`
-- Google Drive: `~/Google Drive`, `~/GoogleDrive`, `~/Library/CloudStorage/GoogleDrive*`
-- iCloud: `~/Library/Mobile Documents/com~apple~CloudDocs`
+- OneDrive: `~/OneDrive*`, `~/Library/CloudStorage/OneDrive*`
+- Google Drive: `~/Library/CloudStorage/GoogleDrive*`, preferring `My Drive` when present, then `~/GoogleDrive` and `~/Google Drive`
+- iCloud: `~/Library/Mobile Documents/com~apple~CloudDocs`, plus a few common fallback paths
 
 ### Windows
 
 Probes include:
 - Dropbox: `%APPDATA%\Dropbox\info.json`, `%LOCALAPPDATA%\Dropbox\info.json`
-- OneDrive: `OneDrive`, `OneDriveCommercial`, `OneDriveConsumer` env vars
+- OneDrive: common `OneDrive*` locations under the user profile and cloud-storage folder
 - Google Drive: `%USERPROFILE%\Google Drive`, `%USERPROFILE%\My Drive`
 - iCloud: `%USERPROFILE%\iCloudDrive`
 
@@ -138,77 +103,28 @@ Probes include:
 - Dropbox: `~/.dropbox/info.json`, `~/Dropbox`
 - OneDrive: `~/OneDrive`, `~/OneDrive - Personal`
 - Google Drive: `~/Google Drive`, `~/GoogleDrive`
-- iCloud (commonly via mounts): `~/iCloudDrive`, `~/Cloud/iCloud`, `~/rclone/iCloud`
+- iCloud: common mount-style paths such as `~/iCloudDrive`, `~/Cloud/iCloud`, `~/rclone/iCloud`
 
-Note:
-- Linux cloud setups are often mount-based (`rclone`, FUSE, distro-specific tools).
-- For reliable Linux behavior across setups, use env overrides or INI config.
+For Linux machines with custom cloud mounts, edit `osconfig.json` directly instead of relying on probes.
 
-### Ubuntu Recommendation
+## Local Backup Behavior
 
-For Ubuntu development machines, especially when Google Drive is mounted through `rclone`, GNOME integration, or another user-specific path, do not rely on probe-only behavior.
-
-Recommended setup for Mzansi and related local development:
-
-```bash
-export OSLIB_CLOUD_ROOT_GOOGLEDRIVE="$HOME/GoogleDrive-Mzansi"
-```
-
-If the mount path differs by machine, keep the same variable name and only change the value:
-
-```bash
-export OSLIB_CLOUD_ROOT_GOOGLEDRIVE="$HOME/cloud/mzansi-gdrive"
-```
-
-Equivalent `cloudstorage.ini` entry:
-
-```ini
-googledrive=/home/me/GoogleDrive-Mzansi
-```
-
-This is the preferred approach for Ubuntu-based development of Mzansi and the upcoming Python `OsLib`, `RaiUtils`, and `JsonPit` packages because it keeps the cloud-root contract deterministic across languages and machines.
-
-## Recommended Setup Strategy
-
-For production stability:
-1. Set explicit env vars in service/user profile.
-2. Keep an INI file for machine-local fallback and readability.
-3. Use `GetCloudDiscoveryReport()` during startup diagnostics.
-4. Call `ResetCloudStorageCache()` after changing env/config at runtime.
+`Os.LocalBackupDir` now comes from config first, then falls back to OS-local defaults. If the configured backup directory is itself inside a discovered cloud root, OsLib rejects it and falls back to a non-cloud local path.
 
 ## Cloud-Aware File IO
 
-`RaiFile` now treats a path as cloud-backed when it is inside one of the discovered provider roots.
+`RaiFile` treats a path as cloud-backed when it falls under one of the effective provider roots returned by `GetCloudStorageRoots()`.
 
-This matters for file operations that wait for cloud-synced directories or files to materialize or vanish.
+That behavior now applies consistently whether the root came from:
+- explicit config
+- probing
+- cached discovered state restored through `Os.Config`
 
-Practical consequence:
-- A custom Google Drive root on Ubuntu, configured through `OSLIB_CLOUD_ROOT_GOOGLEDRIVE` or `cloudstorage.ini`, participates in the same cloud-aware IO behavior as Dropbox and OneDrive.
+## Recommended Setup
 
-## Cross-Language Convention
-
-If multiple libraries in the same environment need cloud-root discovery, they should share the same environment variable and INI key contract.
-
-Recommended shared convention for C# and Python packages:
-- Use `OSLIB_CLOUD_ROOT_GOOGLEDRIVE` for Google Drive overrides.
-- Use `OSLIB_CLOUD_CONFIG` for an explicit machine-local config file.
-- Use the same INI keys: `dropbox`, `onedrive`, `googledrive` or `google_drive`, `icloud` or `icloud_drive`.
-- Apply the same precedence: environment override, explicit INI file, default INI locations, then OS-specific probing.
-
-That keeps `OsLib`, `RaiUtils`, and `JsonPit` aligned whether the caller is .NET or Python.
-
-## Testing Guidance
-
-Recommended test coverage:
-- Env override precedence over INI and probing
-- INI parsing and key aliases
-- Preferred order resolution
-- No-provider-found error path
-- Cross-platform path normalization and trailing separator behavior
-
-Integration tests:
-- macOS with all 4 providers present
-- Windows with OneDrive + Google Drive + Dropbox/iCloud where installed
-- Ubuntu with mounted providers (`rclone` or native clients)
-
-For Ubuntu integration tests, prefer a configured Google Drive mount path over home-directory probe assumptions, and verify both discovery and `RaiFile` cloud-aware IO behavior under that mounted root.
+For stable machine behavior:
+1. Let OsLib create `osconfig.json` on first use.
+2. Edit `cloud.*` entries for any provider whose probe path is not the path you want to standardize on.
+3. Set `localBackupDir` if you need backups in a specific non-cloud location.
+4. Call `ResetCloudStorageCache()` after changing config at runtime.
+5. Use `GetCloudDiscoveryReport()` in diagnostics when onboarding a new machine.

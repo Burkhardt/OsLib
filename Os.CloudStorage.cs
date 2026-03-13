@@ -3,41 +3,310 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace OsLib
 {
+	public sealed class CloudModel
+	{
+		[JsonProperty("dropbox")]
+		private string DropboxRootSerialized
+		{
+			get => DropboxRoot?.Path ?? string.Empty;
+			set => DropboxRoot = ToRaiPath(value);
+		}
+
+		[JsonProperty("onedrive")]
+		private string OneDriveRootSerialized
+		{
+			get => OneDriveRoot?.Path ?? string.Empty;
+			set => OneDriveRoot = ToRaiPath(value);
+		}
+
+		[JsonProperty("googledrive")]
+		private string GoogleDriveRootSerialized
+		{
+			get => GoogleDriveRoot?.Path ?? string.Empty;
+			set => GoogleDriveRoot = ToRaiPath(value);
+		}
+
+		[JsonProperty("icloud")]
+		private string ICloudRootSerialized
+		{
+			get => ICloudRoot?.Path ?? string.Empty;
+			set => ICloudRoot = ToRaiPath(value);
+		}
+
+		[JsonIgnore]
+		public RaiPath DropboxRoot { get; internal set; }
+
+		[JsonIgnore]
+		public RaiPath OneDriveRoot { get; internal set; }
+
+		[JsonIgnore]
+		public RaiPath GoogleDriveRoot { get; internal set; }
+
+		[JsonIgnore]
+		public RaiPath ICloudRoot { get; internal set; }
+
+		[JsonIgnore]
+		public IReadOnlyDictionary<CloudStorageType, RaiPath> Roots
+		{
+			get
+			{
+				var roots = new Dictionary<CloudStorageType, RaiPath>();
+				TryAdd(roots, CloudStorageType.Dropbox, DropboxRoot);
+				TryAdd(roots, CloudStorageType.OneDrive, OneDriveRoot);
+				TryAdd(roots, CloudStorageType.GoogleDrive, GoogleDriveRoot);
+				TryAdd(roots, CloudStorageType.ICloud, ICloudRoot);
+				return roots;
+			}
+		}
+
+		public RaiPath GetRoot(CloudStorageType provider)
+		{
+			return provider switch
+			{
+				CloudStorageType.Dropbox => DropboxRoot,
+				CloudStorageType.OneDrive => OneDriveRoot,
+				CloudStorageType.GoogleDrive => GoogleDriveRoot,
+				CloudStorageType.ICloud => ICloudRoot,
+				_ => null
+			};
+		}
+
+		internal void SetRoot(CloudStorageType provider, string value)
+		{
+			var normalized = ToRaiPath(value);
+			switch (provider)
+			{
+				case CloudStorageType.Dropbox:
+					DropboxRoot = normalized;
+					break;
+				case CloudStorageType.OneDrive:
+					OneDriveRoot = normalized;
+					break;
+				case CloudStorageType.GoogleDrive:
+					GoogleDriveRoot = normalized;
+					break;
+				case CloudStorageType.ICloud:
+					ICloudRoot = normalized;
+					break;
+			}
+		}
+
+		internal bool MergeMissingDiscoveredRoots(IReadOnlyDictionary<CloudStorageType, string> discoveredRoots)
+		{
+			var changed = false;
+			foreach (var provider in Enum.GetValues<CloudStorageType>())
+			{
+				if (GetRoot(provider) != null)
+					continue;
+
+				if (!discoveredRoots.TryGetValue(provider, out var root) || string.IsNullOrWhiteSpace(root))
+					continue;
+
+				SetRoot(provider, root);
+				changed = true;
+			}
+
+			return changed;
+		}
+
+		internal CloudModel Clone()
+		{
+			return new CloudModel
+			{
+				DropboxRoot = ToRaiPath(DropboxRoot?.Path),
+				OneDriveRoot = ToRaiPath(OneDriveRoot?.Path),
+				GoogleDriveRoot = ToRaiPath(GoogleDriveRoot?.Path),
+				ICloudRoot = ToRaiPath(ICloudRoot?.Path)
+			};
+		}
+
+		internal void Normalize()
+		{
+			foreach (var provider in Enum.GetValues<CloudStorageType>())
+				SetRoot(provider, GetRoot(provider)?.Path);
+		}
+
+		private static RaiPath ToRaiPath(string value)
+		{
+			return string.IsNullOrWhiteSpace(value) ? null : new RaiPath(value);
+		}
+
+		private static void TryAdd(Dictionary<CloudStorageType, RaiPath> roots, CloudStorageType provider, RaiPath value)
+		{
+			if (value != null)
+				roots[provider] = value;
+		}
+	}
+
+	public sealed class OsConfigModel
+	{
+		[JsonProperty("homeDir")]
+		private string HomeDirSerialized
+		{
+			get => HomeDir?.Path ?? string.Empty;
+			set => HomeDir = ToRaiPath(value);
+		}
+
+		[JsonProperty("tempDir")]
+		private string TempDirSerialized
+		{
+			get => TempDir?.Path ?? string.Empty;
+			set => TempDir = ToRaiPath(value);
+		}
+
+		[JsonProperty("localBackupDir")]
+		private string LocalBackupDirSerialized
+		{
+			get => LocalBackupDir?.Path ?? string.Empty;
+			set => LocalBackupDir = ToRaiPath(value);
+		}
+
+		[JsonIgnore]
+		public RaiPath HomeDir { get; internal set; }
+
+		[JsonIgnore]
+		public RaiPath TempDir { get; internal set; }
+
+		[JsonIgnore]
+		public RaiPath LocalBackupDir { get; internal set; }
+
+		[JsonProperty("defaultCloudOrder")]
+		public List<CloudStorageType> DefaultCloudOrder { get; internal set; } = Os.CreateDefaultCloudOrder().ToList();
+
+		[JsonProperty("cloud")]
+		public CloudModel Cloud { get; internal set; } = new CloudModel();
+
+		[JsonIgnore]
+		public RaiPath DropboxPath => Cloud?.DropboxRoot;
+
+		[JsonIgnore]
+		public RaiPath OneDrivePath => Cloud?.OneDriveRoot;
+
+		[JsonIgnore]
+		public RaiPath GooglePath => Cloud?.GoogleDriveRoot;
+
+		[JsonIgnore]
+		public RaiPath ICloudPath => Cloud?.ICloudRoot;
+
+		[JsonIgnore]
+		public IReadOnlyDictionary<CloudStorageType, RaiPath> CloudDirPaths => Cloud?.Roots ?? new Dictionary<CloudStorageType, RaiPath>();
+
+		public RaiPath GetCloudDirPath(CloudStorageType provider)
+		{
+			return Cloud?.GetRoot(provider);
+		}
+
+		internal OsConfigModel Clone()
+		{
+			return new OsConfigModel
+			{
+				HomeDir = ToRaiPath(HomeDir?.Path),
+				TempDir = ToRaiPath(TempDir?.Path),
+				LocalBackupDir = ToRaiPath(LocalBackupDir?.Path),
+				DefaultCloudOrder = DefaultCloudOrder?.ToList() ?? Os.CreateDefaultCloudOrder().ToList(),
+				Cloud = Cloud?.Clone() ?? new CloudModel()
+			};
+		}
+
+		internal void Normalize()
+		{
+			HomeDir = ToRaiPath(HomeDir?.Path);
+			TempDir = ToRaiPath(TempDir?.Path);
+			LocalBackupDir = ToRaiPath(LocalBackupDir?.Path);
+			DefaultCloudOrder = (DefaultCloudOrder == null || DefaultCloudOrder.Count == 0)
+				? Os.CreateDefaultCloudOrder().ToList()
+				: DefaultCloudOrder.Distinct().ToList();
+			Cloud ??= new CloudModel();
+			Cloud.Normalize();
+		}
+
+		private static RaiPath ToRaiPath(string value)
+		{
+			return string.IsNullOrWhiteSpace(value) ? null : new RaiPath(value);
+		}
+	}
+
+	public sealed class OsConfigFile : ConfigFile<OsConfigModel>
+	{
+		public OsConfigFile(string fullName) : base(fullName, autoLoad: true)
+		{
+		}
+
+		protected override OsConfigModel CreateDefaultData()
+		{
+			return new OsConfigModel
+			{
+				HomeDir = new RaiPath(Os.ResolveSystemHomeDir()),
+				TempDir = new RaiPath(Os.ResolveSystemTempDir()),
+				LocalBackupDir = new RaiPath(Os.ResolveSystemLocalBackupDir()),
+				DefaultCloudOrder = Os.CreateDefaultCloudOrder().ToList(),
+				Cloud = new CloudModel()
+			};
+		}
+
+		protected override OsConfigModel NormalizeData(OsConfigModel data)
+		{
+			data ??= CreateDefaultData();
+			data.Normalize();
+			return data;
+		}
+
+		internal void Persist()
+		{
+			Save();
+		}
+	}
+
 	public partial class Os
 	{
-		private static readonly CloudStorageType[] DefaultCloudOrder =
-		{
-			CloudStorageType.GoogleDrive,
-			CloudStorageType.ICloud,
-			CloudStorageType.Dropbox,
-			CloudStorageType.OneDrive
-		};
-
-		private static readonly Dictionary<CloudStorageType, string> EnvVarByProvider = new()
-		{
-			{ CloudStorageType.Dropbox, "OSLIB_CLOUD_ROOT_DROPBOX" },
-			{ CloudStorageType.OneDrive, "OSLIB_CLOUD_ROOT_ONEDRIVE" },
-			{ CloudStorageType.GoogleDrive, "OSLIB_CLOUD_ROOT_GOOGLEDRIVE" },
-			{ CloudStorageType.ICloud, "OSLIB_CLOUD_ROOT_ICLOUD" }
-		};
-
+		private static OsConfigFile config;
 		private static Dictionary<CloudStorageType, string> cloudRootsCache;
 		private static bool isDiscoveringCloudRoots;
+		private static bool isInitializingConfig;
 
-		/// <summary>
-		/// Preferred cloud storage root based on configured precedence.
-		/// Throws when no provider root could be found.
-		/// </summary>
+		private const string CloudDiscoveryGuidePath = "OsLib/CLOUD_STORAGE_DISCOVERY.md";
+		private const string DefaultConfigFileName = "osconfig.json";
+
+		public static OsConfigFile Config
+		{
+			get
+			{
+				try
+				{
+					isInitializingConfig = true;
+					if (config == null)
+						config = new OsConfigFile(GetDefaultConfigPath());
+
+					config.SetFullName(GetDefaultConfigPath());
+				}
+				finally
+				{
+					isInitializingConfig = false;
+				}
+
+				return config;
+			}
+		}
+
 		public static string CloudStorageRoot => GetPreferredCloudStorageRoot();
 
-		/// <summary>
-		/// Returns all discovered cloud storage roots keyed by provider.
-		/// Discovery uses environment overrides, config files, and OS-specific probes.
-		/// </summary>
+		public static OsConfigModel LoadConfig(bool refresh = false)
+		{
+			if (refresh)
+			{
+				Config.Load();
+				InvalidateConfiguredPathCaches();
+				ResetCloudStorageCache();
+			}
+
+			return Config.Data;
+		}
+
 		public static IReadOnlyDictionary<CloudStorageType, string> GetCloudStorageRoots(bool refresh = false)
 		{
 			if (refresh || cloudRootsCache == null)
@@ -48,6 +317,8 @@ namespace OsLib
 				try
 				{
 					isDiscoveringCloudRoots = true;
+					if (refresh)
+						LoadConfig(refresh: true);
 					cloudRootsCache = DiscoverCloudStorageRoots();
 				}
 				finally
@@ -55,11 +326,15 @@ namespace OsLib
 					isDiscoveringCloudRoots = false;
 				}
 			}
+
 			return new Dictionary<CloudStorageType, string>(cloudRootsCache);
 		}
 
 		internal static bool IsCloudPath(string candidatePath)
 		{
+			if (isInitializingConfig)
+				return false;
+
 			var normalizedCandidate = NormalizePathForComparison(candidatePath);
 			if (string.IsNullOrWhiteSpace(normalizedCandidate) || IsDropboxMetadataPath(normalizedCandidate))
 				return false;
@@ -81,47 +356,35 @@ namespace OsLib
 			return false;
 		}
 
-		/// <summary>
-		/// Returns the first available root according to the preferred order.
-		/// When no order is given, uses: GoogleDrive, ICloud, Dropbox, OneDrive.
-		/// </summary>
 		public static string GetPreferredCloudStorageRoot(params CloudStorageType[] preferredOrder)
 		{
 			var roots = GetCloudStorageRoots();
-			var order = (preferredOrder != null && preferredOrder.Length > 0) ? preferredOrder : DefaultCloudOrder;
+			var configuredOrder = LoadConfig().DefaultCloudOrder ?? CreateDefaultCloudOrder().ToList();
+			var order = (preferredOrder != null && preferredOrder.Length > 0)
+				? preferredOrder
+				: configuredOrder.ToArray();
+
 			foreach (var provider in order)
 			{
 				if (roots.TryGetValue(provider, out var root))
 					return root;
 			}
 
-			throw new DirectoryNotFoundException(
-				"No cloud storage root could be discovered. Configure one of: " +
-				"OSLIB_CLOUD_ROOT_DROPBOX, OSLIB_CLOUD_ROOT_ONEDRIVE, OSLIB_CLOUD_ROOT_GOOGLEDRIVE, OSLIB_CLOUD_ROOT_ICLOUD " +
-				"or provide an INI file via OSLIB_CLOUD_CONFIG.");
+			throw new DirectoryNotFoundException("No cloud storage root could be discovered. " + GetCloudStorageSetupGuidance());
 		}
 
-		/// <summary>
-		/// Returns the discovered root for a specific provider, or null if not found.
-		/// </summary>
 		public static string GetCloudStorageRoot(CloudStorageType provider, bool refresh = false)
 		{
 			var roots = GetCloudStorageRoots(refresh);
 			return roots.TryGetValue(provider, out var root) ? root : null;
 		}
 
-		/// <summary>
-		/// Clears cloud discovery cache so subsequent calls recompute values.
-		/// </summary>
 		public static void ResetCloudStorageCache()
 		{
 			cloudRootsCache = null;
 			isDiscoveringCloudRoots = false;
 		}
 
-		/// <summary>
-		/// Returns a readable report of all discovered cloud providers and roots.
-		/// </summary>
 		public static string GetCloudDiscoveryReport(bool refresh = false)
 		{
 			var roots = GetCloudStorageRoots(refresh);
@@ -137,87 +400,82 @@ namespace OsLib
 			return sb.ToString().TrimEnd();
 		}
 
-		private static Dictionary<CloudStorageType, string> DiscoverCloudStorageRoots()
+		public static string GetCloudStorageSetupGuidance()
 		{
-			var roots = new Dictionary<CloudStorageType, string>();
-
-			ApplyEnvironmentOverrides(roots);
-			ApplyIniConfiguration(roots);
-			ApplyProviderProbes(roots);
-
-			return roots;
+			return "Configure Os.Config in " + GetDefaultConfigPath() + ". See " + CloudDiscoveryGuidePath;
 		}
 
-		private static void ApplyEnvironmentOverrides(Dictionary<CloudStorageType, string> roots)
+		public static string GetDefaultConfigPath()
 		{
-			foreach (var kvp in EnvVarByProvider)
-			{
-				var value = Environment.GetEnvironmentVariable(kvp.Value);
-				TryAddRoot(roots, kvp.Key, value);
-			}
-		}
-
-		private static void ApplyIniConfiguration(Dictionary<CloudStorageType, string> roots)
-		{
-			foreach (var configPath in GetCloudConfigCandidates())
-			{
-				if (!File.Exists(configPath))
-					continue;
-
-				foreach (var line in File.ReadAllLines(configPath))
-				{
-					var raw = line.Trim();
-					if (raw.Length == 0 || raw.StartsWith("#") || raw.StartsWith(";") || !raw.Contains('='))
-						continue;
-
-					var idx = raw.IndexOf('=');
-					if (idx <= 0 || idx >= raw.Length - 1)
-						continue;
-
-					var key = raw.Substring(0, idx).Trim().ToLowerInvariant();
-					var value = raw.Substring(idx + 1).Trim();
-
-					switch (key)
-					{
-						case "dropbox":
-							TryAddRoot(roots, CloudStorageType.Dropbox, value);
-							break;
-						case "onedrive":
-							TryAddRoot(roots, CloudStorageType.OneDrive, value);
-							break;
-						case "googledrive":
-						case "google_drive":
-							TryAddRoot(roots, CloudStorageType.GoogleDrive, value);
-							break;
-						case "icloud":
-						case "icloud_drive":
-							TryAddRoot(roots, CloudStorageType.ICloud, value);
-							break;
-					}
-				}
-			}
-		}
-
-		private static IEnumerable<string> GetCloudConfigCandidates()
-		{
-			var configured = Environment.GetEnvironmentVariable("OSLIB_CLOUD_CONFIG");
-			if (!string.IsNullOrWhiteSpace(configured))
-			{
-				yield return ExpandPath(configured);
-				yield break;
-			}
-
 			if (Type == OsType.Windows)
 			{
 				var appData = Environment.GetEnvironmentVariable("APPDATA");
-				if (!string.IsNullOrWhiteSpace(appData))
-					yield return Path.Combine(appData, "OsLib", "cloudstorage.ini");
+				if (string.IsNullOrWhiteSpace(appData))
+					appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+				if (string.IsNullOrWhiteSpace(appData))
+					appData = Path.Combine(ResolveSystemHomeDir(), "AppData", "Roaming");
+
+				return NormalizeConfigPath(Path.Combine(appData, "RAIkeep", DefaultConfigFileName));
 			}
-			else
+
+			return NormalizeConfigPath(Path.Combine(ResolveSystemHomeDir(), ".config", "RAIkeep", DefaultConfigFileName));
+		}
+
+		[Obsolete("Use GetDefaultConfigPath() instead.")]
+		public static string GetDefaultCloudConfigPath() => GetDefaultConfigPath();
+
+		internal static IReadOnlyList<CloudStorageType> CreateDefaultCloudOrder()
+		{
+			return new[]
 			{
-				yield return new RaiFile("~/.config/oslib/cloudstorage.ini").FullName;
-				yield return new RaiFile("~/.oslib/cloudstorage.ini").FullName;
-			}
+				CloudStorageType.GoogleDrive,
+				CloudStorageType.ICloud,
+				CloudStorageType.Dropbox,
+				CloudStorageType.OneDrive
+			};
+		}
+
+		private static void InvalidateConfiguredPathCaches()
+		{
+			homeDir = null;
+			tempDir = null;
+			localBackupDir = null;
+		}
+
+		private static string NormalizeConfigPath(string path)
+		{
+			if (string.IsNullOrWhiteSpace(path))
+				return string.Empty;
+
+			var expanded = Environment.ExpandEnvironmentVariables(path);
+			if (expanded.StartsWith("~/", StringComparison.Ordinal))
+				expanded = Path.Combine(ResolveSystemHomeDir(), expanded.Substring(2));
+
+			return Path.GetFullPath(expanded);
+		}
+
+		private static Dictionary<CloudStorageType, string> DiscoverCloudStorageRoots()
+		{
+			var roots = new Dictionary<CloudStorageType, string>();
+			ApplyConfiguration(roots, Config.Data.Cloud);
+			ApplyProviderProbes(roots);
+			PersistDiscoveredCloudRoots(roots);
+			return roots;
+		}
+
+		private static void PersistDiscoveredCloudRoots(IReadOnlyDictionary<CloudStorageType, string> roots)
+		{
+			if (Config.Data.Cloud.MergeMissingDiscoveredRoots(roots))
+				Config.Persist();
+		}
+
+		private static void ApplyConfiguration(Dictionary<CloudStorageType, string> roots, CloudModel cloudConfig)
+		{
+			if (cloudConfig == null)
+				return;
+
+			foreach (var kvp in cloudConfig.Roots)
+				TryAddRoot(roots, kvp.Key, kvp.Value.Path);
 		}
 
 		private static void ApplyProviderProbes(Dictionary<CloudStorageType, string> roots)
@@ -256,8 +514,8 @@ namespace OsLib
 		{
 			if (Type == OsType.Windows)
 			{
-				var appData = Environment.GetEnvironmentVariable("APPDATA");
-				var localAppData = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+				var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+				var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 				if (!string.IsNullOrWhiteSpace(appData))
 					yield return Path.Combine(appData, "Dropbox", "info.json");
 				if (!string.IsNullOrWhiteSpace(localAppData))
@@ -265,16 +523,12 @@ namespace OsLib
 			}
 			else
 			{
-				yield return new RaiFile("~/.dropbox/info.json").FullName;
+				yield return Path.Combine(ResolveSystemHomeDir(), ".dropbox", "info.json");
 			}
 		}
 
 		private static void ProbeOneDrive(Dictionary<CloudStorageType, string> roots)
 		{
-			TryAddRoot(roots, CloudStorageType.OneDrive, Environment.GetEnvironmentVariable("OneDrive"));
-			TryAddRoot(roots, CloudStorageType.OneDrive, Environment.GetEnvironmentVariable("OneDriveCommercial"));
-			TryAddRoot(roots, CloudStorageType.OneDrive, Environment.GetEnvironmentVariable("OneDriveConsumer"));
-
 			TryAddRoot(roots, CloudStorageType.OneDrive, "~/OneDrive");
 			TryAddRoot(roots, CloudStorageType.OneDrive, "~/OneDrive - Personal");
 			TryAddRoot(roots, CloudStorageType.OneDrive, "~/Library/CloudStorage/OneDrive");
@@ -282,27 +536,48 @@ namespace OsLib
 			foreach (var path in SafeEnumerateDirectories(HomeDir, "OneDrive*"))
 				TryAddRoot(roots, CloudStorageType.OneDrive, path);
 
-			foreach (var path in SafeEnumerateDirectories(new RaiFile("~/Library/CloudStorage/").Path, "OneDrive*"))
+			foreach (var path in SafeEnumerateDirectories(new RaiFile(Path.Combine(HomeDir, "Library", "CloudStorage")).Path, "OneDrive*"))
 				TryAddRoot(roots, CloudStorageType.OneDrive, path);
 		}
 
 		private static void ProbeGoogleDrive(Dictionary<CloudStorageType, string> roots)
 		{
-			TryAddRoot(roots, CloudStorageType.GoogleDrive, "~/Google Drive");
-			TryAddRoot(roots, CloudStorageType.GoogleDrive, "~/GoogleDrive");
+			if (Type == OsType.MacOS)
+			{
+				foreach (var path in SafeEnumerateDirectories(new RaiFile(Path.Combine(HomeDir, "Library", "CloudStorage")).Path, "GoogleDrive*"))
+					TryAddRoot(roots, CloudStorageType.GoogleDrive, GetMacGoogleDriveProbeTarget(path));
 
-			foreach (var path in SafeEnumerateDirectories(new RaiFile("~/Library/CloudStorage/").Path, "GoogleDrive*"))
-				TryAddRoot(roots, CloudStorageType.GoogleDrive, path);
+				TryAddRoot(roots, CloudStorageType.GoogleDrive, "~/GoogleDrive");
+				TryAddRoot(roots, CloudStorageType.GoogleDrive, "~/Google Drive");
+				return;
+			}
 
 			if (Type == OsType.Windows)
 			{
-				var user = Environment.GetEnvironmentVariable("USERPROFILE");
+				var user = ResolveSystemHomeDir();
 				if (!string.IsNullOrWhiteSpace(user))
 				{
 					TryAddRoot(roots, CloudStorageType.GoogleDrive, Path.Combine(user, "Google Drive"));
 					TryAddRoot(roots, CloudStorageType.GoogleDrive, Path.Combine(user, "My Drive"));
 				}
+				return;
 			}
+
+			TryAddRoot(roots, CloudStorageType.GoogleDrive, "~/GoogleDrive");
+			TryAddRoot(roots, CloudStorageType.GoogleDrive, "~/Google Drive");
+		}
+
+		internal static string GetMacGoogleDriveProbeTarget(string cloudStorageEntryPath)
+		{
+			var expanded = ExpandPath(cloudStorageEntryPath);
+			if (string.IsNullOrWhiteSpace(expanded))
+				return cloudStorageEntryPath;
+
+			var myDrivePath = Path.Combine(expanded, "My Drive");
+			if (Directory.Exists(myDrivePath))
+				return new RaiPath(myDrivePath).Path;
+
+			return new RaiPath(expanded).Path;
 		}
 
 		private static void ProbeICloud(Dictionary<CloudStorageType, string> roots)
@@ -314,7 +589,7 @@ namespace OsLib
 
 			if (Type == OsType.Windows)
 			{
-				var user = Environment.GetEnvironmentVariable("USERPROFILE");
+				var user = ResolveSystemHomeDir();
 				if (!string.IsNullOrWhiteSpace(user))
 					TryAddRoot(roots, CloudStorageType.ICloud, Path.Combine(user, "iCloudDrive"));
 			}
@@ -350,8 +625,7 @@ namespace OsLib
 			if (string.IsNullOrWhiteSpace(expanded))
 				return null;
 
-			var normalized = NormSeperator(expanded).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-			return normalized;
+			return NormSeperator(expanded).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 		}
 
 		private static bool IsDropboxMetadataPath(string normalizedPath)
@@ -371,6 +645,7 @@ namespace OsLib
 			catch
 			{
 			}
+
 			return Array.Empty<string>();
 		}
 	}

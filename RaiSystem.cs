@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using RunProcessAsTask; // https://github.com/jamesmanning/RunProcessAsTask
 
@@ -42,6 +43,16 @@ namespace OsLib		// aka OsLibCore
 	/// <summary>
 	/// Run external processes with optional output capture.
 	/// </summary>
+	public sealed class RaiSystemResult
+	{
+		public string Command { get; init; } = string.Empty;
+		public string Arguments { get; init; } = string.Empty;
+		public string CommandLine { get; init; } = string.Empty;
+		public string Output { get; init; } = string.Empty;
+		public int ExitCode { get; init; }
+		public int WorkerThreadId { get; init; }
+	}
+
 	public class RaiSystem
 	{
 		string command = null;
@@ -83,6 +94,24 @@ namespace OsLib		// aka OsLibCore
 			p.Dispose();
 			msg.TrimEnd();
 			return ExitCode;
+		}
+		public Task<RaiSystemResult> ExecAsync(CancellationToken cancellationToken = default)
+		{
+			return Task.Factory.StartNew(() =>
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+				var workerThreadId = Environment.CurrentManagedThreadId;
+				var exitCode = Exec(out var msg);
+				return new RaiSystemResult
+				{
+					Command = command ?? string.Empty,
+					Arguments = param ?? string.Empty,
+					CommandLine = commandLine ?? string.Empty,
+					Output = msg,
+					ExitCode = exitCode,
+					WorkerThreadId = workerThreadId
+				};
+			}, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 		}
 		/// <summary>
 		/// Execute a command, optionally waiting for it to exit.
