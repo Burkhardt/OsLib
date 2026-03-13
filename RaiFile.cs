@@ -76,8 +76,17 @@ namespace OsLib     // aka OsLibCore
 			}
 		}
 		private static string tempDir = null;
-		public static string LocalBackupDirUnix = "~/Backup/";   // needs to be a directory that is not on any kind of remote or synchronized dir
-		public static string NewSubscriberCommandWin = @"c:\bin\newsub.exe";
+		public static string LocalBackupDir
+		{
+			get
+			{
+				if (localBackupDir == null)
+					localBackupDir = ResolveLocalBackupDir();
+				return localBackupDir;
+			}
+		}
+		[Obsolete("Use LocalBackupDir instead.")]
+		public static string LocalBackupDirUnix => LocalBackupDir;
 
 		public static string DIRSEPERATOR
 		{
@@ -157,6 +166,58 @@ namespace OsLib     // aka OsLibCore
 		public static string NormSeperator(string s)
 		{
 			return s.Replace(@"\", DIRSEPERATOR);
+		}
+
+		private static string localBackupDir = null;
+
+		private static string ResolveLocalBackupDir()
+		{
+			foreach (var candidate in GetLocalBackupDirCandidates())
+			{
+				var normalized = NormalizeBackupDirectoryCandidate(candidate);
+				if (!string.IsNullOrWhiteSpace(normalized) && !IsCloudPath(normalized))
+					return normalized;
+			}
+
+			return new RaiPath(Path.Combine(TempDir, "OsLib", "Backup")).Path;
+		}
+
+		private static IEnumerable<string> GetLocalBackupDirCandidates()
+		{
+			var overridePath = Environment.GetEnvironmentVariable("OSLIB_LOCAL_BACKUP_DIR");
+			if (!string.IsNullOrWhiteSpace(overridePath))
+				yield return overridePath;
+
+			var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+			if (!string.IsNullOrWhiteSpace(localAppData))
+				yield return Path.Combine(localAppData, "OsLib", "Backup");
+
+			if (Type == OsType.Windows)
+			{
+				var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+				if (!string.IsNullOrWhiteSpace(userProfile))
+					yield return Path.Combine(userProfile, "AppData", "Local", "OsLib", "Backup");
+			}
+			else
+			{
+				yield return "~/.local/share/OsLib/Backup";
+				yield return "~/.oslib/backup";
+				yield return "~/Backup";
+			}
+
+			yield return Path.Combine(TempDir, "OsLib", "Backup");
+		}
+
+		private static string NormalizeBackupDirectoryCandidate(string candidate)
+		{
+			if (string.IsNullOrWhiteSpace(candidate))
+				return null;
+
+			var expanded = Environment.ExpandEnvironmentVariables(candidate.Trim());
+			if (expanded.StartsWith("~/"))
+				expanded = $"{HomeDir}{expanded.Substring(1)}";
+
+			return new RaiPath(expanded).Path;
 		}
 	}
 
@@ -760,7 +821,7 @@ namespace OsLib     // aka OsLibCore
 		/// <summary>create a backup file</summary>
 		/// <param name="copy">moves if false, copies otherwise</param>
 		/// <returns>name of backupfile, if there was one created</returns>
-		/// <remarks>the Os.LocalBackupDir will be used; make sure it's not in the Dropbox</remarks>
+		/// <remarks>the Os.LocalBackupDir will be used; make sure it's not in replicated cloud storage</remarks>
 		public string backup(bool copy = false)
 		{
 			if (!File.Exists(FullName))
@@ -768,7 +829,7 @@ namespace OsLib     // aka OsLibCore
 			var backupFile = new RaiFile(FullName);
 			var idx = (backupFile.Path.Length > 2 && backupFile.Path[1] == ':') ? 3 : 0;     // works as expected for c:/123 or c:\123, but not for c:123
 			var s = backupFile.Path.Substring(idx);
-			backupFile.Path = (Os.LocalBackupDirUnix + s).Replace("Dropbox/", "").Replace("dropbox/", "");   // eliminates Dropbox for LocalBackupDir to avoid ensure
+			backupFile.Path = (Os.LocalBackupDir + s).Replace("Dropbox/", "").Replace("dropbox/", "");   // preserves historical backup path shaping while starting from a local backup root
 			mkdir(backupFile.Path);
 			backupFile.Name = backupFile.Name + " " + DateTimeOffset.UtcNow.ToString(Os.DATEFORMAT);
 			backupFile.Ext = Ext;

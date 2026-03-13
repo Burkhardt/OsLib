@@ -1,0 +1,118 @@
+@startuml OsLib-Os-ClassDiagram
+title OsLib Os Class Diagram
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam linetype ortho
+skinparam DiagramFontName "Casual"
+skinparam DiagramFontSize 36
+skinparam ClassFontName "Casual"
+skinparam ClassFontSize 24
+skinparam ClassAttributeIconSize 10
+skinparam ClassAttributeFontName Casual
+skinparam ClassAttributeFontColor #053583
+skinparam ClassAttributeFontWeight normal
+skinparam ClassAttributeFontSize 12
+skinparam ClassMethodFontName "Casual"
+skinparam ClassMethodFontWeight 500
+skinparam ClassFontName "Casual"
+skinparam ClassAttributeFontStyle normal
+skinparam ClassBorderColor #0f766e
+skinparam ClassBackgroundColor #ccfbf1
+skinparam ClassFontColor #111827
+skinparam EnumBorderColor #b45309
+skinparam EnumBackgroundColor #fef3c7
+skinparam EnumFontColor #7c2d12
+skinparam NoteBackgroundColor #fff7d6
+skinparam NoteBorderColor #d4b106
+
+show circle
+
+together {
+	enum OsType << (E,#f59e0b) >> {
+		UNIX
+		Windows
+	}
+	enum CloudStorageType << (E,#f59e0b) >> {
+		Dropbox
+		OneDrive
+		GoogleDrive
+		ICloud
+	}
+	class "Legend" as LegendSample {
+		+{static} staticMethod() : void
+		-{static} staticProperty : string
+		==
+		- privateField : string
+		+ publicField : string
+		# protectedField : string
+		~ internalField : string
+		--
+		- privateMethod() : void
+		+ publicMethod() : void
+		# protectedMethod() : void
+		~ internalMethod() : void
+	}
+}
+
+class Os << (C,#14b8a6) >> {
+	-{static} homeDir : string
+	-{static} type : OsType?
+	-{static} tempDir : string
+	-{static} dIRSEPERATOR : string
+	-{static} DefaultCloudOrder : CloudStorageType[]
+	-{static} EnvVarByProvider : Dictionary<CloudStorageType, string>
+	-{static} cloudRootsCache : Dictionary<CloudStorageType, string>
+	-{static} isDiscoveringCloudRoots : bool
+	==
+	+{static} DIRSEPERATOR : string
+	+{static} ESCAPECHAR : string
+	+{static} DATEFORMAT : string
+	+{static} Type : OsType
+	+{static} HomeDir : string
+	+{static} LocalBackupDir : string
+	+{static} TempDir : string
+	+{static} CloudStorageRoot : string
+	--
+	+{static} ParseDateTime(datetimeInDATEFORMAT : string) : DateTimeOffset
+	+{static} escapeParam(param : string) : string
+	+{static} escapeBlank(name : string) : string
+	+{static} winInternal(fullname : string) : string
+	+{static} NormPath(path : string) : string
+	+{static} Escape(s : string, mode : EscapeMode) : string
+	+{static} NormSeperator(s : string) : string
+	+{static} GetCloudStorageRoots(refresh : bool = false) : IReadOnlyDictionary<CloudStorageType, string>
+	+{static} GetPreferredCloudStorageRoot(preferredOrder : CloudStorageType[]) : string
+	+{static} GetCloudStorageRoot(provider : CloudStorageType, refresh : bool = false) : string
+	+{static} ResetCloudStorageCache() : void
+	+{static} GetCloudDiscoveryReport(refresh : bool = false) : string
+	==
+	-{static} DiscoverCloudStorageRoots() : Dictionary<CloudStorageType, string>
+	-{static} ApplyEnvironmentOverrides(roots : Dictionary<CloudStorageType, string>) : void
+	-{static} ApplyIniConfiguration(roots : Dictionary<CloudStorageType, string>) : void
+	-{static} GetCloudConfigCandidates() : IEnumerable<string>
+	-{static} ApplyProviderProbes(roots : Dictionary<CloudStorageType, string>) : void
+	-{static} ProbeDropbox(roots : Dictionary<CloudStorageType, string>) : void
+	-{static} GetDropboxInfoFileCandidates() : IEnumerable<string>
+	-{static} ProbeOneDrive(roots : Dictionary<CloudStorageType, string>) : void
+	-{static} ProbeGoogleDrive(roots : Dictionary<CloudStorageType, string>) : void
+	-{static} ProbeICloud(roots : Dictionary<CloudStorageType, string>) : void
+	-{static} TryAddRoot(roots : Dictionary<CloudStorageType, string>, provider : CloudStorageType, candidate : string) : bool
+	-{static} ExpandPath(candidate : string) : string
+	-{static} NormalizePathForComparison(value : string) : string
+	-{static} IsDropboxMetadataPath(normalizedPath : string) : bool
+	-{static} SafeEnumerateDirectories(path : string, pattern : string) : IEnumerable<string>
+	~{static} IsCloudPath(candidatePath : string) : bool
+}
+
+Os ..> OsType : uses
+Os ..> CloudStorageType : uses
+
+note bottom of Os
+	`Os` is a partial class 
+	composed from
+	RaiFile.cs and 
+	Os.CloudStorage.cs.
+end note
+
+@enduml

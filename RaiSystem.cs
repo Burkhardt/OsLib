@@ -130,19 +130,50 @@ namespace OsLib		// aka OsLibCore
 		}
 		public RaiSystem(string cmdLine)
 		{
-			commandLine = cmdLine;
-			var pos = 0;
-			if (cmdLine[0] == '"')
-				pos = cmdLine.IndexOf("\" ") + 1;
-			else pos = cmdLine.IndexOf(" ");
-			command = pos > -1 ? cmdLine.Substring(0, pos).Trim() : cmdLine;
-			param = pos > -1 ? cmdLine.Substring(pos + 1).TrimStart() : "";
+			commandLine = cmdLine ?? "";
+			(command, param) = SplitCommandLine(commandLine);
 		}
 		public RaiSystem(string cmd, string p)
 		{
-			commandLine = cmd + " " + p;
-			command = cmd;
-			param = p;
+			command = cmd ?? "";
+			param = p ?? "";
+			commandLine = string.IsNullOrWhiteSpace(param) ? command : command + " " + param;
+		}
+
+		private static (string command, string param) SplitCommandLine(string cmdLine)
+		{
+			if (string.IsNullOrWhiteSpace(cmdLine))
+				return ("", "");
+
+			var trimmed = cmdLine.Trim();
+			if (trimmed[0] == '"')
+			{
+				var closingQuote = FindClosingQuote(trimmed);
+				if (closingQuote < 0)
+					return (trimmed.Trim('"'), "");
+
+				var parsedCommand = trimmed.Substring(1, closingQuote - 1);
+				var parsedParam = closingQuote + 1 < trimmed.Length
+					? trimmed.Substring(closingQuote + 1).TrimStart()
+					: "";
+				return (parsedCommand, parsedParam);
+			}
+
+			var splitPos = trimmed.IndexOf(' ');
+			if (splitPos < 0)
+				return (trimmed, "");
+
+			return (trimmed.Substring(0, splitPos), trimmed.Substring(splitPos + 1).TrimStart());
+		}
+
+		private static int FindClosingQuote(string value)
+		{
+			for (int i = 1; i < value.Length; i++)
+			{
+				if (value[i] == '"' && value[i - 1] != '\\')
+					return i;
+			}
+			return -1;
 		}
 	}
 	/// <summary>

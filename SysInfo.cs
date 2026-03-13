@@ -48,7 +48,6 @@ namespace OsLib
 	{
 		// TODO add ~/.bash_profile ~/.profile /etc/bashrc
 		// TODO install
-		private string versionCommand;
 		public VersionInfo Version
 		{
 			get
@@ -56,7 +55,7 @@ namespace OsLib
 				string info;
 				if (versionInfo == null)
 				{
-					new RaiSystem(versionCommand).Exec(out info);
+					new RaiSystem(execCommand, "--version").Exec(out info);
 					versionInfo = new VersionInfo(info);
 				}
 				return versionInfo;
@@ -67,7 +66,7 @@ namespace OsLib
 		public string Exec(string parameters)
 		{
 			string result;
-			new RaiSystem($"{execCommand} {parameters}").Exec(out result);
+			new RaiSystem(execCommand, parameters ?? "").Exec(out result);
 			return result;
 		}
 		/// <summary>
@@ -203,7 +202,6 @@ namespace OsLib
 		}
 		public CmdInfo(string cmd)
 		{
-			versionCommand = $"{cmd} --version";
 			//whichCommand = $"which {cmd}";
 			execCommand = cmd;
 		}

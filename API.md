@@ -105,7 +105,7 @@ This document provides a detailed, foldable API overview.
 	- <details>
 		<summary>backup(copy): create dated backup file.</summary>
 
-		- Creates a timestamped backup in configured local backup location.
+		- Creates a timestamped backup in the resolved local backup location; `Os.LocalBackupDir` avoids discovered cloud roots and can be overridden with `OSLIB_LOCAL_BACKUP_DIR`.
 		</details>
 	</details>
 

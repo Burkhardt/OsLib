@@ -40,9 +40,9 @@ OsLib
 </details>
 
 <details>
-<summary>Os: Platform helpers for paths, escaping, and provider-based cloud storage discovery.</summary>
+<summary>Os: Platform helpers for paths, escaping, provider-based cloud storage discovery, and local backup placement.</summary>
 
-- Os: `CloudStorageRoot`, `GetCloudStorageRoots`, `GetCloudStorageRoot`, `GetPreferredCloudStorageRoot`, `ResetCloudStorageCache`, `GetCloudDiscoveryReport`, `HomeDir`, `TempDir`, `Escape`, `NormSeperator`
+- Os: `CloudStorageRoot`, `GetCloudStorageRoots`, `GetCloudStorageRoot`, `GetPreferredCloudStorageRoot`, `ResetCloudStorageCache`, `GetCloudDiscoveryReport`, `HomeDir`, `TempDir`, `LocalBackupDir`, `Escape`, `NormSeperator`
 </details>
 
 <details>
@@ -120,6 +120,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 - Foldable class and method-level documentation: [API.md](API.md)
 - Cloud root discovery setup, provider precedence, and cloud-aware IO behavior: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
+- Local backup placement: `Os.LocalBackupDir` resolves an OS-local, non-cloud directory and can be overridden with `OSLIB_LOCAL_BACKUP_DIR`.
 - Ubuntu/Mzansi guidance: prefer `OSLIB_CLOUD_ROOT_GOOGLEDRIVE` or `OSLIB_CLOUD_CONFIG` over probe-only discovery for stable Google Drive roots across C# and Python packages.
 
 ## unit tests

@@ -25,6 +25,20 @@ namespace OsLib.Tests
 			return root;
 		}
 
+		private static string CreateExecutableScript(string root, string scriptName, string content)
+		{
+			var scriptPath = Path.Combine(root, scriptName);
+			File.WriteAllText(scriptPath, content);
+			if (!OperatingSystem.IsWindows())
+			{
+				File.SetUnixFileMode(scriptPath,
+					UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+					UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+					UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+			}
+			return scriptPath;
+		}
+
 		[Fact]
 		public void Os_Type_UsesRuntimePlatformDetection()
 		{
@@ -310,6 +324,92 @@ namespace OsLib.Tests
 			var exitCode = rs.Exec(out var msg);
 			Assert.Equal(0, exitCode);
 			Assert.Contains("hello", msg);
+		}
+
+		[Fact]
+		public void RaiSystem_CommandAndArgsConstructor_SupportsExecutablePathsWithSpaces()
+		{
+			var root = CreateTempDir();
+			try
+			{
+				string scriptPath;
+				string args;
+				if (OperatingSystem.IsWindows())
+				{
+					scriptPath = CreateExecutableScript(root, "echo args.cmd", "@echo off\r\necho %1\r\n");
+					args = "hello";
+				}
+				else
+				{
+					scriptPath = CreateExecutableScript(root, "echo args.sh", "#!/bin/sh\necho \"$1\"\n");
+					args = "hello";
+				}
+
+				var rs = new RaiSystem(scriptPath, args);
+				var exitCode = rs.Exec(out var msg);
+				Assert.Equal(0, exitCode);
+				Assert.Contains("hello", msg);
+			}
+			finally
+			{
+				Directory.Delete(root, recursive: true);
+			}
+		}
+
+		[Fact]
+		public void RaiSystem_CommandLineConstructor_SupportsQuotedExecutablePaths()
+		{
+			var root = CreateTempDir();
+			try
+			{
+				string scriptPath;
+				string commandLine;
+				if (OperatingSystem.IsWindows())
+				{
+					scriptPath = CreateExecutableScript(root, "echo args.cmd", "@echo off\r\necho %1\r\n");
+					commandLine = $"\"{scriptPath}\" hello";
+				}
+				else
+				{
+					scriptPath = CreateExecutableScript(root, "echo args.sh", "#!/bin/sh\necho \"$1\"\n");
+					commandLine = $"\"{scriptPath}\" hello";
+				}
+
+				var rs = new RaiSystem(commandLine);
+				var exitCode = rs.Exec(out var msg);
+				Assert.Equal(0, exitCode);
+				Assert.Contains("hello", msg);
+			}
+			finally
+			{
+				Directory.Delete(root, recursive: true);
+			}
+		}
+
+		[Fact]
+		public void FileInfo_AcceptsForwardSlashPath_OnWindows()
+		{
+			if (!OperatingSystem.IsWindows())
+				return;
+
+			var root = CreateTempDir();
+			try
+			{
+				var filePath = Path.Combine(root, "nested", "sample.txt");
+				var directoryPath = Path.GetDirectoryName(filePath) ?? throw new InvalidOperationException("Expected a parent directory.");
+				Directory.CreateDirectory(directoryPath);
+				File.WriteAllText(filePath, "data");
+
+				var forwardSlashPath = filePath.Replace('\\', '/');
+				var info = new FileInfo(forwardSlashPath);
+
+				Assert.True(info.Exists);
+				Assert.Equal("sample.txt", info.Name);
+			}
+			finally
+			{
+				Directory.Delete(root, recursive: true);
+			}
 		}
 
 		[Fact]

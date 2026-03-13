@@ -16,6 +16,7 @@ namespace OsLib.Tests
 			osType.GetField("homeDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 			osType.GetField("type", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 			osType.GetField("dIRSEPERATOR", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+			osType.GetField("localBackupDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 			Os.ResetCloudStorageCache();
 		}
 
@@ -246,6 +247,86 @@ namespace OsLib.Tests
 
 				Assert.True(projectFile.Cloud);
 				Assert.False(metadataFile.Cloud);
+			}
+			finally
+			{
+				env.Dispose();
+				ResetOsCaches();
+				Cleanup(root);
+			}
+		}
+
+		[Fact]
+		public void LocalBackupDir_UsesExplicitNonCloudOverride()
+		{
+			var root = NewTestRoot();
+			Directory.CreateDirectory(root.Path);
+
+			var home = (root / "home").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+			var localBackup = (root / "local-backup").Path;
+			Directory.CreateDirectory(home);
+			Directory.CreateDirectory(localBackup);
+
+			var env = new EnvScope(new Dictionary<string, string?>
+			{
+				["HOME"] = home,
+				["USERPROFILE"] = home,
+				["APPDATA"] = home,
+				["LOCALAPPDATA"] = home,
+				["OSLIB_LOCAL_BACKUP_DIR"] = localBackup,
+				["OSLIB_CLOUD_ROOT_DROPBOX"] = null,
+				["OSLIB_CLOUD_ROOT_ONEDRIVE"] = null,
+				["OSLIB_CLOUD_ROOT_GOOGLEDRIVE"] = null,
+				["OSLIB_CLOUD_ROOT_ICLOUD"] = null,
+				["OSLIB_CLOUD_CONFIG"] = null
+			});
+
+			try
+			{
+				ResetOsCaches();
+				Assert.Equal(new RaiPath(localBackup).Path, Os.LocalBackupDir);
+				Assert.False(new RaiFile(Os.LocalBackupDir).Cloud);
+			}
+			finally
+			{
+				env.Dispose();
+				ResetOsCaches();
+				Cleanup(root);
+			}
+		}
+
+		[Fact]
+		public void LocalBackupDir_RejectsCloudBackedOverride()
+		{
+			var root = NewTestRoot();
+			Directory.CreateDirectory(root.Path);
+
+			var home = (root / "home").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+			var googleDrive = (root / "GoogleDriveRoot").Path;
+			var cloudBackedBackup = (new RaiPath(googleDrive) / "Backups").Path;
+			Directory.CreateDirectory(home);
+			Directory.CreateDirectory(googleDrive);
+			Directory.CreateDirectory(cloudBackedBackup);
+
+			var env = new EnvScope(new Dictionary<string, string?>
+			{
+				["HOME"] = home,
+				["USERPROFILE"] = home,
+				["APPDATA"] = home,
+				["LOCALAPPDATA"] = home,
+				["OSLIB_LOCAL_BACKUP_DIR"] = cloudBackedBackup,
+				["OSLIB_CLOUD_ROOT_DROPBOX"] = null,
+				["OSLIB_CLOUD_ROOT_ONEDRIVE"] = null,
+				["OSLIB_CLOUD_ROOT_GOOGLEDRIVE"] = googleDrive,
+				["OSLIB_CLOUD_ROOT_ICLOUD"] = null,
+				["OSLIB_CLOUD_CONFIG"] = null
+			});
+
+			try
+			{
+				ResetOsCaches();
+				Assert.NotEqual(new RaiPath(cloudBackedBackup).Path, Os.LocalBackupDir);
+				Assert.False(new RaiFile(Os.LocalBackupDir).Cloud);
 			}
 			finally
 			{
