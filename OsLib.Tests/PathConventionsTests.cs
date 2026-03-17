@@ -1,13 +1,17 @@
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using OsLib;
 
 namespace OsLib.Tests;
 
 public class PathConventionsTests
 {
-    private static RaiPath NewTestRoot()
+    private static RaiPath NewTestRoot([CallerMemberName] string testName = "")
     {
-        var guidSegment = Guid.NewGuid().ToString("N");
-        return new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "path-conventions" / guidSegment;
+        var root = new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "path-conventions" / SanitizeSegment(testName);
+        CleanupDir(root);
+        return root;
     }
 
     private static void EnsureDir(RaiPath path)
@@ -30,6 +34,20 @@ public class PathConventionsTests
     private static string FileAt(RaiPath path, string nameWithExt)
     {
         return new RaiFile(path.Path + nameWithExt).FullName;
+    }
+
+    private static string SanitizeSegment(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "test";
+
+        var invalid = Path.GetInvalidFileNameChars();
+        var cleaned = new string(value
+            .Select(ch => invalid.Contains(ch) || char.IsWhiteSpace(ch) ? '-' : ch)
+            .ToArray())
+            .Trim('-');
+
+        return string.IsNullOrWhiteSpace(cleaned) ? "test" : cleaned;
     }
 
     [Fact]

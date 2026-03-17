@@ -6,64 +6,41 @@ namespace OsLib.Tests;
 public class CloudStorageProviderPathTests
 {
 	[Theory]
-	[InlineData(CloudStorageType.Dropbox, "DropboxRoot")]
-	[InlineData(CloudStorageType.OneDrive, "OneDriveRoot")]
-	[InlineData(CloudStorageType.GoogleDrive, "GoogleDriveRoot")]
-	[InlineData(CloudStorageType.ICloud, "ICloudRoot")]
-	public void GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider(CloudStorageType provider, string dirName)
+	[InlineData(CloudStorageType.Dropbox)]
+	[InlineData(CloudStorageType.OneDrive)]
+	[InlineData(CloudStorageType.GoogleDrive)]
+	[InlineData(CloudStorageType.ICloud)]
+	public void GetCloudStorageProviderForPath_ReturnsInstalledProvider_ForDiscoveredRoot(CloudStorageType provider)
 	{
-		var root = OsTestEnvironment.NewTestRoot("cloud-providers");
-		using var env = new OsTestEnvironment(root);
+		if (!CloudStorageRealTestEnvironment.TryGetCloudTestRoot(provider, "cloud-providers", out var root, out var providerRoot, out var reason))
+			Assert.Skip($"Provider {provider}: {reason}. {Os.GetCloudStorageSetupGuidance()}");
 
-		var providerRoot = (root / dirName).Path;
-		new RaiPath(providerRoot).mkdir();
-		WriteProviderConfig(env, provider, providerRoot);
+		var cloudDir = root / "Workspace" / "Project";
+		Directory.CreateDirectory(cloudDir.Path);
 
-		Assert.Equal(new RaiPath(providerRoot).Path, Os.GetCloudStorageRoot(provider, refresh: true));
+		Assert.Equal(provider, Os.GetCloudStorageProviderForPath(providerRoot));
+		Assert.Equal(provider, Os.GetCloudStorageProviderForPath(cloudDir.Path));
 	}
 
 	[Theory]
-	[InlineData(CloudStorageType.Dropbox, "DropboxRoot")]
-	[InlineData(CloudStorageType.OneDrive, "OneDriveRoot")]
-	[InlineData(CloudStorageType.GoogleDrive, "GoogleDriveRoot")]
-	[InlineData(CloudStorageType.ICloud, "ICloudRoot")]
-	public void RaiFile_CloudFlag_DetectsFilesUnderEachConfiguredProvider(CloudStorageType provider, string dirName)
+	[InlineData(CloudStorageType.Dropbox)]
+	[InlineData(CloudStorageType.OneDrive)]
+	[InlineData(CloudStorageType.GoogleDrive)]
+	[InlineData(CloudStorageType.ICloud)]
+	public void RaiFile_CloudFlag_DetectsFilesUnderInstalledProvider(CloudStorageType provider)
 	{
-		var root = OsTestEnvironment.NewTestRoot("cloud-providers");
-		using var env = new OsTestEnvironment(root);
+		if (!CloudStorageRealTestEnvironment.TryGetCloudTestRoot(provider, "cloud-providers", out var root, out _, out var reason))
+			Assert.Skip($"Provider {provider}: {reason}. {Os.GetCloudStorageSetupGuidance()}");
 
-		var providerRoot = new RaiPath((root / dirName).Path);
-		var cloudDir = providerRoot / "Workspace" / "Project";
-		var localDir = root / "LocalFiles";
-		providerRoot.mkdir();
+		var cloudDir = root / "Workspace" / "Project";
+		var localDir = new RaiPath(Os.TempDir) / "RAIkeep" / "cloud-providers" / "LocalFiles" / provider.ToString();
 		cloudDir.mkdir();
 		localDir.mkdir();
-		WriteProviderConfig(env, provider, providerRoot.Path);
 
 		var cloudFile = new RaiFile(cloudDir.Path + "sample.txt");
 		var localFile = new RaiFile(localDir.Path + "sample.txt");
 
-		Assert.Equal(new RaiPath(providerRoot.Path).Path, Os.GetCloudStorageRoot(provider, refresh: true));
 		Assert.True(cloudFile.Cloud);
 		Assert.False(localFile.Cloud);
-	}
-
-	private static void WriteProviderConfig(OsTestEnvironment env, CloudStorageType provider, string providerRoot)
-	{
-		switch (provider)
-		{
-			case CloudStorageType.Dropbox:
-				env.WriteConfig(dropbox: providerRoot);
-				break;
-			case CloudStorageType.OneDrive:
-				env.WriteConfig(oneDrive: providerRoot);
-				break;
-			case CloudStorageType.GoogleDrive:
-				env.WriteConfig(googleDrive: providerRoot);
-				break;
-			case CloudStorageType.ICloud:
-				env.WriteConfig(iCloud: providerRoot);
-				break;
-		}
 	}
 }

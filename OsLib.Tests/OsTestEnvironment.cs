@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Linq;
 
 namespace OsLib.Tests;
@@ -84,7 +85,12 @@ internal sealed class OsTestEnvironment : IDisposable
 
 		var configFile = new RaiFile(ConfigPath);
 		RaiFile.mkdir(configFile.Path);
-		File.WriteAllText(configFile.FullName, json.ToString());
+		var textFile = new TextFile(configFile.FullName)
+		{
+			Lines = json.ToString().Replace("\r\n", "\n").Split('\n').ToList()
+		};
+		textFile.Changed = true;
+		textFile.Save();
 		Os.LoadConfig(refresh: true);
 	}
 
@@ -96,9 +102,14 @@ internal sealed class OsTestEnvironment : IDisposable
 		ResetOsCaches();
 	}
 
-	internal static RaiPath NewTestRoot(string area)
+	internal static RaiPath NewTestRoot(string area, string? suffix = null, [CallerMemberName] string testName = "")
 	{
-		return new RaiPath(Path.GetTempPath()) / "RAIkeep" / "oslib-tests" / area / Guid.NewGuid().ToString("N");
+		var root = new RaiPath(Path.GetTempPath()) / "RAIkeep" / "oslib-tests" / SanitizeSegment(area) / SanitizeSegment(testName);
+		if (!string.IsNullOrWhiteSpace(suffix))
+			root /= SanitizeSegment(suffix);
+
+		Cleanup(root);
+		return root;
 	}
 
 	internal static void Cleanup(RaiPath root)
@@ -121,6 +132,8 @@ internal sealed class OsTestEnvironment : IDisposable
 		osType.GetField("dIRSEPERATOR", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("tempDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("localBackupDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+		osType.GetField("config", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+		osType.GetField("remoteTestConfig", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		Os.ResetCloudStorageCache();
 	}
 
@@ -142,5 +155,19 @@ internal sealed class OsTestEnvironment : IDisposable
 	private static string NormalizeForJson(string? value)
 	{
 		return string.IsNullOrWhiteSpace(value) ? string.Empty : new RaiPath(value).Path;
+	}
+
+	private static string SanitizeSegment(string? value)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+			return "test";
+
+		var invalid = Path.GetInvalidFileNameChars();
+		var cleaned = new string(value
+			.Select(ch => invalid.Contains(ch) || char.IsWhiteSpace(ch) ? '-' : ch)
+			.ToArray())
+			.Trim('-');
+
+		return string.IsNullOrWhiteSpace(cleaned) ? "test" : cleaned;
 	}
 }

@@ -43,7 +43,7 @@ namespace OsLib
 			}
 		}
 
-		public void Append(string line)
+		public TextFile Append(string line)
 		{
 			if (lines == null)
 				Read();
@@ -52,28 +52,32 @@ namespace OsLib
 			else
 				lines.Add(line);
 			Changed = true;
+			return this;
 		}
 
-		public void Insert(int beforeLine, string line)
+		public TextFile Insert(int beforeLine, string line)
 		{
 			Lines.Insert(beforeLine, line);
 			Changed = true;
+			return this;
 		}
 
-		public void Delete(int line)
+		public TextFile Delete(int line)
 		{
 			Lines.RemoveAt(line);
 			Changed = true;
+			return this;
 		}
 
-		public void DeleteAll()
+		public TextFile DeleteAll()
 		{
 			lines = new List<string>();
 			Append("");
 			Changed = true;
+			return this;
 		}
 
-		public void Sort(bool reverse = false)
+		public TextFile Sort(bool reverse = false)
 		{
 			var lineArray = Lines.ToArray();
 			Array.Sort(lineArray);
@@ -81,6 +85,7 @@ namespace OsLib
 				Array.Reverse(lineArray);
 			this.lines = new List<string>(lineArray);
 			Changed = true;
+			return this;
 		}
 
 		public List<string> Read()
@@ -94,7 +99,7 @@ namespace OsLib
 		/// Save the TextFile to disk, including dropbox locations.
 		/// </summary>
 		/// <param name="backup">With backup == false the wait for materializing is not going to work; only use outside dropbox and alike.</param>
-		public void Save(bool backup = false)
+		public TextFile Save(bool backup = false)
 		{
 			if (Changed || !Exists())
 			{
@@ -103,15 +108,40 @@ namespace OsLib
 					this.backup(); // calls AwaitVanishing()
 				else
 					this.rm(); // calls AwaitVanishing()
-				File.WriteAllLines(FullName, (lines == null ? new List<string>() : lines), Encoding.UTF8);
+				File.WriteAllLines(FullName, (lines == null ? new List<string>() : lines), new UTF8Encoding(false));
 				AwaitMaterializing(true);
 				Changed = false;
 			}
+			return this;
 		}
 
-		public TextFile(string name)
+		public TextFile(string name, string content = null)
 			: base(name)
 		{
+			if (string.IsNullOrEmpty(Ext))
+				Ext = "txt";    // default for TextFile
+			if (content != null)
+			{
+				Append(content);
+				Save();
+			}
+		}
+		/// <summary>
+		/// Create a TextFile at path with name and optional content.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <param name="name">"text", "text.txt", "text.ini, ..."</param>
+		/// <param name="content">to add</param>
+		public TextFile(RaiPath path, string name, string content = null)
+			: base(path, name)
+		{
+			if (string.IsNullOrEmpty(Ext))
+				Ext = "txt";	// default for TextFile
+			if (content != null)
+			{
+				Append(content);
+				Save();
+			}
 		}
 	}
 }

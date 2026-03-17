@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using OsLib;
 using Xunit;
@@ -9,9 +11,10 @@ namespace OsLib.Tests
 {
 	public class CliCommandTests
 	{
-		private static string CreateTempRoot()
+		private static string CreateTempRoot([CallerMemberName] string testName = "")
 		{
-			var root = new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "cli" / Guid.NewGuid().ToString("N");
+			var root = new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "cli" / SanitizeSegment(testName);
+			Cleanup(root.Path);
 			root.mkdir();
 			return root.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 		}
@@ -30,16 +33,21 @@ namespace OsLib.Tests
 
 		private static string CreateExecutableScript(string root, string scriptName, string content)
 		{
-			var scriptPath = new RaiFile(scriptName) { Path = root }.FullName;
-			File.WriteAllText(scriptPath, content);
-			if (!OperatingSystem.IsWindows())
-			{
-				File.SetUnixFileMode(scriptPath,
-					UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-					UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-					UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
-			}
-			return scriptPath;
+			return RaiSystem.CreateScript(new RaiPath(root), scriptName, content).FullName;
+		}
+
+		private static string SanitizeSegment(string? value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return "test";
+
+			var invalid = Path.GetInvalidFileNameChars();
+			var cleaned = new string(value
+				.Select(ch => invalid.Contains(ch) || char.IsWhiteSpace(ch) ? '-' : ch)
+				.ToArray())
+				.Trim('-');
+
+			return string.IsNullOrWhiteSpace(cleaned) ? "test" : cleaned;
 		}
 
 		[Fact]

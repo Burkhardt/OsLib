@@ -18,7 +18,13 @@ OsLib
 <details>
 <summary>RaiSystem: Run external processes with optional output capture.</summary>
 
-- RaiSystem: `Exec`, `Start`
+- RaiSystem: `Exec`, `Start`, `CreateScript`
+</details>
+
+<details>
+<summary>Script: Executable script file backed by TextFile and RaiSystem.</summary>
+
+- Script: create a script file from content, save/update it, and apply Unix executable mode automatically.
 </details>
 
 <details>
@@ -130,6 +136,7 @@ https://www.nuget.org/packages/OsLibCore/
 - CLI command hierarchy and external tool wrappers: [../CliCommand-Hierarchy.puml](../CliCommand-Hierarchy.puml)
 - Local backup placement: `Os.LocalBackupDir` resolves an OS-local, non-cloud directory and can be configured in `osconfig.json`.
 - Ubuntu/Mzansi guidance: prefer explicit `cloud.*` entries in `osconfig.json` over probe-only discovery for stable Google Drive roots across machines.
+- Script helper: use `RaiSystem.CreateScript(path, name, content)` or `new Script(path, name, content)` when tests or tools need an executable script file.
 
 ## unit tests
 

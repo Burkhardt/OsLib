@@ -66,6 +66,15 @@ namespace OsLib     // aka OsLibCore
 				return tempDir;
 			}
 		}
+		public static string NewShortId(int length = 4)
+		{
+			if (length < 1)
+				length = 1;
+			if (length > 32)
+				length = 32;
+
+			return Guid.NewGuid().ToString("N").Substring(0, length);
+		}
 		private static string tempDir = null;
 		public static string LocalBackupDir
 		{
@@ -407,14 +416,16 @@ namespace OsLib     // aka OsLibCore
 		/// <summary>
 		/// Constructor that takes a string path; the caller knows that this is a directory path; it does not have to exist yet in the file system.
 		/// </summary>
-		/// <param name="s">if value of s does not end with a directory separator, one will be added</param>
-		public RaiPath(string s)
+		/// <param name="s">if value of s does not end with a directory separator, one will be added; "." gets current directory</param>
+		public RaiPath(string s = ".")
 		{
 			if (string.IsNullOrEmpty(s))
 			{
 				Path = string.Empty;
 				return;
 			}
+			if (s == ".")
+				s = Directory.GetCurrentDirectory();	// where the binary is running that executes this code
 			Path = s[^1] == Os.DIRSEPERATOR[0] ? s : s + Os.DIRSEPERATOR;
 		}
 
@@ -427,7 +438,8 @@ namespace OsLib     // aka OsLibCore
 			path.Name = string.Empty;
 			path.Ext = string.Empty;
 		}
-		public void mkdir() => new RaiFile(Path).mkdir();
+		public bool Exists() => Directory.Exists(path.Path);
+		public RaiPath mkdir() => new RaiFile(Path).mkdir();
 		public void rmdir(int depth = 0, bool deleteFiles = false) => new RaiFile(Path).rmdir(depth, deleteFiles);
 		public override string ToString() => Path;
 	}
@@ -804,7 +816,7 @@ namespace OsLib     // aka OsLibCore
 					new RaiFile(new RaiPath(subdir).Path).rmdir(depth - 1, deleteFiles);
 			}
 			Directory.Delete(Path); // directory may still be not empty here (if deleteFile == false) => throws exception
-			if (Path.ToLower().Contains("dropbox"))
+			if (Os.IsCloudPath(Path))
 				awaitDirVanishing(Path);
 		}
 		/// <summary>
@@ -822,24 +834,27 @@ namespace OsLib     // aka OsLibCore
 		/// Create a directory if it does not exist yet, using current Path
 		/// </summary>
 		/// <returns>DirectoryInfo</returns>
-		public void mkdir()
+		public RaiPath mkdir()
 		{
-			mkdir(Path);
+			return mkdir(Path);
 		}
 		/// <summary>Create a directory if it does not exist yet</summary>
 		/// <param name="dirname">if not given current directory is used</param>
-		/// <returns>DirectoryInfo structure; contains properties Exists and CreationDate</returns>
-		public static DirectoryInfo mkdir(string dirname)
+		/// <returns>created or existing directory as RaiPath</returns>
+		public static RaiPath mkdir(string dirname = null)
 		{
 			dirname = string.IsNullOrEmpty(dirname) ? Directory.GetCurrentDirectory() : dirname;
-			var dir = new DirectoryInfo(dirname);
+			var path = new RaiPath(dirname);
+			if (path.Exists())
+				return path;
+			var dir = new DirectoryInfo(path.Path);
 			if (!dir.Exists)  // TODO problems with network drives, i.e. IservSetting.RemoteRootDir
 			{
-				dir = Directory.CreateDirectory(dirname);
-				if (dirname.ToLower().Contains("dropbox"))
-					awaitDirMaterializing(dirname);
+				dir = Directory.CreateDirectory(path.Path);
+				if (Os.IsCloudPath(path.Path))
+					awaitDirMaterializing(path.Path);
 			}
-			return dir;
+			return new RaiPath(dir.FullName);
 		}
 		/// <summary>
 		/// zip this file into archive
@@ -900,16 +915,29 @@ namespace OsLib     // aka OsLibCore
 			if (!File.Exists(FullName))
 				return null;   // no file no backup
 			var backupFile = new RaiFile(FullName);
-			var idx = (backupFile.Path.Length > 2 && backupFile.Path[1] == ':') ? 3 : 0;     // works as expected for c:/123 or c:\123, but not for c:123
-			var s = backupFile.Path.Substring(idx);
-			backupFile.Path = (Os.LocalBackupDir + s).Replace("Dropbox/", "").Replace("dropbox/", "");   // preserves historical backup path shaping while starting from a local backup root
-			mkdir(backupFile.Path);
+			backupFile.Path = Os.LocalBackupDir + GetBackupRelativeDirectoryPath(backupFile.Path);
+			new RaiPath(backupFile.Path).mkdir();
 			backupFile.Name = backupFile.Name + " " + DateTimeOffset.UtcNow.ToString(Os.DATEFORMAT);
 			backupFile.Ext = Ext;
 			if (copy)
 				backupFile.cp(this);
 			else backupFile.mv(this);
 			return backupFile.FullName;
+		}
+
+		internal static string GetBackupRelativeDirectoryPath(string sourceDirectoryPath)
+		{
+			var sourceDirectory = new RaiPath(sourceDirectoryPath).Path;
+			var provider = Os.GetCloudStorageProviderForPath(sourceDirectory);
+			if (provider != null)
+			{
+				var providerRoot = Os.GetCloudStorageRoot(provider.Value);
+				var normalizedProviderRoot = new RaiPath(providerRoot).Path;
+				return sourceDirectory.Substring(normalizedProviderRoot.Length);
+			}
+
+			var idx = (sourceDirectory.Length > 2 && sourceDirectory[1] == ':') ? 3 : 0;     // works as expected for c:/123 or c:\123, but not for c:123
+			return sourceDirectory.Substring(idx);
 		}
 
 		public string[] DirList
@@ -926,8 +954,6 @@ namespace OsLib     // aka OsLibCore
 		/// <param name="filename"></param>
 		public RaiFile(string filename)
 		{
-			// var lowercase = filename.ToLower();
-			// Ensure = lowercase.Contains(".dropbox") ? false : lowercase.Contains("dropbox") || lowercase.Contains("onedrive") || lowercase.Contains("cloudstorage");	// sets Ensure also for files inside local .dropbox folder 
 			path = string.Empty;
 			name = string.Empty;
 			ext = string.Empty;
@@ -959,6 +985,27 @@ namespace OsLib     // aka OsLibCore
 				else Name = filename;   // also takes care of ext
 			}
 			UpdateCloudFlag();
+		}
+		/// <summary>
+		/// Constructor that takes a RaiPath and optional name and extension to build the full file path.
+		/// </summary>
+		/// <param name="p"></param>
+		/// <param name="name">null or "test" or "test.txt"</param>
+		/// <param name="ext">null or "txt"</param>
+		public RaiFile(RaiPath p, string name = null, string ext = null) : this(BuildFullName(p, name, ext))
+		{
+		}
+
+		private static string BuildFullName(RaiPath p, string name, string ext)
+		{
+			if (string.IsNullOrEmpty(name))
+				return p.Path;
+
+			var fileName = name;
+			if (!string.IsNullOrEmpty(ext) && !fileName.EndsWith("." + ext, StringComparison.OrdinalIgnoreCase))
+				fileName += "." + ext;
+
+			return p.Path + fileName;
 		}
 	}
 } //namespace OsLib

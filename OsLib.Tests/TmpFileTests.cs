@@ -1,13 +1,17 @@
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using OsLib;
 
 namespace OsLib.Tests;
 
 public class TmpFileTests
 {
-    private static RaiPath NewTestRoot()
+    private static RaiPath NewTestRoot([CallerMemberName] string testName = "")
     {
-        var guidSegment = Guid.NewGuid().ToString("N");
-        return new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "tmpfile" / guidSegment;
+        var root = new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "tmpfile" / SanitizeSegment(testName);
+        CleanupDir(root);
+        return root;
     }
 
     private static void CleanupDir(RaiPath path)
@@ -19,6 +23,20 @@ public class TmpFileTests
         catch
         {
         }
+    }
+
+    private static string SanitizeSegment(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "test";
+
+        var invalid = Path.GetInvalidFileNameChars();
+        var cleaned = new string(value
+            .Select(ch => invalid.Contains(ch) || char.IsWhiteSpace(ch) ? '-' : ch)
+            .ToArray())
+            .Trim('-');
+
+        return string.IsNullOrWhiteSpace(cleaned) ? "test" : cleaned;
     }
 
     [Fact]

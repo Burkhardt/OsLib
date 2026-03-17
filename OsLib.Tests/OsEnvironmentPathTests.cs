@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 
 namespace OsLib.Tests;
 
@@ -118,5 +119,58 @@ public class OsEnvironmentPathTests
 		using var env = new OsTestEnvironment(root, forcedType: OsType.Windows);
 
 		Assert.Equal(Path.Combine(env.AppData, "RAIkeep", "osconfig.json"), Os.GetDefaultConfigPath());
+	}
+
+	[Fact]
+	public void LoadConfig_UsesUpdatedDefaultConfigPath_AfterEnvironmentSwitch()
+	{
+		var root1 = OsTestEnvironment.NewTestRoot("env-paths", "first");
+		var google1 = (root1 / "google-one").Path;
+		Directory.CreateDirectory(google1);
+		using (var env1 = new OsTestEnvironment(root1))
+		{
+			env1.WriteConfig(googleDrive: google1);
+			Assert.Equal(new RaiPath(google1).Path, Os.LoadConfig(refresh: true).GooglePath!.Path);
+		}
+
+		var root2 = OsTestEnvironment.NewTestRoot("env-paths", "second");
+		var google2 = (root2 / "google-two").Path;
+		Directory.CreateDirectory(google2);
+		using var env2 = new OsTestEnvironment(root2);
+		env2.WriteConfig(googleDrive: google2);
+
+		Assert.Equal(new RaiPath(google2).Path, Os.LoadConfig(refresh: true).GooglePath!.Path);
+	}
+
+	[Fact]
+	public void LoadRemoteTestConfig_UsesUpdatedDefaultConfigPath_AfterEnvironmentSwitch()
+	{
+		var root1 = OsTestEnvironment.NewTestRoot("env-paths", "first");
+		using (var env1 = new OsTestEnvironment(root1))
+		{
+			env1.WriteConfig();
+			WriteRemoteTestConfig(Os.GetDefaultRemoteTestConfigPath(), "alpha@host");
+			Assert.Equal("alpha@host", Os.LoadRemoteTestConfig(refresh: true).GetObserver("mzansi")!.SshTarget);
+		}
+
+		var root2 = OsTestEnvironment.NewTestRoot("env-paths", "second");
+		using var env2 = new OsTestEnvironment(root2);
+		env2.WriteConfig();
+		WriteRemoteTestConfig(Os.GetDefaultRemoteTestConfigPath(), "beta@host");
+
+		Assert.Equal("beta@host", Os.LoadRemoteTestConfig(refresh: true).GetObserver("mzansi")!.SshTarget);
+	}
+
+	private static void WriteRemoteTestConfig(string path, string sshTarget)
+	{
+		var file = new RaiFile(path);
+		RaiFile.mkdir(file.Path);
+		File.WriteAllText(
+			file.FullName,
+			"{\n" +
+			"  \"observers\": {\n" +
+			$"    \"mzansi\": {{ \"sshTarget\": \"{sshTarget}\" }}\n" +
+			"  }\n" +
+			"}\n");
 	}
 }

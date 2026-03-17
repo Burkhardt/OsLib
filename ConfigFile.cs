@@ -42,15 +42,20 @@ namespace OsLib
 
 		protected virtual TData NormalizeData(TData data) => data ?? CreateDefaultData();
 
-		protected void Save()
+		public void Save()
 		{
 			mkdir();
 			File.WriteAllText(FullName, JsonConvert.SerializeObject(Data, Formatting.Indented, CreateSerializerSettings()));
 		}
 
-		internal void SetFullName(string fullName)
+		internal bool SetFullName(string fullName)
 		{
 			var normalized = System.IO.Path.GetFullPath(fullName);
+			var current = string.IsNullOrWhiteSpace(FullName) ? string.Empty : System.IO.Path.GetFullPath(FullName);
+			var changed = !string.Equals(
+				current,
+				normalized,
+				OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 			var directory = System.IO.Path.GetDirectoryName(normalized) ?? string.Empty;
 			var extension = System.IO.Path.GetExtension(normalized);
 
@@ -59,6 +64,7 @@ namespace OsLib
 				: Os.NormSeperator(directory) + Os.DIRSEPERATOR;
 			Name = System.IO.Path.GetFileNameWithoutExtension(normalized);
 			Ext = string.IsNullOrWhiteSpace(extension) ? string.Empty : extension.TrimStart('.');
+			return changed;
 		}
 
 		private static JsonSerializerSettings CreateSerializerSettings()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Xunit;
 using OsLib;
 
@@ -18,25 +19,43 @@ namespace OsLib.Tests
 			osType.GetField("dIRSEPERATOR", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		}
 
-		private static string CreateTempDir()
+		private static RaiPath CreateTempDir([CallerMemberName] string testName = "")
 		{
-			var root = new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "core" / Guid.NewGuid().ToString("N");
+			var root = new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "core" / SanitizeSegment(testName);
+			Cleanup(root);
 			root.mkdir();
-			return root.Path;
+			return root;
 		}
 
-		private static string CreateExecutableScript(string root, string scriptName, string content)
+		private static void Cleanup(RaiPath root)
 		{
-			var scriptPath = Path.Combine(root, scriptName);
-			File.WriteAllText(scriptPath, content);
-			if (!OperatingSystem.IsWindows())
+			try
 			{
-				File.SetUnixFileMode(scriptPath,
-					UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-					UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-					UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+				if (Directory.Exists(root.Path))
+					new RaiFile(root.Path).rmdir(depth: 10, deleteFiles: true);
 			}
-			return scriptPath;
+			catch
+			{
+			}
+		}
+
+		private static string SanitizeSegment(string? value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return "test";
+
+			var invalid = Path.GetInvalidFileNameChars();
+			var cleaned = new string(value
+				.Select(ch => invalid.Contains(ch) || char.IsWhiteSpace(ch) ? '-' : ch)
+				.ToArray())
+				.Trim('-');
+
+			return string.IsNullOrWhiteSpace(cleaned) ? "test" : cleaned;
+		}
+
+		private static string CreateExecutableScript(RaiPath root, string scriptName, string content)
+		{
+			return RaiSystem.CreateScript(root, scriptName, content).FullName;
 		}
 
 		[Fact]
@@ -136,14 +155,14 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var rf = new RaiFile(Path.Combine(root, "file.test.txt"));
+				var rf = new RaiFile(root, "file.test", "txt");
 				Assert.Equal("file.test", rf.Name);
 				Assert.Equal("txt", rf.Ext);
 				Assert.EndsWith(Os.DIRSEPERATOR, rf.Path);
 			}
 			finally
 			{
-				Directory.Delete(root, recursive: true);
+				root.rmdir();
 			}
 		}
 
@@ -153,24 +172,24 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var source = new RaiFile(Path.Combine(root, "source.txt"));
-				File.WriteAllText(source.FullName, "data");
-				var copy = new RaiFile(Path.Combine(root, "copy.txt"));
+				var source = new TextFile(root, "source.txt", "data");
+				var copy = new TextFile(root, "copy.txt");
 				copy.cp(source);
-				Assert.True(File.Exists(copy.FullName));
-				Assert.Equal("data", File.ReadAllText(copy.FullName));
+				Assert.True(copy.Exists());
+				Assert.Equal("data", copy.Lines[0]);
 
-				var moved = new RaiFile(Path.Combine(root, "moved.txt"));
+				var moved = new TextFile(root, "moved.txt");
 				moved.mv(copy);
-				Assert.True(File.Exists(moved.FullName));
-				Assert.False(File.Exists(copy.FullName));
+				Assert.True(moved.Exists());
+				Assert.False(copy.Exists());
+				Assert.Equal("data", moved.Lines[0]);
 
 				moved.rm();
-				Assert.False(File.Exists(moved.FullName));
+				Assert.False(moved.Exists());
 			}
 			finally
 			{
-				Directory.Delete(root, recursive: true);
+				root.rmdir(depth: 9, deleteFiles: true);
 			}
 		}
 
@@ -180,16 +199,14 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var source = new RaiFile(Path.Combine(root, "source.txt"));
-				File.WriteAllText(source.FullName, "src");
-				var dest = new RaiFile(Path.Combine(root, "dest.txt"));
-				File.WriteAllText(dest.FullName, "dest");
+				var source = new TextFile(root, "source.txt", "src");
+				var dest = new TextFile(root, "dest.txt", "dest");
 
 				Assert.Throws<IOException>(() => dest.mv(source, replace: false, keepBackup: false));
 			}
 			finally
 			{
-				Directory.Delete(root, recursive: true);
+				root.rmdir(depth: 9, deleteFiles: true);
 			}
 		}
 
@@ -199,23 +216,21 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var source = new RaiFile(Path.Combine(root, "source.txt"));
-				File.WriteAllText(source.FullName, "src");
-				var dest = new RaiFile(Path.Combine(root, "dest.txt"));
-				File.WriteAllText(dest.FullName, "dest");
+				var source = new TextFile(root, "source.txt", "src");
+				var dest = new TextFile(root, "dest.txt", "dest");
 
 				dest.mv(source, replace: true, keepBackup: true);
 				Assert.True(File.Exists(dest.FullName));
-				Assert.Equal("src", File.ReadAllText(dest.FullName));
+				Assert.Equal("src", File.ReadAllText(dest.FullName).TrimEnd('\r', '\n'));
 
 				var bak = new RaiFile(dest.FullName);
 				bak.Ext = "bak";
 				Assert.True(File.Exists(bak.FullName));
-				Assert.Equal("dest", File.ReadAllText(bak.FullName));
+				Assert.Equal("dest", File.ReadAllText(bak.FullName).TrimEnd('\r', '\n'));
 			}
 			finally
 			{
-				Directory.Delete(root, recursive: true);
+				root.rmdir(depth: 9, deleteFiles: true);
 			}
 		}
 
@@ -225,14 +240,12 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var source = new RaiFile(Path.Combine(root, "source.txt"));
-				File.WriteAllText(source.FullName, "src");
-				var dest = new RaiFile(Path.Combine(root, "dest.txt"));
-				File.WriteAllText(dest.FullName, "dest");
+				var source = new TextFile(root, "source.txt", "src");
+				var dest = new TextFile(root, "dest.txt", "dest");
 
 				dest.mv(source, replace: true, keepBackup: false);
 				Assert.True(File.Exists(dest.FullName));
-				Assert.Equal("src", File.ReadAllText(dest.FullName));
+				Assert.Equal("src", File.ReadAllText(dest.FullName).TrimEnd('\r', '\n'));
 
 				var bak = new RaiFile(dest.FullName);
 				bak.Ext = "bak";
@@ -240,7 +253,7 @@ namespace OsLib.Tests
 			}
 			finally
 			{
-				Directory.Delete(root, recursive: true);
+				root.rmdir(depth: 1, deleteFiles: true);
 			}
 		}
 
@@ -250,16 +263,14 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var dirPath = new RaiPath(Path.Combine(root, "rmdir-throws")).Path;
-				Directory.CreateDirectory(dirPath);
-				File.WriteAllText(Path.Combine(dirPath, "a.txt"), "x");
-				var rf = new RaiFile(dirPath);
-
-				Assert.Throws<IOException>(() => rf.rmdir());
+				var dirPath = root / "rmdir-throws";
+				dirPath.mkdir();
+				new TextFile(dirPath, "a", "x").Save();
+				Assert.Throws<IOException>(() => dirPath.rmdir(depth: 2, deleteFiles: false));
 			}
 			finally
 			{
-				Directory.Delete(root, recursive: true);
+				root.rmdir(depth: 2, deleteFiles: true);
 			}
 		}
 
@@ -269,18 +280,44 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var dirPath = new RaiPath(Path.Combine(root, "rmdir-ok")).Path;
-				Directory.CreateDirectory(dirPath);
-				File.WriteAllText(Path.Combine(dirPath, "a.txt"), "x");
-				Directory.CreateDirectory(Path.Combine(dirPath, "child"));
+				var dirPath = root / "rmdir-ok";
+				dirPath.mkdir();
+				new TextFile(dirPath, "a.txt", "x");
+				(dirPath / "child").mkdir();
 
-				var rf = new RaiFile(dirPath);
+				var rf = new RaiFile(dirPath.Path);
 				rf.rmdir(depth: 1, deleteFiles: true);
-				Assert.False(Directory.Exists(dirPath));
+				Assert.False(Directory.Exists(dirPath.Path));
 			}
 			finally
 			{
-				Directory.Delete(root, recursive: true);
+				root.rmdir(depth: 2, deleteFiles: true);
+			}
+		}
+
+		[Fact]
+		public void Script_Save_CreatesExecutableFile()
+		{
+			var root = CreateTempDir();
+			try
+			{
+				var name = OperatingSystem.IsWindows() ? "echo.cmd" : "echo.sh";
+				var content = OperatingSystem.IsWindows()
+					? "@echo off\r\necho hello\r\n"
+					: "#!/bin/sh\necho hello\n";
+				var script = RaiSystem.CreateScript(root, name, content);
+
+				Assert.True(File.Exists(script.FullName));
+				Assert.Contains("hello", string.Join("\n", script.File.Read()));
+
+				if (OperatingSystem.IsWindows())
+					return;
+
+				Assert.True(File.GetUnixFileMode(script.FullName).HasFlag(UnixFileMode.UserExecute));
+			}
+			finally
+			{
+				root.rmdir(depth: 2, deleteFiles: true);
 			}
 		}
 
@@ -362,7 +399,7 @@ namespace OsLib.Tests
 			}
 			finally
 			{
-				Directory.Delete(root, recursive: true);
+				root.rmdir(depth: 2, deleteFiles: true);
 			}
 		}
 
@@ -392,7 +429,7 @@ namespace OsLib.Tests
 			}
 			finally
 			{
-				Directory.Delete(root, recursive: true);
+				root.rmdir(depth: 2, deleteFiles: true);
 			}
 		}
 
@@ -405,10 +442,10 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var filePath = Path.Combine(root, "nested", "sample.txt");
-				var directoryPath = Path.GetDirectoryName(filePath) ?? throw new InvalidOperationException("Expected a parent directory.");
-				Directory.CreateDirectory(directoryPath);
-				File.WriteAllText(filePath, "data");
+				var nested = root / "nested";
+				nested.mkdir();
+				var sample = new TextFile(nested, "sample.txt", "data");
+				var filePath = sample.FullName;
 
 				var forwardSlashPath = filePath.Replace('\\', '/');
 				var info = new FileInfo(forwardSlashPath);
@@ -418,7 +455,7 @@ namespace OsLib.Tests
 			}
 			finally
 			{
-				Directory.Delete(root, recursive: true);
+				root.rmdir(depth: 2, deleteFiles: true);
 			}
 		}
 

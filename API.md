@@ -202,9 +202,60 @@ This document provides a detailed, foldable API overview.
 		- Returns process handle and optionally waits for completion.
 		</details>
 	- <details>
+		<summary>ExecResult(timeoutMilliseconds): run and capture structured stdout/stderr results.</summary>
+
+		- Returns `RaiSystemResult` with `StandardOutput`, `StandardError`, combined `Output`, exit code, and timeout state.
+		- Supports argument-list based commands so higher-level wrappers do not need to hand-roll process execution.
+		</details>
+	- <details>
 		<summary>Start(): async process execution.</summary>
 
 		- Uses `RunProcessAsTask` to run command asynchronously.
+		</details>
+	- <details>
+		<summary>CreateScript(path, name, content): create an executable script file.</summary>
+
+		- Builds a `Script` instance that stores content through `TextFile` and marks Unix scripts executable.
+		</details>
+	</details>
+
+- <details>
+	<summary>SshSystem / SshFileProbe: reusable remote execution and remote file observation over ssh.</summary>
+
+	- Responsibilities: execute remote commands and scripts through `ssh`, capture structured results via `RaiSystem`, and support remote file checks needed for integration diagnostics.
+	- <details>
+		<summary>SshSystem(target, remoteCommand): execute one remote command using argument-list-safe process launch.</summary>
+
+		- Reuses `RaiSystem` instead of ad hoc `Process` code.
+		- Provides `ExecuteRemoteCommand(...)` and `ExecuteScript(...)` for command and script execution.
+		</details>
+	- <details>
+		<summary>SshFileProbe: remote file and directory observation helpers.</summary>
+
+		- Supports `DirectoryExists`, `ReadFile`, `RemoveDirectory`, `WaitForFileContainingAll`, and `WaitForMissing`.
+		- Intended for real-cloud integration tests and remote diagnostics where another synchronized node must be observed over ssh.
+		</details>
+	- <details>
+		<summary>RemoteCloudSyncProbe: bind one local cloud root to one remote observer/root pair.</summary>
+
+		- Resolves a local provider root through `Os.GetCloudStorageRoot(...)` and validates remote access through environment-driven ssh configuration.
+		- Exposes `LocalCloudRoot`, `RemoteCloudRoot`, `Observer`, and relative-path helpers so OsLib and JsonPit tests can share the same real-cloud probe setup.
+		</details>
+	</details>
+
+- <details>
+	<summary>Script: executable script file abstraction.</summary>
+
+	- Responsibilities: combine `TextFile` persistence with `RaiSystem` execution and Unix executable-mode handling.
+	- <details>
+		<summary>Script(path, name, content): create and persist a script file from text content.</summary>
+
+		- Delegates content creation to the `TextFile` constructor and then applies executable mode where relevant.
+		</details>
+	- <details>
+		<summary>Save(backup) / EnsureExecutable(): persist updates and restore executable mode.</summary>
+
+		- `Save` reuses `TextFile.Save`; `EnsureExecutable` is a no-op on Windows and sets Unix execute bits elsewhere.
 		</details>
 	</details>
 

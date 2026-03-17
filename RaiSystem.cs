@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ using RunProcessAsTask; // https://github.com/jamesmanning/RunProcessAsTask
 *	based on RsbSystem (C++ version from 1991, C# version 2005, dotnet core 2019)
 */
 
-namespace OsLib		// aka OsLibCore
+namespace OsLib     // aka OsLibCore
 {
 	/// <summary>
 	/// Helpers for running shell commands.
@@ -48,8 +49,11 @@ namespace OsLib		// aka OsLibCore
 		public string Command { get; init; } = string.Empty;
 		public string Arguments { get; init; } = string.Empty;
 		public string CommandLine { get; init; } = string.Empty;
+		public string StandardOutput { get; init; } = string.Empty;
+		public string StandardError { get; init; } = string.Empty;
 		public string Output { get; init; } = string.Empty;
 		public int ExitCode { get; init; }
+		public bool TimedOut { get; init; }
 		public int WorkerThreadId { get; init; }
 	}
 
@@ -58,11 +62,13 @@ namespace OsLib		// aka OsLibCore
 		string command = null;
 		string param = null;
 		string commandLine = null;
+		readonly List<string> argumentList = new();
 		public static string IndirectShellExecFile = new RaiFile("~/bin/start").FullName;
 		public int ExitCode = 0;
 		public string this[string environmentVariable]
 		{
-			get {
+			get
+			{
 				var p = new Process();
 				return p.StartInfo.EnvironmentVariables[environmentVariable];
 			}
@@ -75,42 +81,55 @@ namespace OsLib		// aka OsLibCore
 		/// <remarks>RsbSystem instance keeps the result in member ExitCode</remarks>
 		public int Exec(out string msg)
 		{
-			msg = "";
-			var p = new Process();
-			p.StartInfo.FileName = command; // d:\\program files\\imagemagick-6.3.3-q16\\
-			p.StartInfo.Arguments = param;
-			p.StartInfo.CreateNoWindow = true;
-			p.StartInfo.UseShellExecute = false;
-			p.StartInfo.RedirectStandardOutput = true;
-			p.StartInfo.RedirectStandardError = true;
+			var result = ExecResult();
+			msg = result.Output.TrimEnd();
+			return result.ExitCode;
+		}
+		public RaiSystemResult ExecResult(int timeoutMilliseconds = 120000)
+		{
+			using var p = new Process();
+			p.StartInfo = CreateStartInfo(redirectStandardOutput: true, redirectStandardError: true);
 			p.EnableRaisingEvents = true;
 			p.Start();
-			if (!p.StandardOutput.EndOfStream)
-				msg = p.StandardOutput.ReadToEnd();
-			if (!p.StandardError.EndOfStream)
-				msg += p.StandardError.ReadToEnd();
-			p.WaitForExit(120000);  // this needs to come after readToEnd() RSB: https://msdn.microsoft.com/en-us/library/system.diagnostics.processstartinfo.redirectstandardoutput(v=vs.110).aspx
-			ExitCode = p.ExitCode;
-			p.Dispose();
-			msg.TrimEnd();
-			return ExitCode;
+
+			var standardOutput = p.StandardOutput.ReadToEnd();
+			var standardError = p.StandardError.ReadToEnd();
+			var timedOut = timeoutMilliseconds > 0 && !p.WaitForExit(timeoutMilliseconds);
+			if (timedOut)
+			{
+				try
+				{
+					p.Kill(entireProcessTree: true);
+				}
+				catch
+				{
+				}
+			}
+			else if (timeoutMilliseconds <= 0)
+			{
+				p.WaitForExit();
+			}
+
+			ExitCode = timedOut ? -1 : p.ExitCode;
+			return new RaiSystemResult
+			{
+				Command = command ?? string.Empty,
+				Arguments = param ?? string.Empty,
+				CommandLine = commandLine ?? string.Empty,
+				StandardOutput = standardOutput,
+				StandardError = standardError,
+				Output = standardOutput + standardError,
+				ExitCode = ExitCode,
+				TimedOut = timedOut,
+				WorkerThreadId = Environment.CurrentManagedThreadId
+			};
 		}
 		public Task<RaiSystemResult> ExecAsync(CancellationToken cancellationToken = default)
 		{
 			return Task.Factory.StartNew(() =>
 			{
 				cancellationToken.ThrowIfCancellationRequested();
-				var workerThreadId = Environment.CurrentManagedThreadId;
-				var exitCode = Exec(out var msg);
-				return new RaiSystemResult
-				{
-					Command = command ?? string.Empty,
-					Arguments = param ?? string.Empty,
-					CommandLine = commandLine ?? string.Empty,
-					Output = msg,
-					ExitCode = exitCode,
-					WorkerThreadId = workerThreadId
-				};
+				return ExecResult();
 			}, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 		}
 		/// <summary>
@@ -121,26 +140,19 @@ namespace OsLib		// aka OsLibCore
 		/// <remarks>RsbSystem instance keeps the result in member ExitCode if wait==true</remarks>
 		public Process Exec(bool wait = true)
 		{
-			using (var p = new Process())
+			var p = new Process();
+			p.StartInfo = CreateStartInfo(redirectStandardOutput: true, redirectStandardError: false);
+			var result = p.Start();
+			if (wait)
 			{
-				p.StartInfo.FileName = command; // d:\\program files\\imagemagick-6.3.3-q16\\
-				p.StartInfo.Arguments = param;
-				p.StartInfo.CreateNoWindow = true;
-				p.StartInfo.UseShellExecute = false;
-				p.StartInfo.RedirectStandardOutput = true;
-				var result = p.Start();
-				if (wait)
+				if (!p.StandardOutput.EndOfStream)
 				{
-					if (!p.StandardOutput.EndOfStream)
-					{
-						Console.WriteLine(p.StandardOutput.ReadToEnd());
-					}
-					p.WaitForExit(120000);  // don't wait more than 2 min
-					ExitCode = p.ExitCode;
+					Console.WriteLine(p.StandardOutput.ReadToEnd());
 				}
-				return p;
+				p.WaitForExit(120000);  // don't wait more than 2 min
+				ExitCode = p.ExitCode;
 			}
-			//return null;
+			return p;
 		}
 		/// <summary>
 		/// Execute a command asynchronously.
@@ -157,6 +169,10 @@ namespace OsLib		// aka OsLibCore
 			// return jobId;
 			return "not implemented";
 		}
+		public static Script CreateScript(RaiPath path, string name, string content = null)
+		{
+			return new Script(path, name, content ?? string.Empty);
+		}
 		public RaiSystem(string cmdLine)
 		{
 			commandLine = cmdLine ?? "";
@@ -167,6 +183,35 @@ namespace OsLib		// aka OsLibCore
 			command = cmd ?? "";
 			param = p ?? "";
 			commandLine = string.IsNullOrWhiteSpace(param) ? command : command + " " + param;
+		}
+		public RaiSystem(string cmd, IEnumerable<string> args)
+		{
+			command = cmd ?? "";
+			if (args != null)
+				argumentList.AddRange(args);
+			param = string.Join(" ", argumentList);
+			commandLine = string.IsNullOrWhiteSpace(param) ? command : command + " " + param;
+		}
+
+		private ProcessStartInfo CreateStartInfo(bool redirectStandardOutput, bool redirectStandardError)
+		{
+			var startInfo = new ProcessStartInfo
+			{
+				FileName = command,
+				CreateNoWindow = true,
+				UseShellExecute = false,
+				RedirectStandardOutput = redirectStandardOutput,
+				RedirectStandardError = redirectStandardError
+			};
+
+			if (argumentList.Count > 0)
+			{
+				foreach (var arg in argumentList)
+					startInfo.ArgumentList.Add(arg ?? string.Empty);
+			}
+			else startInfo.Arguments = param;
+
+			return startInfo;
 		}
 
 		private static (string command, string param) SplitCommandLine(string cmdLine)
@@ -205,6 +250,7 @@ namespace OsLib		// aka OsLibCore
 			return -1;
 		}
 	}
+
 	/// <summary>
 	/// Windows network drive mount helper.
 	/// </summary>
