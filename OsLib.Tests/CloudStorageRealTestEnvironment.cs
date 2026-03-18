@@ -6,33 +6,30 @@ namespace OsLib.Tests;
 
 internal static class CloudStorageRealTestEnvironment
 {
-	internal static bool TryGetCloudTestRoot(
+	internal static IDisposable BeginConfiguredCloudResolution()
+	{
+		return Os.PushCloudRootResolutionMode(CloudRootResolutionMode.ConfiguredOnly);
+	}
+
+	internal static RaiPath GetConfiguredCloudTestRoot(
 		CloudStorageType provider,
 		string area,
-		out RaiPath root,
 		out string providerRoot,
-		out string reason,
 		[CallerMemberName] string testName = "")
 	{
 		Os.ResetCloudStorageCache();
-		providerRoot = Os.GetCloudStorageRoot(provider, refresh: true);
-		if (string.IsNullOrWhiteSpace(providerRoot))
-		{
-			root = new RaiPath(Os.TempDir) / "RAIkeep" / "missing-cloud-root";
-			reason = "provider root is not configured or not discoverable on this machine";
-			return false;
-		}
+		var configPath = Os.GetDefaultConfigPath();
+		if (!File.Exists(configPath))
+			throw new FileNotFoundException($"Required cloud config file is missing: {configPath}. {Os.GetCloudStorageSetupGuidance()}", configPath);
+
+		if (!Os.TryGetConfiguredCloudStorageRoot(provider, out providerRoot, refresh: true) || string.IsNullOrWhiteSpace(providerRoot))
+			throw new InvalidOperationException($"Provider {provider} is not configured in {configPath}. {Os.GetCloudStorageSetupGuidance()}");
 
 		providerRoot = new RaiPath(providerRoot).Path;
-		root = new RaiPath(providerRoot) / "RAIkeep" / SanitizeSegment(area) / SanitizeSegment(testName);
 		if (!Directory.Exists(providerRoot))
-		{
-			reason = $"provider root does not exist: {providerRoot}";
-			return false;
-		}
+			throw new DirectoryNotFoundException($"Configured provider root does not exist: {providerRoot}. {Os.GetCloudStorageSetupGuidance()}");
 
-		reason = string.Empty;
-		return true;
+		return new RaiPath(providerRoot) / "RAIkeep" / SanitizeSegment(area) / SanitizeSegment(testName);
 	}
 
 	private static string SanitizeSegment(string value)

@@ -8,6 +8,7 @@ public class RemoteSshTests
 	[Fact]
 	public void Mzansi_Ssh_Readiness_Probe_Works()
 	{
+		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		Console.WriteLine(Os.GetCloudConfigurationDiagnosticReport(refresh: true));
 		Console.WriteLine(Os.GetRemoteTestConfigurationDiagnosticReport(refresh: true));
 
@@ -25,6 +26,7 @@ public class RemoteSshTests
 	[Fact]
 	public void Mzansi_GoogleDrive_Root_Is_Readable_From_Remote_OsConfig()
 	{
+		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		Console.WriteLine(Os.GetCloudConfigurationDiagnosticReport(refresh: true));
 		Console.WriteLine(Os.GetRemoteTestConfigurationDiagnosticReport(refresh: true));
 

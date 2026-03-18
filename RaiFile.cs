@@ -23,7 +23,7 @@ namespace OsLib     // aka OsLibCore
 	/// Provides OS-aware environment and path utilities, including platform detection,
 	/// home/temp directory discovery, separator normalization, and cloud-root lookup.
 	/// </summary>
-	public partial class Os
+	public static partial class Os
 	{
 		public static string HomeDir
 		{
@@ -255,7 +255,7 @@ namespace OsLib     // aka OsLibCore
 			if (string.IsNullOrWhiteSpace(candidate))
 				return null;
 
-			var expanded = Environment.ExpandEnvironmentVariables(candidate.Trim());
+			var expanded = candidate.Trim();
 			if (expanded.StartsWith("~/"))
 				expanded = $"{HomeDir}{expanded.Substring(1)}";
 

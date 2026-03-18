@@ -7,14 +7,17 @@ namespace OsLib.Tests;
 public class CloudStorageAgreementTests
 {
 	[Fact]
-	public void CloudStorageRoot_UsesDocumentedDefaultOrder_ForAvailableInstalledProviders()
+	public void CloudStorageRoot_UsesDocumentedDefaultOrder_ForAvailableConfiguredProviders()
 	{
+		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		var roots = Os.GetCloudStorageRoots(refresh: true);
-		var configuredOrder = Os.LoadConfig(refresh: true).DefaultCloudOrder ?? Os.CreateDefaultCloudOrder().ToList();
+		var configuredOrder = Os.TryLoadExistingConfig(out var config, refresh: true)
+			? config.DefaultCloudOrder ?? Os.CreateDefaultCloudOrder().ToList()
+			: Os.CreateDefaultCloudOrder().ToList();
 		var expectedProvider = configuredOrder.FirstOrDefault(roots.ContainsKey);
 
 		if (!roots.Any())
-			Assert.Skip($"No installed provider roots are available. {Os.GetCloudStorageSetupGuidance()}");
+			Assert.Skip($"No configured provider roots are available. {Os.GetCloudStorageSetupGuidance()}");
 
 		Assert.Equal(roots[expectedProvider], Os.CloudStorageRoot);
 		Assert.True(Os.IsCloudPath(Os.CloudStorageRoot));
@@ -25,10 +28,10 @@ public class CloudStorageAgreementTests
 	[InlineData(CloudStorageType.OneDrive)]
 	[InlineData(CloudStorageType.GoogleDrive)]
 	[InlineData(CloudStorageType.ICloud)]
-	public void RaiFile_UsesInstalledProviderRoot_ForCloudAwareFlag(CloudStorageType provider)
+	public void RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag(CloudStorageType provider)
 	{
-		if (!CloudStorageRealTestEnvironment.TryGetCloudTestRoot(provider, "cloud-agreement", out var root, out _, out var reason))
-			Assert.Skip($"Provider {provider}: {reason}. {Os.GetCloudStorageSetupGuidance()}");
+		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
+		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "cloud-agreement", out _);
 
 		var projectDir = root / "Mzansi" / "JsonPit";
 		var metadataDir = root / ".dropbox" / "cache";

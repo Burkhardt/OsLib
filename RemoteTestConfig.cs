@@ -144,10 +144,10 @@ namespace OsLib
 		}
 	}
 
-	public partial class Os
+	public static partial class Os
 	{
 		private static RemoteTestConfigFile remoteTestConfig;
-		private const string DefaultRemoteTestConfigFileName = "remote-test-config.json";
+		private const string defaultRemoteTestConfigFileName = "remote-test-config.json";
 
 		public static RemoteTestConfigFile RemoteTestConfig
 		{
@@ -172,14 +172,8 @@ namespace OsLib
 
 		public static string GetDefaultRemoteTestConfigPath()
 		{
-			if (Type == OsType.Windows)
-			{
-				var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-				return Path.Combine(appData, "RAIkeep", DefaultRemoteTestConfigFileName);
-			}
-
-			var configDirectory = Path.GetDirectoryName(GetDefaultConfigPath()) ?? string.Empty;
-			return new RaiFile(Path.Combine(configDirectory, DefaultRemoteTestConfigFileName)).FullName;
+			var configDir = new RaiPath(new RaiFile(GetDefaultConfigPath()).Path);
+			return new RaiFile(configDir, defaultRemoteTestConfigFileName).FullName;
 		}
 
 		public static string GetRemoteTestConfigurationDiagnosticReport(bool refresh = false)

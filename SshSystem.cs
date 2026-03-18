@@ -190,7 +190,7 @@ namespace OsLib
 			var localCloudRoot = Os.GetCloudStorageRoot(provider, refresh: true);
 			if (string.IsNullOrWhiteSpace(localCloudRoot) || !Directory.Exists(localCloudRoot))
 			{
-				reason = $"{provider} is not discoverable or not accessible on this machine. {Os.GetCloudStorageSetupGuidance()}";
+				reason = $"{provider} is not configured or not accessible on this machine. {Os.GetCloudStorageSetupGuidance()}";
 				return false;
 			}
 

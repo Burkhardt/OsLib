@@ -10,35 +10,27 @@ namespace OsLib.Tests
 	public class CloudStorageMachineStateTests
 	{
 		[Fact]
-		public void MachineCloudState_PrintsDiscoveryInputs_AndProviderStatus_WithoutFailingForMissingRoots()
+		public void MachineCloudState_PrintsConfiguredProviderStatus_WithoutFailingForMissingRoots()
 		{
-			Console.WriteLine("Cloud discovery environment variables:");
-			foreach (var envVar in new[]
-			{
-				"HOME",
-				"USERPROFILE",
-				"APPDATA",
-				"LOCALAPPDATA"
-			})
-			{
-				var value = Environment.GetEnvironmentVariable(envVar);
-				Console.WriteLine($"- {envVar}: {(string.IsNullOrWhiteSpace(value) ? "<unset>" : value)}");
-			}
+			using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
+
+			Console.WriteLine("Cloud configuration state:");
 			Console.WriteLine($"- active config path: {Os.GetDefaultConfigPath()}");
+			Console.WriteLine($"- config file exists: {File.Exists(Os.GetDefaultConfigPath())}");
 
 			Console.WriteLine("Cloud discovery config candidates:");
 			foreach (var candidate in GetConfigCandidates())
 				Console.WriteLine($"- {candidate}: {(File.Exists(candidate) ? "found" : "missing")}");
 
 			Os.ResetCloudStorageCache();
-			var report = Os.GetCloudDiscoveryReport(refresh: true);
+			var report = Os.GetCloudConfigurationDiagnosticReport(refresh: true);
 			Console.WriteLine(report);
 
 			foreach (var provider in Enum.GetValues<CloudStorageType>())
 			{
-				var root = Os.GetCloudStorageRoot(provider);
+				var root = Os.TryGetConfiguredCloudStorageRoot(provider, out var configuredRoot) ? configuredRoot : string.Empty;
 				var status = string.IsNullOrWhiteSpace(root)
-					? "not found"
+					? "not configured"
 					: Directory.Exists(root) ? "directory exists" : "configured but directory missing";
 				Console.WriteLine($"Provider {provider}: {status}{(string.IsNullOrWhiteSpace(root) ? string.Empty : $" -> {root}")}");
 			}

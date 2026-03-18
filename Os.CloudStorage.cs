@@ -8,6 +8,12 @@ using Newtonsoft.Json.Linq;
 
 namespace OsLib
 {
+	internal enum CloudRootResolutionMode
+	{
+		ConfiguredAndProbed,
+		ConfiguredOnly
+	}
+
 	public sealed class CloudModel
 	{
 		[JsonProperty("googledrive")]
@@ -133,7 +139,7 @@ namespace OsLib
 
 		private static RaiPath ToRaiPath(string value)
 		{
-			return string.IsNullOrWhiteSpace(value) ? null : new RaiPath(value);
+			return string.IsNullOrWhiteSpace(value) ? null : new RaiPath(Os.ExpandUserHomePathForConfig(value));
 		}
 
 		private static void TryAdd(Dictionary<CloudStorageType, RaiPath> roots, CloudStorageType provider, RaiPath value)
@@ -180,7 +186,7 @@ namespace OsLib
 
 		[JsonProperty("cloud")]
 		public CloudModel Cloud { get; internal set; } = new CloudModel();
-		
+
 		[JsonIgnore]
 		public RaiPath GooglePath => Cloud?.GoogleDriveRoot;
 
@@ -228,13 +234,13 @@ namespace OsLib
 
 		private static RaiPath ToRaiPath(string value)
 		{
-			return string.IsNullOrWhiteSpace(value) ? null : new RaiPath(value);
+			return string.IsNullOrWhiteSpace(value) ? null : new RaiPath(Os.ExpandUserHomePathForConfig(value));
 		}
 	}
 
 	public sealed class OsConfigFile : ConfigFile<OsConfigModel>
 	{
-		public OsConfigFile(string fullName) : base(fullName, autoLoad: true)
+		public OsConfigFile(string fullName, bool autoLoad = true) : base(fullName, autoLoad: autoLoad)
 		{
 		}
 
@@ -256,47 +262,23 @@ namespace OsLib
 			data.Normalize();
 			return data;
 		}
-		[Obsolete("Use Save() instead.")]
-		internal void Persist()
-		{
-			Save();
-		}
 	}
 
-	public partial class Os
+	public static partial class Os
 	{
 		private static OsConfigFile config;
+		private static string configPathOverride;
 		private static Dictionary<CloudStorageType, string> cloudRootsCache;
+		private static CloudRootResolutionMode cloudRootResolutionMode = CloudRootResolutionMode.ConfiguredAndProbed;
 		private static bool isDiscoveringCloudRoots;
 		private static bool isInitializingConfig;
 
-		private const string CloudDiscoveryGuidePath = "OsLib/CLOUD_STORAGE_DISCOVERY.md";
-		private const string DefaultConfigFileName = "osconfig.json";
+		private const string cloudDiscoveryGuidePath = "OsLib/CLOUD_STORAGE_DISCOVERY.md";
+		private const string defaultConfigPath = "~/.config/RAIkeep/osconfig.json";
 
 		public static OsConfigFile Config
 		{
-			get
-			{
-				try
-				{
-					isInitializingConfig = true;
-					var configPath = GetDefaultConfigPath();
-					if (config == null)
-						config = new OsConfigFile(configPath);
-					else if (config.SetFullName(configPath))
-					{
-						config.Load();
-						InvalidateConfiguredPathCaches();
-						ResetCloudStorageCache();
-					}
-				}
-				finally
-				{
-					isInitializingConfig = false;
-				}
-
-				return config;
-			}
+			get => EnsureConfigLoaded();
 		}
 
 		public static string CloudStorageRoot => GetPreferredCloudStorageRoot();
@@ -313,8 +295,49 @@ namespace OsLib
 			return Config.Data;
 		}
 
+		internal static bool TryLoadExistingConfig(out OsConfigModel data, bool refresh = false)
+		{
+			var existingConfig = TryGetExistingConfig(refresh);
+			if (existingConfig == null)
+			{
+				data = null;
+				return false;
+			}
+
+			data = existingConfig.Data;
+			return true;
+		}
+
+		internal static IReadOnlyDictionary<CloudStorageType, string> GetConfiguredCloudStorageRoots(bool refresh = false)
+		{
+			if (!TryLoadExistingConfig(out var configured, refresh) || configured?.Cloud == null)
+				return new Dictionary<CloudStorageType, string>();
+
+			var roots = new Dictionary<CloudStorageType, string>();
+			try
+			{
+				isDiscoveringCloudRoots = true;
+				ApplyConfiguredRoots(roots, configured.Cloud);
+			}
+			finally
+			{
+				isDiscoveringCloudRoots = false;
+			}
+
+			return roots;
+		}
+
+		internal static bool TryGetConfiguredCloudStorageRoot(CloudStorageType provider, out string root, bool refresh = false)
+		{
+			var roots = GetConfiguredCloudStorageRoots(refresh);
+			return roots.TryGetValue(provider, out root);
+		}
+
 		public static IReadOnlyDictionary<CloudStorageType, string> GetCloudStorageRoots(bool refresh = false)
 		{
+			if (cloudRootResolutionMode == CloudRootResolutionMode.ConfiguredOnly)
+				return new Dictionary<CloudStorageType, string>(GetConfiguredCloudStorageRoots(refresh));
+
 			if (refresh || cloudRootsCache == null)
 			{
 				if (isDiscoveringCloudRoots)
@@ -367,7 +390,9 @@ namespace OsLib
 		public static string GetPreferredCloudStorageRoot(params CloudStorageType[] preferredOrder)
 		{
 			var roots = GetCloudStorageRoots();
-			var configuredOrder = LoadConfig().DefaultCloudOrder ?? CreateDefaultCloudOrder().ToList();
+			var configuredOrder = TryLoadExistingConfig(out var configured, refresh: false)
+				? configured.DefaultCloudOrder ?? CreateDefaultCloudOrder().ToList()
+				: CreateDefaultCloudOrder().ToList();
 			var order = (preferredOrder != null && preferredOrder.Length > 0)
 				? preferredOrder
 				: configuredOrder.ToArray();
@@ -411,13 +436,15 @@ namespace OsLib
 		public static string GetCloudConfigurationDiagnosticReport(bool refresh = false)
 		{
 			var effectiveRoots = GetCloudStorageRoots(refresh);
-			var config = LoadConfig();
+			var hasConfig = TryLoadExistingConfig(out var config, refresh);
+			config ??= new OsConfigModel();
 			var sb = new StringBuilder();
 			sb.AppendLine("Cloud configuration diagnostics:");
 			sb.AppendLine($"- active config path: {GetDefaultConfigPath()}");
-			sb.AppendLine($"- homeDir: {HomeDir}");
-			sb.AppendLine($"- tempDir: {TempDir}");
-			sb.AppendLine($"- localBackupDir: {LocalBackupDir}");
+			sb.AppendLine($"- config file: {(hasConfig ? "present" : "missing")}");
+			sb.AppendLine($"- homeDir: {(hasConfig ? config.HomeDir?.Path ?? string.Empty : "<not loaded>")}");
+			sb.AppendLine($"- tempDir: {(hasConfig ? config.TempDir?.Path ?? string.Empty : "<not loaded>")}");
+			sb.AppendLine($"- localBackupDir: {(hasConfig ? config.LocalBackupDir?.Path ?? string.Empty : "<not loaded>")}");
 			sb.AppendLine($"- configured default cloud order: {string.Join(", ", config.DefaultCloudOrder ?? CreateDefaultCloudOrder().ToList())}");
 
 			foreach (var provider in Enum.GetValues<CloudStorageType>())
@@ -432,23 +459,12 @@ namespace OsLib
 
 		public static string GetCloudStorageSetupGuidance()
 		{
-			return "Configure Os.Config in " + GetDefaultConfigPath() + ". See " + CloudDiscoveryGuidePath;
+			return "Configure Os.Config in " + GetDefaultConfigPath() + ". See " + cloudDiscoveryGuidePath;
 		}
 
 		public static string GetDefaultConfigPath()
 		{
-			if (Type == OsType.Windows)
-			{
-				var appData = Environment.GetEnvironmentVariable("APPDATA");
-				if (string.IsNullOrWhiteSpace(appData))
-					appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-				if (string.IsNullOrWhiteSpace(appData))
-					appData = Path.Combine(ResolveSystemHomeDir(), "AppData", "Roaming");
-
-				return NormalizeConfigPath(Path.Combine(appData, "RAIkeep", DefaultConfigFileName));
-			}
-
-			return NormalizeConfigPath(Path.Combine(ResolveSystemHomeDir(), ".config", "RAIkeep", DefaultConfigFileName));
+			return NormalizeConfigPath(string.IsNullOrWhiteSpace(configPathOverride) ? defaultConfigPath : configPathOverride);
 		}
 
 		[Obsolete("Use GetDefaultConfigPath() instead.")]
@@ -458,10 +474,10 @@ namespace OsLib
 		{
 			return new[]
 			{
-				CloudStorageType.GoogleDrive,
-				CloudStorageType.ICloud,
+				CloudStorageType.OneDrive,
 				CloudStorageType.Dropbox,
-				CloudStorageType.OneDrive
+				CloudStorageType.GoogleDrive,
+				CloudStorageType.ICloud
 			};
 		}
 
@@ -477,9 +493,7 @@ namespace OsLib
 			if (string.IsNullOrWhiteSpace(path))
 				return string.Empty;
 
-			var expanded = Environment.ExpandEnvironmentVariables(path);
-			if (expanded.StartsWith("~/", StringComparison.Ordinal))
-				expanded = Path.Combine(ResolveSystemHomeDir(), expanded.Substring(2));
+			var expanded = ExpandUserHomePath(path);
 
 			return Path.GetFullPath(expanded);
 		}
@@ -653,10 +667,25 @@ namespace OsLib
 			if (string.IsNullOrWhiteSpace(candidate))
 				return null;
 
-			var expanded = Environment.ExpandEnvironmentVariables(candidate.Trim());
-			if (expanded.StartsWith("~/", StringComparison.Ordinal))
-				expanded = HomeDir + expanded.Substring(1);
-			return expanded;
+			return ExpandUserHomePath(candidate);
+		}
+
+		private static string ExpandUserHomePath(string path)
+		{
+			var expanded = path.Trim();
+			if (!expanded.StartsWith("~/", StringComparison.Ordinal))
+				return expanded;
+
+			var home = ResolveSystemHomeDir();
+			if (string.IsNullOrWhiteSpace(home))
+				return expanded;
+
+			return home.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + DIRSEPERATOR + expanded.Substring(2);
+		}
+
+		internal static string ExpandUserHomePathForConfig(string path)
+		{
+			return ExpandUserHomePath(path);
 		}
 
 		private static string NormalizePathForComparison(string value)
@@ -697,6 +726,103 @@ namespace OsLib
 			}
 
 			return Array.Empty<string>();
+		}
+
+		internal static IDisposable PushConfigPathOverride(string configPath)
+		{
+			var previous = configPathOverride;
+			configPathOverride = NormalizeConfigPath(configPath);
+			config = null;
+			InvalidateConfiguredPathCaches();
+			ResetCloudStorageCache();
+			return new DisposableScope(() =>
+			{
+				configPathOverride = previous;
+				config = null;
+				InvalidateConfiguredPathCaches();
+				ResetCloudStorageCache();
+			});
+		}
+
+		internal static IDisposable PushCloudRootResolutionMode(CloudRootResolutionMode mode)
+		{
+			var previous = cloudRootResolutionMode;
+			cloudRootResolutionMode = mode;
+			ResetCloudStorageCache();
+			return new DisposableScope(() =>
+			{
+				cloudRootResolutionMode = previous;
+				ResetCloudStorageCache();
+			});
+		}
+
+		private static OsConfigFile EnsureConfigLoaded()
+		{
+			try
+			{
+				isInitializingConfig = true;
+				var configPath = GetDefaultConfigPath();
+				if (config == null)
+					config = new OsConfigFile(configPath);
+				else if (config.SetFullName(configPath))
+				{
+					config.Load();
+					InvalidateConfiguredPathCaches();
+					ResetCloudStorageCache();
+				}
+			}
+			finally
+			{
+				isInitializingConfig = false;
+			}
+
+			return config;
+		}
+
+		private static OsConfigFile TryGetExistingConfig(bool refresh = false)
+		{
+			try
+			{
+				isInitializingConfig = true;
+				var configPath = GetDefaultConfigPath();
+				if (!File.Exists(configPath))
+					return null;
+
+				if (config == null)
+					config = new OsConfigFile(configPath);
+				else if (config.SetFullName(configPath) || refresh)
+				{
+					config.Load();
+					InvalidateConfiguredPathCaches();
+					ResetCloudStorageCache();
+				}
+
+				return config;
+			}
+			finally
+			{
+				isInitializingConfig = false;
+			}
+		}
+
+		private sealed class DisposableScope : IDisposable
+		{
+			private readonly Action onDispose;
+			private bool disposed;
+
+			internal DisposableScope(Action onDispose)
+			{
+				this.onDispose = onDispose;
+			}
+
+			public void Dispose()
+			{
+				if (disposed)
+					return;
+
+				disposed = true;
+				onDispose();
+			}
 		}
 	}
 }

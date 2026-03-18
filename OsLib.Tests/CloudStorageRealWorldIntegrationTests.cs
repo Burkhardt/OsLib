@@ -17,8 +17,8 @@ namespace OsLib.Tests
 		[InlineData(CloudStorageType.ICloud)]
 		public void RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider(CloudStorageType provider)
 		{
-			if (!TryPrepareWritableIntegrationRoot(provider, out var root, out var providerRoot, out var reason))
-				Assert.Skip($"Provider {provider}: {reason}. {Os.GetCloudStorageSetupGuidance()}");
+			using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
+			var root = PrepareWritableIntegrationRoot(provider, out var providerRoot);
 
 			try
 			{
@@ -84,8 +84,8 @@ namespace OsLib.Tests
 		[InlineData(CloudStorageType.ICloud)]
 		public void TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider(CloudStorageType provider)
 		{
-			if (!TryPrepareWritableIntegrationRoot(provider, out var root, out var providerRoot, out var reason))
-				Assert.Skip($"Provider {provider}: {reason}. {Os.GetCloudStorageSetupGuidance()}");
+			using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
+			var root = PrepareWritableIntegrationRoot(provider, out var providerRoot);
 
 			try
 			{
@@ -119,44 +119,24 @@ namespace OsLib.Tests
 			}
 		}
 
-		private static bool TryPrepareWritableIntegrationRoot(CloudStorageType provider, out RaiPath root, out string providerRoot, out string reason)
+		private static RaiPath PrepareWritableIntegrationRoot(CloudStorageType provider, out string providerRoot)
 		{
-			Os.ResetCloudStorageCache();
-			providerRoot = Os.GetCloudStorageRoot(provider, refresh: true);
-			if (string.IsNullOrWhiteSpace(providerRoot))
-			{
-				root = new RaiPath(Os.TempDir) / "RAIkeep" / "missing-cloud-root";
-				reason = "provider root is not configured or not discoverable on this machine";
-				return false;
-			}
-
-			providerRoot = new RaiPath(providerRoot).Path;
-			if (!Directory.Exists(providerRoot))
-			{
-				root = new RaiPath(providerRoot) / "RAIkeep" / "oslib-cloud-integration-tests" / provider.ToString();
-				reason = $"provider root does not exist: {providerRoot}";
-				return false;
-			}
-
-			root = new RaiPath(providerRoot) / "RAIkeep" / "oslib-cloud-integration-tests" / provider.ToString();
-			reason = string.Empty;
+			var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "oslib-cloud-integration-tests", out providerRoot);
 
 			try
 			{
 				Cleanup(root);
 				root.mkdir();
-				return true;
+				return root;
 			}
 			catch (UnauthorizedAccessException ex)
 			{
-				reason = $"root is not writable: {ex.Message}";
+				throw new UnauthorizedAccessException($"Configured provider root is not writable: {root.Path}. {ex.Message}", ex);
 			}
 			catch (IOException ex)
 			{
-				reason = $"root is not writable: {ex.Message}";
+				throw new IOException($"Configured provider root is not writable: {root.Path}. {ex.Message}", ex);
 			}
-
-			return false;
 		}
 
 		private static void Cleanup(RaiPath root)

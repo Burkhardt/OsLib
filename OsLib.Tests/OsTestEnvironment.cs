@@ -11,6 +11,7 @@ namespace OsLib.Tests;
 internal sealed class OsTestEnvironment : IDisposable
 {
 	private readonly Dictionary<string, string?> before = new();
+	private readonly IDisposable configPathOverrideScope;
 	private readonly object? originalType;
 	private readonly OsType? forcedType;
 
@@ -21,10 +22,12 @@ internal sealed class OsTestEnvironment : IDisposable
 		Home = (root / "home").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 		AppData = (root / "app-data").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 		LocalAppData = (root / "local-app-data").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		ConfigPath = new RaiFile(root / "config" / "RAIkeep", "osconfig", "json").FullName;
 
 		new RaiPath(Home).mkdir();
 		new RaiPath(AppData).mkdir();
 		new RaiPath(LocalAppData).mkdir();
+		configPathOverrideScope = Os.PushConfigPathOverride(ConfigPath);
 
 		SetEnvironmentVariable("HOME", Home);
 		SetEnvironmentVariable("USERPROFILE", Home);
@@ -48,8 +51,7 @@ internal sealed class OsTestEnvironment : IDisposable
 	internal string Home { get; }
 	internal string AppData { get; }
 	internal string LocalAppData { get; }
-
-	internal string ConfigPath => Os.GetDefaultConfigPath();
+	internal string ConfigPath { get; }
 
 	internal void WriteConfig(
 		string? dropbox = null,
@@ -142,6 +144,7 @@ internal sealed class OsTestEnvironment : IDisposable
 		typeof(Os).GetField("type", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, originalType);
 		foreach (var kvp in before)
 			Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
+		configPathOverrideScope.Dispose();
 		ResetOsCaches();
 		Cleanup(Root);
 	}

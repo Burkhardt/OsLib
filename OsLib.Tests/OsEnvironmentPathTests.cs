@@ -9,7 +9,9 @@ public class OsEnvironmentPathTests
 	[Fact]
 	public void TempDir_MatchesSystemTempPath_WhenNotConfigured()
 	{
-		OsTestEnvironment.ResetOsCaches();
+		var root = OsTestEnvironment.NewTestRoot("env-paths");
+		using var env = new OsTestEnvironment(root);
+		env.DeleteConfig();
 
 		Assert.Equal(Path.GetTempPath(), Os.TempDir);
 		Assert.True(Path.IsPathRooted(Os.TempDir));
@@ -104,21 +106,37 @@ public class OsEnvironmentPathTests
 	}
 
 	[Fact]
-	public void GetDefaultConfigPath_UsesUnixConfigDirectory()
+	public void GetDefaultConfigPath_UsesFixedRAIkeepConfigLocation()
+	{
+		OsTestEnvironment.ResetOsCaches();
+
+		var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty;
+		var expected = new RaiFile(new RaiPath(home) / ".config" / "RAIkeep", "osconfig", "json").FullName;
+
+		Assert.Equal(expected, Os.GetDefaultConfigPath());
+	}
+
+	[Fact]
+	public void GetDefaultConfigPath_UsesConfiguredOverride_WhenPresent()
 	{
 		var root = OsTestEnvironment.NewTestRoot("env-paths");
 		using var env = new OsTestEnvironment(root);
 
-		Assert.Equal(new RaiFile(Path.Combine(env.Home, ".config", "RAIkeep", "osconfig.json")).FullName, Os.GetDefaultConfigPath());
+		Assert.Equal(env.ConfigPath, Os.GetDefaultConfigPath());
 	}
 
 	[Fact]
-	public void GetDefaultConfigPath_UsesWindowsAppDataLocation()
+	public void ConfiguredOnlyCloudResolution_DoesNotCreateMissingConfigFile()
 	{
 		var root = OsTestEnvironment.NewTestRoot("env-paths");
-		using var env = new OsTestEnvironment(root, forcedType: OsType.Windows);
+		using var env = new OsTestEnvironment(root);
+		env.DeleteConfig();
+		using var configuredCloud = Os.PushCloudRootResolutionMode(CloudRootResolutionMode.ConfiguredOnly);
 
-		Assert.Equal(Path.Combine(env.AppData, "RAIkeep", "osconfig.json"), Os.GetDefaultConfigPath());
+		var roots = Os.GetCloudStorageRoots(refresh: true);
+
+		Assert.Empty(roots);
+		Assert.False(File.Exists(env.ConfigPath));
 	}
 
 	[Fact]

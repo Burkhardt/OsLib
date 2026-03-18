@@ -10,10 +10,10 @@ public class CloudStorageProviderPathTests
 	[InlineData(CloudStorageType.OneDrive)]
 	[InlineData(CloudStorageType.GoogleDrive)]
 	[InlineData(CloudStorageType.ICloud)]
-	public void GetCloudStorageProviderForPath_ReturnsInstalledProvider_ForDiscoveredRoot(CloudStorageType provider)
+	public void GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot(CloudStorageType provider)
 	{
-		if (!CloudStorageRealTestEnvironment.TryGetCloudTestRoot(provider, "cloud-providers", out var root, out var providerRoot, out var reason))
-			Assert.Skip($"Provider {provider}: {reason}. {Os.GetCloudStorageSetupGuidance()}");
+		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
+		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "cloud-providers", out var providerRoot);
 
 		var cloudDir = root / "Workspace" / "Project";
 		Directory.CreateDirectory(cloudDir.Path);
@@ -27,10 +27,10 @@ public class CloudStorageProviderPathTests
 	[InlineData(CloudStorageType.OneDrive)]
 	[InlineData(CloudStorageType.GoogleDrive)]
 	[InlineData(CloudStorageType.ICloud)]
-	public void RaiFile_CloudFlag_DetectsFilesUnderInstalledProvider(CloudStorageType provider)
+	public void RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(CloudStorageType provider)
 	{
-		if (!CloudStorageRealTestEnvironment.TryGetCloudTestRoot(provider, "cloud-providers", out var root, out _, out var reason))
-			Assert.Skip($"Provider {provider}: {reason}. {Os.GetCloudStorageSetupGuidance()}");
+		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
+		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "cloud-providers", out _);
 
 		var cloudDir = root / "Workspace" / "Project";
 		var localDir = new RaiPath(Os.TempDir) / "RAIkeep" / "cloud-providers" / "LocalFiles" / provider.ToString();

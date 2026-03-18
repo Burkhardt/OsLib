@@ -3,17 +3,17 @@ using System.IO;
 namespace OsLib.Tests;
 
 [Collection("CloudStorageEnvironment")]
-public class CloudStorageDiscoveryTests
+public class ConfiguredCloudStorageRootTests
 {
 	[Theory]
 	[InlineData(CloudStorageType.Dropbox)]
 	[InlineData(CloudStorageType.OneDrive)]
 	[InlineData(CloudStorageType.GoogleDrive)]
 	[InlineData(CloudStorageType.ICloud)]
-	public void GetCloudStorageRoots_ReturnsAvailableProviderRoots_AsCloudPaths(CloudStorageType provider)
+	public void GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths(CloudStorageType provider)
 	{
-		if (!CloudStorageRealTestEnvironment.TryGetCloudTestRoot(provider, "cloud-discovery", out var root, out var providerRoot, out var reason))
-			Assert.Skip($"Provider {provider}: {reason}. {Os.GetCloudStorageSetupGuidance()}");
+		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
+		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "configured-cloud-roots", out var providerRoot);
 
 		var roots = Os.GetCloudStorageRoots(refresh: true);
 
@@ -29,10 +29,10 @@ public class CloudStorageDiscoveryTests
 	[InlineData(CloudStorageType.OneDrive)]
 	[InlineData(CloudStorageType.GoogleDrive)]
 	[InlineData(CloudStorageType.ICloud)]
-	public void GetCloudStorageRoot_ReturnsInstalledProviderRoot_WhenAvailable(CloudStorageType provider)
+	public void GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable(CloudStorageType provider)
 	{
-		if (!CloudStorageRealTestEnvironment.TryGetCloudTestRoot(provider, "cloud-discovery", out var root, out var providerRoot, out var reason))
-			Assert.Skip($"Provider {provider}: {reason}. {Os.GetCloudStorageSetupGuidance()}");
+		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
+		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "configured-cloud-roots", out var providerRoot);
 
 		var resolvedRoot = Os.GetCloudStorageRoot(provider, refresh: true);
 

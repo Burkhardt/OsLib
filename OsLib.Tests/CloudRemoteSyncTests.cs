@@ -13,6 +13,7 @@ public class CloudRemoteSyncTests
 	[InlineData(CloudStorageType.OneDrive)]
 	public void TextFile_SyncsWithMzansi(CloudStorageType provider)
 	{
+		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		Console.WriteLine(Os.GetCloudConfigurationDiagnosticReport(refresh: true));
 		Console.WriteLine(Os.GetRemoteTestConfigurationDiagnosticReport(refresh: true));
 
