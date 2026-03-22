@@ -18,28 +18,35 @@ namespace OsLib     // aka OsLibCore
 {
 	public enum EscapeMode { noEsc, blankEsc, paramEsc, backslashed };
 	public enum OsType { Windows, MacOS, Ubuntu };
-	public enum CloudStorageType { Dropbox, OneDrive, GoogleDrive, ICloud };
+		public enum CloudStorageType { Dropbox, OneDrive, GoogleDrive };
 	/// <summary>
 	/// Provides OS-aware environment and path utilities, including platform detection,
 	/// home/temp directory discovery, separator normalization, and cloud-root lookup.
 	/// </summary>
 	public static partial class Os
 	{
-		public static string HomeDir
+		public static RaiPath UserHomeDir
 		{
 			get
 			{
-				if (homeDir == null)
-				{
-					var configured = Config.Data.HomeDir?.Path?.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
-					homeDir = string.IsNullOrWhiteSpace(configured)
-						? ResolveSystemHomeDir().TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar)
-						: configured;
-				}
-				return homeDir;
+				userHomeDir ??= new RaiPath(ResolveSystemHomeDir());
+				LogDebug<OsDiagnosticsLogScope>("Resolved user home directory to {UserHomeDir}", userHomeDir.Path);
+				return userHomeDir;
 			}
 		}
-		private static string homeDir = null;
+
+		public static RaiPath AppRootDir
+		{
+			get
+			{
+				appRootDir = new RaiPath(Directory.GetCurrentDirectory());
+				LogDebug<OsDiagnosticsLogScope>("Resolved application root directory to {AppRootDir}", appRootDir.Path);
+				return appRootDir;
+			}
+		}
+
+		public static bool IsWindows => Type == OsType.Windows;
+		public static bool IsMacOS => Type == OsType.MacOS;
 		public static OsType Type
 		{
 			get
@@ -51,17 +58,33 @@ namespace OsLib     // aka OsLibCore
 		}
 		public static bool IsUnixLike => Type != OsType.Windows;
 		public static bool IsLinuxLike => Type == OsType.Ubuntu;
+		private static RaiPath userHomeDir = null;
+		private static RaiPath appRootDir = null;
 		private static OsType? type = null;
-		public static string TempDir
+		public static RaiPath TempDir
 		{
 			get
 			{
 				if (tempDir == null)
 				{
-					var configured = Config.Data.TempDir?.Path;
-					tempDir = string.IsNullOrWhiteSpace(configured)
-						? ResolveSystemTempDir()
-						: configured;
+					try
+					{
+						if (TryLoadExistingConfig(out var configured, refresh: false) && configured?.TempDir != null)
+						{
+							tempDir = new RaiPath(configured.TempDir.Path);
+							LogInformation<OsDiagnosticsLogScope>("Using configured temp directory {TempDir}", tempDir.Path);
+						}
+						else
+						{
+							tempDir = new RaiPath(ResolveSystemTempDir());
+							LogWarningOnce<OsDiagnosticsLogScope>("fallback:tempdir", "TempDir is not configured. Falling back to operating system temp directory {TempDir}", tempDir.Path);
+						}
+					}
+					catch (Exception ex)
+					{
+						tempDir = new RaiPath(ResolveSystemTempDir());
+						LogError<OsDiagnosticsLogScope>(ex, "Failed to resolve configured temp directory. Falling back to operating system temp directory {TempDir}", tempDir.Path);
+					}
 				}
 				return tempDir;
 			}
@@ -75,8 +98,8 @@ namespace OsLib     // aka OsLibCore
 
 			return Guid.NewGuid().ToString("N").Substring(0, length);
 		}
-		private static string tempDir = null;
-		public static string LocalBackupDir
+		private static RaiPath tempDir = null;
+		public static RaiPath LocalBackupDir
 		{
 			get
 			{
@@ -85,8 +108,6 @@ namespace OsLib     // aka OsLibCore
 				return localBackupDir;
 			}
 		}
-		[Obsolete("Use LocalBackupDir instead.")]
-		public static string LocalBackupDirUnix => LocalBackupDir;
 
 		public static string DIRSEPERATOR
 		{
@@ -168,7 +189,7 @@ namespace OsLib     // aka OsLibCore
 			return s.Replace(@"\", DIRSEPERATOR);
 		}
 
-		private static string localBackupDir = null;
+		private static RaiPath localBackupDir = null;
 
 		internal static string ResolveSystemHomeDir()
 		{
@@ -192,6 +213,9 @@ namespace OsLib     // aka OsLibCore
 			if (string.IsNullOrEmpty(resolved))
 				resolved = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty;
 
+			if (string.IsNullOrWhiteSpace(resolved))
+				LogWarningOnce<OsDiagnosticsLogScope>("fallback:userhome:empty", "User home directory could not be resolved from environment variables. SpecialFolder fallback returned an empty value.");
+
 			return resolved;
 		}
 
@@ -209,23 +233,43 @@ namespace OsLib     // aka OsLibCore
 					return normalized;
 			}
 
-			return new RaiPath(Path.Combine(ResolveSystemTempDir(), "OsLib", "Backup")).Path;
+			return (new RaiPath(ResolveSystemTempDir()) / "OsLib" / "Backup").Path;
 		}
 
-		private static string ResolveConfiguredOrDefaultLocalBackupDir()
+		private static RaiPath ResolveConfiguredOrDefaultLocalBackupDir()
 		{
-			var configured = Config.Data.LocalBackupDir?.Path;
-			if (!string.IsNullOrWhiteSpace(configured) && !IsCloudPath(configured))
-				return configured;
+			try
+			{
+				if (TryLoadExistingConfig(out var configured, refresh: false) && configured?.LocalBackupDir != null)
+				{
+					var configuredPath = configured.LocalBackupDir.Path;
+					if (!IsCloudPath(configuredPath))
+					{
+						LogInformation<OsDiagnosticsLogScope>("Using configured local backup directory {LocalBackupDir}", configuredPath);
+						return new RaiPath(configuredPath);
+					}
+
+					LogWarningOnce<OsDiagnosticsLogScope>("fallback:localbackup:cloud", "Configured local backup directory {LocalBackupDir} is cloud-backed. Falling back to a non-cloud directory.", configuredPath);
+				}
+			}
+			catch (Exception ex)
+			{
+				LogError<OsDiagnosticsLogScope>(ex, "Failed to resolve configured local backup directory. Falling back to an operating system local directory.");
+			}
 
 			foreach (var candidate in GetLocalBackupDirCandidates())
 			{
 				var normalized = NormalizeBackupDirectoryCandidate(candidate);
 				if (!string.IsNullOrWhiteSpace(normalized) && !IsCloudPath(normalized))
-					return normalized;
+				{
+					LogWarningOnce<OsDiagnosticsLogScope>("fallback:localbackup", "LocalBackupDir is not configured. Falling back to local directory {LocalBackupDir}", normalized);
+					return new RaiPath(normalized);
+				}
 			}
 
-			return ResolveSystemLocalBackupDir();
+			var systemFallback = ResolveSystemLocalBackupDir();
+			LogWarningOnce<OsDiagnosticsLogScope>("fallback:localbackup:system", "No preferred local backup directory candidate was available. Falling back to system backup directory {LocalBackupDir}", systemFallback);
+			return new RaiPath(systemFallback);
 		}
 
 		private static IEnumerable<string> GetLocalBackupDirCandidates()
@@ -257,7 +301,7 @@ namespace OsLib     // aka OsLibCore
 
 			var expanded = candidate.Trim();
 			if (expanded.StartsWith("~/"))
-				expanded = $"{HomeDir}{expanded.Substring(1)}";
+				expanded = $"{UserHomeDir.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)}{expanded.Substring(1)}";
 
 			return new RaiPath(expanded).Path;
 		}
@@ -414,6 +458,17 @@ namespace OsLib     // aka OsLibCore
 			return new RaiPath(self.path.Path + subDir + Os.DIRSEPERATOR);
 		}
 		/// <summary>
+		/// Using the / operator to add a subdirectory to a path
+		/// </summary>
+		/// <param name="self"></param>
+		/// <param name="subDir">RaiPath</param>
+		/// <returns>RaiPath object for daisy chaining reasons</returns>
+		public static RaiPath operator /(RaiPath self, RaiPath subDir)
+		{
+			return new RaiPath(self.path.Path + subDir.Path);
+		}
+
+		/// <summary>
 		/// Constructor that takes a string path; the caller knows that this is a directory path; it does not have to exist yet in the file system.
 		/// </summary>
 		/// <param name="s">if value of s does not end with a directory separator, one will be added; "." gets current directory</param>
@@ -425,7 +480,7 @@ namespace OsLib     // aka OsLibCore
 				return;
 			}
 			if (s == ".")
-				s = Directory.GetCurrentDirectory();	// where the binary is running that executes this code
+				s = Os.AppRootDir.Path;	// where the binary is running that executes this code
 			Path = s[^1] == Os.DIRSEPERATOR[0] ? s : s + Os.DIRSEPERATOR;
 		}
 
@@ -915,7 +970,7 @@ namespace OsLib     // aka OsLibCore
 			if (!File.Exists(FullName))
 				return null;   // no file no backup
 			var backupFile = new RaiFile(FullName);
-			backupFile.Path = Os.LocalBackupDir + GetBackupRelativeDirectoryPath(backupFile.Path);
+			backupFile.Path = (Os.LocalBackupDir / GetBackupRelativeDirectoryPath(backupFile.Path)).Path;
 			new RaiPath(backupFile.Path).mkdir();
 			backupFile.Name = backupFile.Name + " " + DateTimeOffset.UtcNow.ToString(Os.DATEFORMAT);
 			backupFile.Ext = Ext;
@@ -925,7 +980,7 @@ namespace OsLib     // aka OsLibCore
 			return backupFile.FullName;
 		}
 
-		internal static string GetBackupRelativeDirectoryPath(string sourceDirectoryPath)
+		internal static RaiPath GetBackupRelativeDirectoryPath(string sourceDirectoryPath)
 		{
 			var sourceDirectory = new RaiPath(sourceDirectoryPath).Path;
 			var provider = Os.GetCloudStorageProviderForPath(sourceDirectory);
@@ -933,11 +988,11 @@ namespace OsLib     // aka OsLibCore
 			{
 				var providerRoot = Os.GetCloudStorageRoot(provider.Value);
 				var normalizedProviderRoot = new RaiPath(providerRoot).Path;
-				return sourceDirectory.Substring(normalizedProviderRoot.Length);
+				return new RaiPath(sourceDirectory.Substring(normalizedProviderRoot.Length));
 			}
 
 			var idx = (sourceDirectory.Length > 2 && sourceDirectory[1] == ':') ? 3 : 0;     // works as expected for c:/123 or c:\123, but not for c:123
-			return sourceDirectory.Substring(idx);
+			return new RaiPath(sourceDirectory.Substring(idx));
 		}
 
 		public string[] DirList
@@ -961,12 +1016,12 @@ namespace OsLib     // aka OsLibCore
 			{
 				#region some unix conventions for convenience
 				if (filename.StartsWith("~/"))
-					filename = $"{Os.HomeDir}{filename.Substring(1)}";
+					filename = $"{Os.UserHomeDir.Path.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar)}{filename.Substring(1)}";
 				else if (filename.StartsWith("./"))
-					filename = $"{Directory.GetCurrentDirectory()}{filename.Substring(1)}";
+					filename = $"{Os.AppRootDir.Path.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar)}{filename.Substring(1)}";
 				else if (filename.StartsWith("../"))
 				{
-					var dir = Directory.GetCurrentDirectory();
+					var dir = Os.AppRootDir.Path.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
 					while (filename.StartsWith("../"))
 					{
 						dir = new RaiFile(dir.TrimEnd('/')).Path;   // one up

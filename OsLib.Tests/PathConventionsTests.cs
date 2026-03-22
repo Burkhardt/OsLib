@@ -9,7 +9,7 @@ public class PathConventionsTests
 {
     private static RaiPath NewTestRoot([CallerMemberName] string testName = "")
     {
-        var root = new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "path-conventions" / SanitizeSegment(testName);
+        var root = Os.TempDir / "RAIkeep" / "oslib-tests" / "path-conventions" / SanitizeSegment(testName);
         CleanupDir(root);
         return root;
     }

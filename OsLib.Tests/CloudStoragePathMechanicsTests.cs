@@ -9,7 +9,6 @@ public class CloudStoragePathMechanicsTests
 	[InlineData(CloudStorageType.Dropbox, "DropboxRoot")]
 	[InlineData(CloudStorageType.OneDrive, "OneDriveRoot")]
 	[InlineData(CloudStorageType.GoogleDrive, "GoogleDriveRoot")]
-	[InlineData(CloudStorageType.ICloud, "ICloudRoot")]
 	public void GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider(CloudStorageType provider, string dirName)
 	{
 		var root = OsTestEnvironment.NewTestRoot("cloud-providers");
@@ -26,7 +25,6 @@ public class CloudStoragePathMechanicsTests
 	[InlineData(CloudStorageType.Dropbox, "DropboxRoot")]
 	[InlineData(CloudStorageType.OneDrive, "OneDriveRoot")]
 	[InlineData(CloudStorageType.GoogleDrive, "GoogleDriveRoot")]
-	[InlineData(CloudStorageType.ICloud, "ICloudRoot")]
 	public void GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider(CloudStorageType provider, string dirName)
 	{
 		var root = OsTestEnvironment.NewTestRoot("cloud-providers");
@@ -49,7 +47,6 @@ public class CloudStoragePathMechanicsTests
 	[InlineData(CloudStorageType.Dropbox, "DropboxRoot")]
 	[InlineData(CloudStorageType.OneDrive, "OneDriveRoot")]
 	[InlineData(CloudStorageType.GoogleDrive, "GoogleDriveRoot")]
-	[InlineData(CloudStorageType.ICloud, "ICloudRoot")]
 	public void RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(CloudStorageType provider, string dirName)
 	{
 		var root = OsTestEnvironment.NewTestRoot("cloud-providers");
@@ -83,9 +80,6 @@ public class CloudStoragePathMechanicsTests
 				break;
 			case CloudStorageType.GoogleDrive:
 				env.WriteConfig(googleDrive: providerRoot);
-				break;
-			case CloudStorageType.ICloud:
-				env.WriteConfig(iCloud: providerRoot);
 				break;
 		}
 	}

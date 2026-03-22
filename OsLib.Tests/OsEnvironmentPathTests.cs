@@ -13,12 +13,12 @@ public class OsEnvironmentPathTests
 		using var env = new OsTestEnvironment(root);
 		env.DeleteConfig();
 
-		Assert.Equal(Path.GetTempPath(), Os.TempDir);
-		Assert.True(Path.IsPathRooted(Os.TempDir));
+		Assert.Equal(Path.GetTempPath(), Os.TempDir.Path);
+		Assert.True(Path.IsPathRooted(Os.TempDir.Path));
 	}
 
 	[Fact]
-	public void HomeDir_FallsBackToUserProfileSpecialFolder_WhenPrimaryVariablesMissing()
+	public void UserHomeDir_FallsBackToUserProfileSpecialFolder_WhenPrimaryVariablesMissing()
 	{
 		var beforeHome = Environment.GetEnvironmentVariable("HOME");
 		var beforeUserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
@@ -35,7 +35,7 @@ public class OsEnvironmentPathTests
 
 			var expected = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty;
 
-			Assert.Equal(expected, Os.HomeDir);
+			Assert.Equal(expected, Os.UserHomeDir.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
 		}
 		finally
 		{
@@ -56,7 +56,7 @@ public class OsEnvironmentPathTests
 
 		var expected = (new RaiPath(env.Home) / ".local-backup").Path;
 
-		Assert.Equal(expected, Os.LocalBackupDir);
+		Assert.Equal(expected, Os.LocalBackupDir.Path);
 	}
 
 	[Fact]
@@ -66,9 +66,9 @@ public class OsEnvironmentPathTests
 		using var env = new OsTestEnvironment(root);
 		env.WriteConfig();
 
-		Assert.True(Path.IsPathRooted(Os.LocalBackupDir));
-		Assert.False(new RaiFile(Os.LocalBackupDir).Cloud);
-		Assert.Contains("backup", Os.LocalBackupDir, StringComparison.OrdinalIgnoreCase);
+		Assert.True(Path.IsPathRooted(Os.LocalBackupDir.Path));
+		Assert.False(new RaiFile(Os.LocalBackupDir.Path).Cloud);
+		Assert.Contains("backup", Os.LocalBackupDir.Path, StringComparison.OrdinalIgnoreCase);
 	}
 
 	[Fact]
@@ -81,7 +81,7 @@ public class OsEnvironmentPathTests
 		new RaiPath(overrideDir).mkdir();
 		env.WriteConfig(localBackupDir: overrideDir);
 
-		Assert.Equal(new RaiPath(overrideDir).Path, Os.LocalBackupDir);
+		Assert.Equal(new RaiPath(overrideDir).Path, Os.LocalBackupDir.Path);
 	}
 
 	[Fact]
@@ -96,13 +96,21 @@ public class OsEnvironmentPathTests
 		new RaiPath(second).mkdir();
 		env.WriteConfig(localBackupDir: first);
 
-		Assert.Equal(new RaiPath(first).Path, Os.LocalBackupDir);
+		Assert.Equal(new RaiPath(first).Path, Os.LocalBackupDir.Path);
 
 		env.WriteConfig(localBackupDir: second);
-		Assert.Equal(new RaiPath(second).Path, Os.LocalBackupDir);
+		Assert.Equal(new RaiPath(second).Path, Os.LocalBackupDir.Path);
 
 		OsTestEnvironment.ResetOsCaches();
-		Assert.Equal(new RaiPath(second).Path, Os.LocalBackupDir);
+		Assert.Equal(new RaiPath(second).Path, Os.LocalBackupDir.Path);
+	}
+
+	[Fact]
+	public void AppRootDir_UsesCurrentWorkingDirectory()
+	{
+		OsTestEnvironment.ResetOsCaches();
+
+		Assert.Equal(new RaiPath(Directory.GetCurrentDirectory()).Path, Os.AppRootDir.Path);
 	}
 
 	[Fact]

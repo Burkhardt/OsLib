@@ -17,10 +17,13 @@ public class CloudStorageAgreementMechanicsTests
 		Directory.CreateDirectory(dropbox);
 		Directory.CreateDirectory(googleDrive);
 		env.WriteConfig(dropbox: dropbox, googleDrive: googleDrive);
+		var configFile = new OsConfigFile(env.ConfigPath);
+		var expectedRoot = configFile.Data.DefaultCloudOrder
+			.Select(provider => configFile.Data.GetCloudDirPath(provider)?.Path)
+			.First(path => !string.IsNullOrWhiteSpace(path));
 
-		Assert.Equal(new RaiPath(googleDrive).Path, Os.CloudStorageRoot);
+		Assert.Equal(expectedRoot, Os.CloudStorageRootDir.Path);
 		Assert.Equal(new RaiPath(googleDrive).Path, Os.GetCloudStorageRoot(CloudStorageType.GoogleDrive));
-		Assert.Null(Os.GetCloudStorageRoot(CloudStorageType.ICloud));
 	}
 
 	[Fact]
@@ -30,7 +33,7 @@ public class CloudStorageAgreementMechanicsTests
 		using var env = new OsTestEnvironment(root);
 		env.WriteConfig();
 
-		var ex = Assert.Throws<DirectoryNotFoundException>(() => _ = Os.CloudStorageRoot);
+		var ex = Assert.Throws<DirectoryNotFoundException>(() => _ = Os.CloudStorageRootDir);
 		Assert.Contains("Configure Os.Config", ex.Message);
 		Assert.Contains("CLOUD_STORAGE_DISCOVERY.md", ex.Message);
 	}
@@ -42,15 +45,12 @@ public class CloudStorageAgreementMechanicsTests
 		using var env = new OsTestEnvironment(root);
 
 		var configuredGoogle = (root / "ConfiguredGoogleDrive").Path;
-		var configuredICloud = (root / "ConfiguredICloud").Path;
 		Directory.CreateDirectory(configuredGoogle);
-		Directory.CreateDirectory(configuredICloud);
-		env.WriteConfig(googleDrive: configuredGoogle, iCloud: configuredICloud);
+		env.WriteConfig(googleDrive: configuredGoogle);
 
 		var roots = Os.GetCloudStorageRoots(refresh: true);
 
 		Assert.Equal(new RaiPath(configuredGoogle).Path, roots[CloudStorageType.GoogleDrive]);
-		Assert.Equal(new RaiPath(configuredICloud).Path, roots[CloudStorageType.ICloud]);
 		Assert.False(roots.ContainsKey(CloudStorageType.Dropbox));
 	}
 
@@ -80,8 +80,8 @@ public class CloudStorageAgreementMechanicsTests
 		Directory.CreateDirectory(localBackup);
 		env.WriteConfig(localBackupDir: localBackup);
 
-		Assert.Equal(new RaiPath(localBackup).Path, Os.LocalBackupDir);
-		Assert.False(new RaiFile(Os.LocalBackupDir).Cloud);
+		Assert.Equal(new RaiPath(localBackup).Path, Os.LocalBackupDir.Path);
+		Assert.False(new RaiFile(Os.LocalBackupDir.Path).Cloud);
 	}
 
 	[Fact]
@@ -96,15 +96,14 @@ public class CloudStorageAgreementMechanicsTests
 		Directory.CreateDirectory(cloudBackedBackup);
 		env.WriteConfig(localBackupDir: cloudBackedBackup, googleDrive: googleDrive);
 
-		Assert.NotEqual(new RaiPath(cloudBackedBackup).Path, Os.LocalBackupDir);
-		Assert.False(new RaiFile(Os.LocalBackupDir).Cloud);
+		Assert.NotEqual(new RaiPath(cloudBackedBackup).Path, Os.LocalBackupDir.Path);
+		Assert.False(new RaiFile(Os.LocalBackupDir.Path).Cloud);
 	}
 
 	[Theory]
 	[InlineData(CloudStorageType.Dropbox, "DropboxRoot")]
 	[InlineData(CloudStorageType.OneDrive, "OneDriveRoot")]
 	[InlineData(CloudStorageType.GoogleDrive, "GoogleDriveRoot")]
-	[InlineData(CloudStorageType.ICloud, "ICloudRoot")]
 	public void Backup_StripsConfiguredCloudRoot_FromBackupTargetPath(CloudStorageType provider, string rootName)
 	{
 		var root = OsTestEnvironment.NewTestRoot("cloud-agreement");
@@ -127,14 +126,11 @@ public class CloudStorageAgreementMechanicsTests
 			case CloudStorageType.GoogleDrive:
 				env.WriteConfig(localBackupDir: localBackup, googleDrive: cloudRoot);
 				break;
-			case CloudStorageType.ICloud:
-				env.WriteConfig(localBackupDir: localBackup, iCloud: cloudRoot);
-				break;
 		}
 
 		var source = new TextFile(projectDir, "report.txt", "provider backup").Save();
 
-		Assert.Equal(new RaiPath("Work/Reports").Path, RaiFile.GetBackupRelativeDirectoryPath(source.Path));
+		Assert.Equal(new RaiPath("Work/Reports").Path, RaiFile.GetBackupRelativeDirectoryPath(source.Path).Path);
 
 		var backup = new RaiFile(source.backup(copy: true));
 
@@ -158,11 +154,11 @@ public class CloudStorageAgreementMechanicsTests
 		var source = new TextFile(sourceDir, "app.log", "local backup").Save();
 		var expectedRelativeDirectory = source.Path;
 
-		Assert.Equal(expectedRelativeDirectory, RaiFile.GetBackupRelativeDirectoryPath(source.Path));
+		Assert.Equal(expectedRelativeDirectory, RaiFile.GetBackupRelativeDirectoryPath(source.Path).Path);
 
 		var backup = new RaiFile(source.backup(copy: true));
 
-		Assert.Equal(Os.LocalBackupDir + expectedRelativeDirectory, backup.Path);
+		Assert.Equal(new RaiPath(Os.LocalBackupDir.Path + expectedRelativeDirectory).Path, backup.Path);
 		Assert.True(File.Exists(backup.FullName));
 		Assert.True(File.Exists(source.FullName));
 	}

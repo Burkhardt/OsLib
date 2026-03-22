@@ -9,7 +9,6 @@ public class ConfiguredCloudStorageRootTests
 	[InlineData(CloudStorageType.Dropbox)]
 	[InlineData(CloudStorageType.OneDrive)]
 	[InlineData(CloudStorageType.GoogleDrive)]
-	[InlineData(CloudStorageType.ICloud)]
 	public void GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths(CloudStorageType provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
@@ -28,7 +27,6 @@ public class ConfiguredCloudStorageRootTests
 	[InlineData(CloudStorageType.Dropbox)]
 	[InlineData(CloudStorageType.OneDrive)]
 	[InlineData(CloudStorageType.GoogleDrive)]
-	[InlineData(CloudStorageType.ICloud)]
 	public void GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable(CloudStorageType provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();

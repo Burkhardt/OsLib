@@ -11,7 +11,7 @@ namespace OsLib.Tests
 	{
 		private static string CreateTempRoot([CallerMemberName] string testName = "")
 		{
-			var root = new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "rclone-command" / SanitizeSegment(testName);
+			var root = Os.TempDir / "RAIkeep" / "oslib-tests" / "rclone-command" / SanitizeSegment(testName);
 			Cleanup(root.Path);
 			root.mkdir();
 			return root.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);

@@ -19,15 +19,14 @@ public class CloudStorageAgreementTests
 		if (!roots.Any())
 			Assert.Skip($"No configured provider roots are available. {Os.GetCloudStorageSetupGuidance()}");
 
-		Assert.Equal(roots[expectedProvider], Os.CloudStorageRoot);
-		Assert.True(Os.IsCloudPath(Os.CloudStorageRoot));
+		Assert.Equal(roots[expectedProvider], Os.CloudStorageRootDir.Path);
+		Assert.True(Os.IsCloudPath(Os.CloudStorageRootDir.Path));
 	}
 
 	[Theory]
 	[InlineData(CloudStorageType.Dropbox)]
 	[InlineData(CloudStorageType.OneDrive)]
 	[InlineData(CloudStorageType.GoogleDrive)]
-	[InlineData(CloudStorageType.ICloud)]
 	public void RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag(CloudStorageType provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();

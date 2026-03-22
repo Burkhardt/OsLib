@@ -14,7 +14,6 @@ namespace OsLib.Tests
 		[InlineData(CloudStorageType.Dropbox)]
 		[InlineData(CloudStorageType.OneDrive)]
 		[InlineData(CloudStorageType.GoogleDrive)]
-		[InlineData(CloudStorageType.ICloud)]
 		public void RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider(CloudStorageType provider)
 		{
 			using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
@@ -81,7 +80,6 @@ namespace OsLib.Tests
 		[InlineData(CloudStorageType.Dropbox)]
 		[InlineData(CloudStorageType.OneDrive)]
 		[InlineData(CloudStorageType.GoogleDrive)]
-		[InlineData(CloudStorageType.ICloud)]
 		public void TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider(CloudStorageType provider)
 		{
 			using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();

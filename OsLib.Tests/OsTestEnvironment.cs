@@ -57,7 +57,6 @@ internal sealed class OsTestEnvironment : IDisposable
 		string? dropbox = null,
 		string? oneDrive = null,
 		string? googleDrive = null,
-		string? iCloud = null,
 		string? homeDir = null,
 		string? tempDir = null,
 		string? localBackupDir = null,
@@ -67,8 +66,7 @@ internal sealed class OsTestEnvironment : IDisposable
 		{
 			["dropbox"] = NormalizeForJson(dropbox),
 			["onedrive"] = NormalizeForJson(oneDrive),
-			["googledrive"] = NormalizeForJson(googleDrive),
-			["icloud"] = NormalizeForJson(iCloud)
+			["googledrive"] = NormalizeForJson(googleDrive)
 		};
 
 		var json = new JObject
@@ -129,7 +127,8 @@ internal sealed class OsTestEnvironment : IDisposable
 	internal static void ResetOsCaches()
 	{
 		var osType = typeof(Os);
-		osType.GetField("homeDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+		osType.GetField("userHomeDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+		osType.GetField("appRootDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("type", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("dIRSEPERATOR", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("tempDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
@@ -137,6 +136,7 @@ internal sealed class OsTestEnvironment : IDisposable
 		osType.GetField("config", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("remoteTestConfig", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		Os.ResetCloudStorageCache();
+		Os.ResetDiagnosticsForTesting();
 	}
 
 	public void Dispose()

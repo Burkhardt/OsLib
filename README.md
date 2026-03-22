@@ -4,10 +4,15 @@
 
 _formerly_ __OsLibCore__
 
-## 3.3.0
+## 3.5.0
 
-- Introduces `Os.Config` and `osconfig.json` as the reusable typed configuration model for OsLib.
-- Moves cloud roots, backup policy, and configurable directories into a shared config contract while keeping provider probing and caching.
+- Keeps OsLib aligned with the shared `3.5.0` package set.
+- Documents the supported cloud-backed provider claim as `OneDrive`, `GoogleDrive`, and `Dropbox`.
+- Keeps `osconfig.json` and `defaultCloudOrder` as the shared machine-local contract used across the `RAIkeep` package stack.
+- Separates intrinsic OS/runtime directories from config-driven directories: `UserHomeDir` and `AppRootDir` are intrinsic, while `TempDir`, `LocalBackupDir`, and `CloudStorageRootDir` are resolved through config plus safe fallbacks.
+- Moves `*Dir` properties to `RaiPath` return values to encourage `RaiPath` and `RaiFile` composition instead of `Path.Combine` call-site sprawl.
+- Treats missing or invalid `osconfig.json` as a startup-critical degraded-mode condition with structured logging plus explicit console startup diagnostics.
+- Aligns OsLib documentation with JsonPit's `Id`-based identifier contract and legacy `Name` normalization policy.
 
 ## namespace 
 
@@ -48,7 +53,7 @@ OsLib
 <details>
 <summary>Os: Platform helpers for paths, escaping, provider-based cloud storage discovery, and local backup placement.</summary>
 
-- Os: `CloudStorageRoot`, `GetCloudStorageRoots`, `GetCloudStorageRoot`, `GetPreferredCloudStorageRoot`, `ResetCloudStorageCache`, `GetCloudDiscoveryReport`, `HomeDir`, `TempDir`, `LocalBackupDir`, `Escape`, `NormSeperator`
+- Os: `UserHomeDir`, `AppRootDir`, `TempDir`, `LocalBackupDir`, `CloudStorageRootDir`, `GetCloudStorageRoots`, `GetCloudStorageRoot`, `GetCloudStorageRootDir`, `GetPreferredCloudStorageRoot`, `GetPreferredCloudStorageRootDir`, `ResetCloudStorageCache`, `GetCloudDiscoveryReport`, `Escape`, `NormSeperator`
 </details>
 
 <details>
@@ -133,8 +138,10 @@ https://www.nuget.org/packages/OsLibCore/
 
 - Foldable class and method-level documentation: [API.md](API.md)
 - Cloud root discovery setup, provider precedence, and cloud-aware IO behavior: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
+- Path/config/logging design note for the 2026 housekeeping pass: [PATH_CONFIG_LOGGING_REFACTOR.md](PATH_CONFIG_LOGGING_REFACTOR.md)
 - CLI command hierarchy and external tool wrappers: [../CliCommand-Hierarchy.puml](../CliCommand-Hierarchy.puml)
-- Local backup placement: `Os.LocalBackupDir` resolves an OS-local, non-cloud directory and can be configured in `osconfig.json`.
+- Local backup placement: `Os.LocalBackupDir` resolves an OS-local, non-cloud directory as `RaiPath` and can be configured in `osconfig.json`.
+- Structured logging: OsLib diagnostics use `ILogger<T>` templates; only startup-critical configuration failures emit console diagnostics.
 - Ubuntu/Mzansi guidance: prefer explicit `cloud.*` entries in `osconfig.json` over probe-only discovery for stable Google Drive roots across machines.
 - Script helper: use `RaiSystem.CreateScript(path, name, content)` or `new Script(path, name, content)` when tests or tools need an executable script file.
 
@@ -146,13 +153,13 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.3.0.md](RELEASE_NOTES_3.3.0.md)
+- Current release notes: [RELEASE_NOTES_3.5.0.md](RELEASE_NOTES_3.5.0.md)
 
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.3.0`)
+- Trigger: push a version tag in format `v*` (example: `v3.5.0`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.3.0 -m "v3.3.0" && git push origin v3.3.0`
+	- `git tag -a v3.5.0 -m "v3.5.0" && git push origin v3.5.0`

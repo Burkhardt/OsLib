@@ -16,20 +16,17 @@ public class CloudStorageConfigMechanicsTests
 		var dropbox = (root / "DropboxRoot").Path;
 		var oneDrive = (root / "OneDriveRoot").Path;
 		var googleDrive = (root / "GoogleDriveRoot").Path;
-		var iCloud = (root / "ICloudRoot").Path;
 
 		Directory.CreateDirectory(dropbox);
 		Directory.CreateDirectory(oneDrive);
 		Directory.CreateDirectory(googleDrive);
-		Directory.CreateDirectory(iCloud);
-		env.WriteConfig(dropbox: dropbox, oneDrive: oneDrive, googleDrive: googleDrive, iCloud: iCloud);
+		env.WriteConfig(dropbox: dropbox, oneDrive: oneDrive, googleDrive: googleDrive);
 
 		var roots = Os.GetCloudStorageRoots(refresh: true);
 
 		Assert.Equal(new RaiPath(dropbox).Path, roots[CloudStorageType.Dropbox]);
 		Assert.Equal(new RaiPath(oneDrive).Path, roots[CloudStorageType.OneDrive]);
 		Assert.Equal(new RaiPath(googleDrive).Path, roots[CloudStorageType.GoogleDrive]);
-		Assert.Equal(new RaiPath(iCloud).Path, roots[CloudStorageType.ICloud]);
 	}
 
 	[Fact]
@@ -58,17 +55,13 @@ public class CloudStorageConfigMechanicsTests
 		using var env = new OsTestEnvironment(root);
 
 		var googleDrive = (root / "GoogleDriveIni").Path;
-		var iCloud = (root / "ICloudIni").Path;
 		Directory.CreateDirectory(googleDrive);
-		Directory.CreateDirectory(iCloud);
-		env.WriteConfig(googleDrive: googleDrive, iCloud: iCloud);
+		env.WriteConfig(googleDrive: googleDrive);
 
 		var config = Os.LoadConfig(refresh: true);
 
 		Assert.Equal(new RaiPath(googleDrive).Path, config.GooglePath!.Path);
-		Assert.Equal(new RaiPath(iCloud).Path, config.ICloudPath!.Path);
 		Assert.Equal(new RaiPath(googleDrive).Path, config.GetCloudDirPath(CloudStorageType.GoogleDrive)!.Path);
-		Assert.Equal(new RaiPath(iCloud).Path, config.CloudDirPaths[CloudStorageType.ICloud].Path);
 	}
 
 	[Fact]
@@ -90,7 +83,7 @@ public class CloudStorageConfigMechanicsTests
 	}
 
 	[Fact]
-	public void LoadConfig_AutoCreatesDefaultUserConfigFile_WhenMissing()
+	public void LoadConfig_DoesNotCreateConfigFile_WhenMissing_AndReturnsFallbackDefaults()
 	{
 		if (!Os.IsUnixLike)
 			return;
@@ -105,15 +98,10 @@ public class CloudStorageConfigMechanicsTests
 		var config = Os.LoadConfig(refresh: true);
 		var configPath = Os.GetDefaultConfigPath();
 
-		Assert.True(File.Exists(configPath));
-		Assert.Equal(new RaiPath(googleDrive.Path).Path, config.GooglePath!.Path);
-
-		var configJson = JObject.Parse(File.ReadAllText(configPath));
-		Assert.Equal(new RaiPath(env.Home).Path, configJson["homeDir"]!.ToString());
-		Assert.Equal(string.Empty, configJson["cloud"]!["dropbox"]!.ToString());
-		Assert.Equal(string.Empty, configJson["cloud"]!["onedrive"]!.ToString());
-		Assert.Equal(new RaiPath(googleDrive.Path).Path, configJson["cloud"]!["googledrive"]!.ToString());
-		Assert.Equal(string.Empty, configJson["cloud"]!["icloud"]!.ToString());
+		Assert.False(File.Exists(configPath));
+		Assert.Null(config.GooglePath);
+		Assert.Equal(new RaiPath(Os.ResolveSystemTempDir()).Path, config.TempDir!.Path);
+		Assert.Equal(new RaiPath(Os.ResolveSystemLocalBackupDir()).Path, config.LocalBackupDir!.Path);
 	}
 
 	[Fact]
@@ -177,7 +165,6 @@ public class CloudStorageConfigMechanicsTests
 		Assert.Contains("Dropbox", report);
 		Assert.Contains("OneDrive", report);
 		Assert.Contains("GoogleDrive", report);
-		Assert.Contains("ICloud", report);
 	}
 
 	[Fact]

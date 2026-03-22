@@ -147,7 +147,7 @@ namespace OsLib     // aka OsLibCore
 			{
 				if (!p.StandardOutput.EndOfStream)
 				{
-					Console.WriteLine(p.StandardOutput.ReadToEnd());
+					_ = p.StandardOutput.ReadToEnd();
 				}
 				p.WaitForExit(120000);  // don't wait more than 2 min
 				ExitCode = p.ExitCode;

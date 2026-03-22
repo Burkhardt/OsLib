@@ -67,7 +67,7 @@ namespace OsLib
 			return changed;
 		}
 
-		private static JsonSerializerSettings CreateSerializerSettings()
+		protected static JsonSerializerSettings CreateSerializerSettings()
 		{
 			return new JsonSerializerSettings
 			{

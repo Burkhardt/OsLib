@@ -43,7 +43,6 @@ together {
 		Dropbox
 		OneDrive
 		GoogleDrive
-		ICloud
 	}
 	class "Legend<size:10>ⓈⒶⓅ</size>" as LegendSample {
 		+{static} staticMethod() : void
@@ -80,7 +79,6 @@ class "<size:18>CloudModel</size>" as CloudModel << (C,#14b8a6) >> {
 	+ DropboxRoot : RaiPath
 	+ OneDriveRoot : RaiPath
 	+ GoogleDriveRoot : RaiPath
-	+ ICloudRoot : RaiPath
 	+ Roots : IReadOnlyDictionary<CloudStorageType, RaiPath>
 	--
 	+ GetRoot(provider : CloudStorageType) : RaiPath
@@ -99,7 +97,6 @@ class "<size:18>OsConfigModel</size>" as OsConfigModel << (C,#14b8a6) >> {
 	+ DropboxPath : RaiPath
 	+ OneDrivePath : RaiPath
 	+ GooglePath : RaiPath
-	+ ICloudPath : RaiPath
 	+ CloudDirPaths : IReadOnlyDictionary<CloudStorageType, RaiPath>
 	--
 	+ GetCloudDirPath(provider : CloudStorageType) : RaiPath
@@ -114,10 +111,11 @@ class "<size:18>OsConfigFile</size>" as OsConfigFile << (C,#14b8a6) >> {
 }
 
 class "<size:24>Os</size>ⓈⓅ " as Os << (C,#14b8a6) >> {
-	-{static} homeDir : string
+	-{static} userHomeDir : RaiPath
+	-{static} appRootDir : RaiPath
 	-{static} type : OsType?
-	-{static} tempDir : string
-	-{static} localBackupDir : string
+	-{static} tempDir : RaiPath
+	-{static} localBackupDir : RaiPath
 	-{static} dIRSEPERATOR : string
 	-{static} config : OsConfigFile
 	-{static} remoteTestConfig : RemoteTestConfigFile
@@ -134,12 +132,16 @@ class "<size:24>Os</size>ⓈⓅ " as Os << (C,#14b8a6) >> {
 	+{static} ESCAPECHAR : string
 	+{static} DATEFORMAT : string
 	+{static} Type : OsType
+	+{static} IsWindows : bool
+	+{static} IsMacOS : bool
 	+{static} IsUnixLike : bool
 	+{static} IsLinuxLike : bool
-	+{static} HomeDir : string
-	+{static} LocalBackupDir : string
-	+{static} TempDir : string
+	+{static} UserHomeDir : RaiPath
+	+{static} AppRootDir : RaiPath
+	+{static} LocalBackupDir : RaiPath
+	+{static} TempDir : RaiPath
 	+{static} Config : OsConfigFile
+	+{static} CloudStorageRootDir : RaiPath
 	+{static} CloudStorageRoot : string
 	--
 	+{static} ParseDateTime(datetimeInDATEFORMAT : string) : DateTimeOffset
@@ -184,7 +186,6 @@ class "<size:24>Os</size>ⓈⓅ " as Os << (C,#14b8a6) >> {
 	-{static} GetDropboxInfoFileCandidates() : IEnumerable<string>
 	-{static} ProbeOneDrive(roots : Dictionary<CloudStorageType, string>) : void
 	-{static} ProbeGoogleDrive(roots : Dictionary<CloudStorageType, string>) : void
-	-{static} ProbeICloud(roots : Dictionary<CloudStorageType, string>) : void
 	-{static} TryAddRoot(roots : Dictionary<CloudStorageType, string>, provider : CloudStorageType, candidate : string) : bool
 	-{static} ExpandPath(candidate : string) : string
 	-{static} ExpandUserHomePath(path : string) : string

@@ -272,7 +272,6 @@ namespace OsLib
 					CloudStorageType.Dropbox => "dropbox",
 					CloudStorageType.OneDrive => "onedrive",
 					CloudStorageType.GoogleDrive => "googledrive",
-					CloudStorageType.ICloud => "icloud",
 					_ => string.Empty
 				};
 

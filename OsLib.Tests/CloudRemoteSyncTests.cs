@@ -27,6 +27,10 @@ public class CloudRemoteSyncTests
 		var localFile = new TextFile(localDir, "sample.txt");
 		var remoteDir = probe.GetRemoteDirectory(relativeDir);
 		var remoteFile = new RaiFile(probe.GetRemoteFullName(relativeFile));
+		var propagationTimeout = TimeSpan.FromMinutes(2);
+		var deletePropagationTimeout = provider == CloudStorageType.GoogleDrive
+			? TimeSpan.FromMinutes(5)
+			: propagationTimeout;
 		var keepArtifactsForInspection = false;
 
 		try
@@ -35,7 +39,7 @@ public class CloudRemoteSyncTests
 				new RaiFile(localDir.Path).rmdir(depth: 10, deleteFiles: true);
 
 			Assert.True(
-				probe.Observer.WaitForMissing(remoteDir.Path, TimeSpan.FromMinutes(2), out _),
+				probe.Observer.WaitForMissing(remoteDir.Path, deletePropagationTimeout, out _),
 				$"Remote baseline directory did not vanish after local cleanup. {probe.LastFailure}");
 
 			var createTimer = Stopwatch.StartNew();
@@ -44,21 +48,22 @@ public class CloudRemoteSyncTests
 
 			Assert.True(localFile.Cloud);
 			Assert.True(localFile.Exists());
-			Assert.True(probe.Observer.WaitForFileContainingAll(remoteFile.FullName, TimeSpan.FromMinutes(2), out var createSeen, "alpha"), probe.LastFailure);
+			Assert.True(probe.Observer.WaitForFileContainingAll(remoteFile.FullName, propagationTimeout, out var createSeen, "alpha"), probe.LastFailure);
 
 			var updateTimer = Stopwatch.StartNew();
 			localFile.DeleteAll().Append("gamma").Append("delta").Save();
 			updateTimer.Stop();
 
-			Assert.True(probe.Observer.WaitForFileContainingAll(remoteFile.FullName, TimeSpan.FromMinutes(2), out var updateSeen, "gamma", "delta"), probe.LastFailure);
+			Assert.True(probe.Observer.WaitForFileContainingAll(remoteFile.FullName, propagationTimeout, out var updateSeen, "gamma", "delta"), probe.LastFailure);
 			Assert.DoesNotContain("alpha", probe.Observer.ReadFile(remoteFile.FullName));
 
 			var deleteTimer = Stopwatch.StartNew();
-			localFile.rm();
+			if (localDir.Exists())
+				new RaiFile(localDir.Path).rmdir(depth: 10, deleteFiles: true);
 			deleteTimer.Stop();
-			var localExistsAfterDelete = localFile.Exists();
+			var localExistsAfterDelete = localDir.Exists();
 
-			var deletePropagated = probe.Observer.WaitForMissing(remoteFile.FullName, TimeSpan.FromMinutes(2), out var deleteSeen);
+			var deletePropagated = probe.Observer.WaitForMissing(remoteDir.Path, deletePropagationTimeout, out var deleteSeen);
 			if (!deletePropagated)
 			{
 				keepArtifactsForInspection = true;
@@ -66,7 +71,7 @@ public class CloudRemoteSyncTests
 				var remoteFileState = probe.Observer.DescribePathState(remoteFile.FullName);
 				var remoteDirListing = probe.Observer.ListDirectory(remoteDir.Path);
 				throw new Xunit.Sdk.XunitException(
-					$"Delete did not propagate to Mzansi within timeout. localExistsAfterDelete={localExistsAfterDelete}; remoteFileExists={remoteFileExists}; remoteFile='{remoteFile.FullName}'; remoteDir='{remoteDir.Path}'.\n" +
+					$"Delete did not propagate to Mzansi within timeout {deletePropagationTimeout}. localExistsAfterDelete={localExistsAfterDelete}; remoteFileExists={remoteFileExists}; remoteFile='{remoteFile.FullName}'; remoteDir='{remoteDir.Path}'.\n" +
 					$"Remote file state:\n{remoteFileState}\n\nRemote directory listing:\n{remoteDirListing}\n\nLast failure: {probe.LastFailure}");
 			}
 

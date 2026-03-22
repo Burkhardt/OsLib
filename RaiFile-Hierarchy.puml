@@ -50,6 +50,7 @@ class RaiFile {
   +mkdir()
   +rmdir(depth : int, deleteFiles : bool)
   +backup(copy : bool) : string
+  ~GetBackupRelativeDirectoryPath(sourceDirectoryPath : string) : RaiPath
 }
 
 abstract class "ConfigFile<TData>" as ConfigFile {
@@ -61,7 +62,6 @@ class CloudModel {
   +DropboxRoot : RaiPath
   +OneDriveRoot : RaiPath
   +GoogleDriveRoot : RaiPath
-  +ICloudRoot : RaiPath
   +GetRoot(provider : CloudStorageType) : RaiPath
 }
 
@@ -72,6 +72,14 @@ class OsConfigModel {
   +DefaultCloudOrder : List~CloudStorageType~
   +Cloud : CloudModel
   +GetCloudDirPath(provider : CloudStorageType) : RaiPath
+}
+
+class Os {
+  +UserHomeDir : RaiPath
+  +AppRootDir : RaiPath
+  +TempDir : RaiPath
+  +LocalBackupDir : RaiPath
+  +CloudStorageRootDir : RaiPath
 }
 
 class OsConfigFile {

@@ -38,7 +38,6 @@ namespace OsLib.Tests
 			Assert.Contains("Dropbox", report);
 			Assert.Contains("OneDrive", report);
 			Assert.Contains("GoogleDrive", report);
-			Assert.Contains("ICloud", report);
 		}
 
 		private static IEnumerable<string> GetConfigCandidates()

@@ -14,14 +14,23 @@ namespace OsLib.Tests
 		private static void ResetOsCaches()
 		{
 			var osType = typeof(Os);
-			osType.GetField("homeDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+			osType.GetField("userHomeDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+			osType.GetField("appRootDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+			osType.GetField("tempDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+			osType.GetField("localBackupDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 			osType.GetField("type", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 			osType.GetField("dIRSEPERATOR", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+			osType.GetField("config", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+			osType.GetField("configPathOverride", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+			osType.GetField("cloudRootsCache", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+			osType.GetField("isDiscoveringCloudRoots", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, false);
+			osType.GetField("isInitializingConfig", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, false);
+			Os.ResetDiagnosticsForTesting();
 		}
 
 		private static RaiPath CreateTempDir([CallerMemberName] string testName = "")
 		{
-			var root = new RaiPath(Os.TempDir) / "RAIkeep" / "oslib-tests" / "core" / SanitizeSegment(testName);
+			var root = Os.TempDir / "RAIkeep" / "oslib-tests" / "core" / SanitizeSegment(testName);
 			Cleanup(root);
 			root.mkdir();
 			return root;
@@ -87,7 +96,7 @@ namespace OsLib.Tests
 		}
 
 		[Fact]
-		public void Os_HomeDir_UsesWindowsVariables_OnWindows()
+		public void Os_UserHomeDir_UsesWindowsVariables_OnWindows()
 		{
 			if (Os.Type != OsType.Windows)
 				return;
@@ -102,7 +111,7 @@ namespace OsLib.Tests
 				Environment.SetEnvironmentVariable("HOMEPATH", "\\Users\\FallbackUser");
 				ResetOsCaches();
 
-				Assert.Equal("C:\\Users\\UnitTestUser", Os.HomeDir);
+				Assert.Equal("C:\\Users\\UnitTestUser", Os.UserHomeDir.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
 			}
 			finally
 			{
@@ -114,7 +123,7 @@ namespace OsLib.Tests
 		}
 
 		[Fact]
-		public void Os_HomeDir_UsesHomeVariable_OnUnix()
+		public void Os_UserHomeDir_UsesHomeVariable_OnUnix()
 		{
 			if (!Os.IsUnixLike)
 				return;
@@ -123,9 +132,11 @@ namespace OsLib.Tests
 			try
 			{
 				Environment.SetEnvironmentVariable("HOME", "/tmp/oslib-home-unittest");
+				var fakeConfigDir = new RaiPath("/tmp/oslib-home-unittest/.config/RAIkeep");
+				Cleanup(fakeConfigDir);
 				ResetOsCaches();
 
-				Assert.Equal("/tmp/oslib-home-unittest", Os.HomeDir);
+				Assert.Equal("/tmp/oslib-home-unittest", Os.UserHomeDir.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
 			}
 			finally
 			{

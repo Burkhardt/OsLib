@@ -14,6 +14,15 @@ namespace OsLib
 		ConfiguredOnly
 	}
 
+	public enum OsConfigLoadStatus
+	{
+		Unknown,
+		Loaded,
+		Missing,
+		Unreadable,
+		Invalid
+	}
+
 	public sealed class CloudModel
 	{
 		[JsonProperty("googledrive")]
@@ -21,13 +30,6 @@ namespace OsLib
 		{
 			get => GoogleDriveRoot?.Path ?? string.Empty;
 			set => GoogleDriveRoot = ToRaiPath(value);
-		}
-
-		[JsonProperty("icloud")]
-		private string ICloudRootSerialized
-		{
-			get => ICloudRoot?.Path ?? string.Empty;
-			set => ICloudRoot = ToRaiPath(value);
 		}
 
 		[JsonProperty("dropbox")]
@@ -48,9 +50,6 @@ namespace OsLib
 		public RaiPath GoogleDriveRoot { get; internal set; }
 
 		[JsonIgnore]
-		public RaiPath ICloudRoot { get; internal set; }
-
-		[JsonIgnore]
 		public RaiPath DropboxRoot { get; internal set; }
 
 		[JsonIgnore]
@@ -63,7 +62,6 @@ namespace OsLib
 			{
 				var roots = new Dictionary<CloudStorageType, RaiPath>();
 				TryAdd(roots, CloudStorageType.GoogleDrive, GoogleDriveRoot);
-				TryAdd(roots, CloudStorageType.ICloud, ICloudRoot);
 				TryAdd(roots, CloudStorageType.Dropbox, DropboxRoot);
 				TryAdd(roots, CloudStorageType.OneDrive, OneDriveRoot);
 				return roots;
@@ -75,7 +73,6 @@ namespace OsLib
 			return provider switch
 			{
 				CloudStorageType.GoogleDrive => GoogleDriveRoot,
-				CloudStorageType.ICloud => ICloudRoot,
 				CloudStorageType.Dropbox => DropboxRoot,
 				CloudStorageType.OneDrive => OneDriveRoot,
 				_ => null
@@ -89,9 +86,6 @@ namespace OsLib
 			{
 				case CloudStorageType.GoogleDrive:
 					GoogleDriveRoot = normalized;
-					break;
-				case CloudStorageType.ICloud:
-					ICloudRoot = normalized;
 					break;
 				case CloudStorageType.Dropbox:
 					DropboxRoot = normalized;
@@ -125,7 +119,6 @@ namespace OsLib
 			return new CloudModel
 			{
 				GoogleDriveRoot = ToRaiPath(GoogleDriveRoot?.Path),
-				ICloudRoot = ToRaiPath(ICloudRoot?.Path),
 				DropboxRoot = ToRaiPath(DropboxRoot?.Path),
 				OneDriveRoot = ToRaiPath(OneDriveRoot?.Path),
 			};
@@ -191,9 +184,6 @@ namespace OsLib
 		public RaiPath GooglePath => Cloud?.GoogleDriveRoot;
 
 		[JsonIgnore]
-		public RaiPath ICloudPath => Cloud?.ICloudRoot;
-
-		[JsonIgnore]
 		public RaiPath DropboxPath => Cloud?.DropboxRoot;
 
 		[JsonIgnore]
@@ -222,7 +212,7 @@ namespace OsLib
 
 		internal void Normalize()
 		{
-			HomeDir = ToRaiPath(HomeDir?.Path);
+			HomeDir = null;
 			TempDir = ToRaiPath(TempDir?.Path);
 			LocalBackupDir = ToRaiPath(LocalBackupDir?.Path);
 			DefaultCloudOrder = (DefaultCloudOrder == null || DefaultCloudOrder.Count == 0)
@@ -244,11 +234,61 @@ namespace OsLib
 		{
 		}
 
+		public OsConfigLoadStatus LastLoadStatus { get; private set; } = OsConfigLoadStatus.Unknown;
+
+		public override OsConfigModel Load()
+		{
+			if (!Exists())
+			{
+				LastLoadStatus = OsConfigLoadStatus.Missing;
+				Data = NormalizeData(CreateDefaultData());
+				Os.ReportStartupCritical<OsConfigFile>(
+					$"osconfig-missing:{FullName}",
+					$"RAIkeep startup configuration error: osconfig.json is missing at '{FullName}'. Startup continues in degraded mode with intrinsic and fallback paths. This configuration must be corrected.",
+					"Configuration file {ConfigPath} is missing. Startup continues in degraded mode with intrinsic and fallback paths.",
+					FullName);
+				return Data;
+			}
+
+			try
+			{
+				var json = File.ReadAllText(FullName);
+				var data = JsonConvert.DeserializeObject<OsConfigModel>(json, CreateSerializerSettings()) ?? CreateDefaultData();
+				Data = NormalizeData(data);
+				LastLoadStatus = OsConfigLoadStatus.Loaded;
+				Os.LogInformation<OsConfigFile>("Loaded configuration file {ConfigPath}", FullName);
+				return Data;
+			}
+			catch (JsonException ex)
+			{
+				LastLoadStatus = OsConfigLoadStatus.Invalid;
+				Data = NormalizeData(CreateDefaultData());
+				Os.ReportStartupCritical<OsConfigFile>(
+					$"osconfig-invalid:{FullName}",
+					ex,
+					$"RAIkeep startup configuration error: osconfig.json at '{FullName}' is malformed. Startup continues in degraded mode with intrinsic and fallback paths. This configuration must be corrected.",
+					"Configuration file {ConfigPath} is malformed. Startup continues in degraded mode with intrinsic and fallback paths.",
+					FullName);
+				return Data;
+			}
+			catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+			{
+				LastLoadStatus = OsConfigLoadStatus.Unreadable;
+				Data = NormalizeData(CreateDefaultData());
+				Os.ReportStartupCritical<OsConfigFile>(
+					$"osconfig-unreadable:{FullName}",
+					ex,
+					$"RAIkeep startup configuration error: osconfig.json at '{FullName}' could not be read. Startup continues in degraded mode with intrinsic and fallback paths. This configuration must be corrected.",
+					"Configuration file {ConfigPath} could not be read. Startup continues in degraded mode with intrinsic and fallback paths.",
+					FullName);
+				return Data;
+			}
+		}
+
 		protected override OsConfigModel CreateDefaultData()
 		{
 			return new OsConfigModel
 			{
-				HomeDir = new RaiPath(Os.ResolveSystemHomeDir()),
 				TempDir = new RaiPath(Os.ResolveSystemTempDir()),
 				LocalBackupDir = new RaiPath(Os.ResolveSystemLocalBackupDir()),
 				DefaultCloudOrder = Os.CreateDefaultCloudOrder().ToList(),
@@ -259,6 +299,15 @@ namespace OsLib
 		protected override OsConfigModel NormalizeData(OsConfigModel data)
 		{
 			data ??= CreateDefaultData();
+			if (data.HomeDir != null)
+			{
+				Os.LogWarningOnce<OsConfigFile>(
+					$"deprecated-homeDir:{FullName}",
+					"Configuration file {ConfigPath} contains deprecated homeDir value {HomeDir}. UserHomeDir is now derived from the operating system and the configured value is ignored.",
+					FullName,
+					data.HomeDir.Path);
+				data.HomeDir = null;
+			}
 			data.Normalize();
 			return data;
 		}
@@ -281,7 +330,7 @@ namespace OsLib
 			get => EnsureConfigLoaded();
 		}
 
-		public static string CloudStorageRoot => GetPreferredCloudStorageRoot();
+		public static RaiPath CloudStorageRootDir => GetPreferredCloudStorageRootDir();
 
 		public static OsConfigModel LoadConfig(bool refresh = false)
 		{
@@ -400,16 +449,36 @@ namespace OsLib
 			foreach (var provider in order)
 			{
 				if (roots.TryGetValue(provider, out var root))
+				{
+					LogInformation<OsDiagnosticsLogScope>("Resolved preferred cloud storage root {CloudStorageRoot} for provider {CloudStorageProvider}", root, provider);
 					return root;
+				}
 			}
 
+			ReportStartupCritical<OsDiagnosticsLogScope>(
+				"cloud-root-missing",
+				$"RAIkeep startup configuration error: no cloud storage root could be resolved from '{GetDefaultConfigPath()}'. Startup continues in degraded mode until cloud storage configuration is corrected.",
+				"No cloud storage root could be discovered from configuration path {ConfigPath}. Startup continues in degraded mode until cloud storage configuration is corrected.",
+				GetDefaultConfigPath());
+
 			throw new DirectoryNotFoundException("No cloud storage root could be discovered. " + GetCloudStorageSetupGuidance());
+		}
+
+		public static RaiPath GetPreferredCloudStorageRootDir(params CloudStorageType[] preferredOrder)
+		{
+			return new RaiPath(GetPreferredCloudStorageRoot(preferredOrder));
 		}
 
 		public static string GetCloudStorageRoot(CloudStorageType provider, bool refresh = false)
 		{
 			var roots = GetCloudStorageRoots(refresh);
 			return roots.TryGetValue(provider, out var root) ? root : null;
+		}
+
+		public static RaiPath GetCloudStorageRootDir(CloudStorageType provider, bool refresh = false)
+		{
+			var root = GetCloudStorageRoot(provider, refresh);
+			return string.IsNullOrWhiteSpace(root) ? null : new RaiPath(root);
 		}
 
 		public static void ResetCloudStorageCache()
@@ -438,11 +507,14 @@ namespace OsLib
 			var effectiveRoots = GetCloudStorageRoots(refresh);
 			var hasConfig = TryLoadExistingConfig(out var config, refresh);
 			config ??= new OsConfigModel();
+			var configState = Os.config?.LastLoadStatus.ToString() ?? OsConfigLoadStatus.Unknown.ToString();
 			var sb = new StringBuilder();
 			sb.AppendLine("Cloud configuration diagnostics:");
 			sb.AppendLine($"- active config path: {GetDefaultConfigPath()}");
-			sb.AppendLine($"- config file: {(hasConfig ? "present" : "missing")}");
-			sb.AppendLine($"- homeDir: {(hasConfig ? config.HomeDir?.Path ?? string.Empty : "<not loaded>")}");
+			sb.AppendLine($"- config file: {(hasConfig ? "present" : "degraded")}");
+			sb.AppendLine($"- config load status: {configState}");
+			sb.AppendLine($"- userHomeDir: {UserHomeDir.Path}");
+			sb.AppendLine($"- appRootDir: {AppRootDir.Path}");
 			sb.AppendLine($"- tempDir: {(hasConfig ? config.TempDir?.Path ?? string.Empty : "<not loaded>")}");
 			sb.AppendLine($"- localBackupDir: {(hasConfig ? config.LocalBackupDir?.Path ?? string.Empty : "<not loaded>")}");
 			sb.AppendLine($"- configured default cloud order: {string.Join(", ", config.DefaultCloudOrder ?? CreateDefaultCloudOrder().ToList())}");
@@ -476,14 +548,14 @@ namespace OsLib
 			{
 				CloudStorageType.OneDrive,
 				CloudStorageType.Dropbox,
-				CloudStorageType.GoogleDrive,
-				CloudStorageType.ICloud
+				CloudStorageType.GoogleDrive
 			};
 		}
 
 		private static void InvalidateConfiguredPathCaches()
 		{
-			homeDir = null;
+			userHomeDir = null;
+			appRootDir = null;
 			tempDir = null;
 			localBackupDir = null;
 		}
@@ -509,6 +581,12 @@ namespace OsLib
 
 		private static void PersistDiscoveredCloudRoots(IReadOnlyDictionary<CloudStorageType, string> roots)
 		{
+			if (Config.LastLoadStatus != OsConfigLoadStatus.Loaded || !Config.Exists())
+			{
+				LogDebug<OsDiagnosticsLogScope>("Skipping persistence of discovered cloud roots because configuration is in {ConfigLoadStatus} state at {ConfigPath}", Config.LastLoadStatus, Config.FullName);
+				return;
+			}
+
 			if (Config.Data.Cloud.MergeMissingDiscoveredRoots(roots))
 				Config.Save();
 		}
@@ -536,8 +614,6 @@ namespace OsLib
 				ProbeOneDrive(roots);
 			if (!roots.ContainsKey(CloudStorageType.GoogleDrive))
 				ProbeGoogleDrive(roots);
-			if (!roots.ContainsKey(CloudStorageType.ICloud))
-				ProbeICloud(roots);
 		}
 
 		private static void ProbeDropbox(Dictionary<CloudStorageType, string> roots)
@@ -555,8 +631,9 @@ namespace OsLib
 					TryAddRoot(roots, CloudStorageType.Dropbox, personalPath);
 					TryAddRoot(roots, CloudStorageType.Dropbox, businessRoot);
 				}
-				catch
+				catch (Exception ex)
 				{
+					LogError<OsDiagnosticsLogScope>(ex, "Failed to probe Dropbox info file {InfoPath}", infoPath);
 				}
 			}
 
@@ -587,10 +664,10 @@ namespace OsLib
 			TryAddRoot(roots, CloudStorageType.OneDrive, "~/OneDrive - Personal");
 			TryAddRoot(roots, CloudStorageType.OneDrive, "~/Library/CloudStorage/OneDrive");
 
-			foreach (var path in SafeEnumerateDirectories(HomeDir, "OneDrive*"))
+			foreach (var path in SafeEnumerateDirectories(UserHomeDir.Path, "OneDrive*"))
 				TryAddRoot(roots, CloudStorageType.OneDrive, path);
 
-			foreach (var path in SafeEnumerateDirectories(new RaiFile(Path.Combine(HomeDir, "Library", "CloudStorage")).Path, "OneDrive*"))
+			foreach (var path in SafeEnumerateDirectories((UserHomeDir / "Library" / "CloudStorage").Path, "OneDrive*"))
 				TryAddRoot(roots, CloudStorageType.OneDrive, path);
 		}
 
@@ -598,7 +675,7 @@ namespace OsLib
 		{
 			if (Type == OsType.MacOS)
 			{
-				foreach (var path in SafeEnumerateDirectories(new RaiFile(Path.Combine(HomeDir, "Library", "CloudStorage")).Path, "GoogleDrive*"))
+				foreach (var path in SafeEnumerateDirectories((UserHomeDir / "Library" / "CloudStorage").Path, "GoogleDrive*"))
 					TryAddRoot(roots, CloudStorageType.GoogleDrive, GetMacGoogleDriveProbeTarget(path));
 
 				TryAddRoot(roots, CloudStorageType.GoogleDrive, "~/GoogleDrive");
@@ -632,21 +709,6 @@ namespace OsLib
 				return new RaiPath(myDrivePath).Path;
 
 			return new RaiPath(expanded).Path;
-		}
-
-		private static void ProbeICloud(Dictionary<CloudStorageType, string> roots)
-		{
-			TryAddRoot(roots, CloudStorageType.ICloud, "~/Library/Mobile Documents/com~apple~CloudDocs");
-			TryAddRoot(roots, CloudStorageType.ICloud, "~/iCloudDrive");
-			TryAddRoot(roots, CloudStorageType.ICloud, "~/Cloud/iCloud");
-			TryAddRoot(roots, CloudStorageType.ICloud, "~/rclone/iCloud");
-
-			if (Type == OsType.Windows)
-			{
-				var user = ResolveSystemHomeDir();
-				if (!string.IsNullOrWhiteSpace(user))
-					TryAddRoot(roots, CloudStorageType.ICloud, Path.Combine(user, "iCloudDrive"));
-			}
 		}
 
 		private static bool TryAddRoot(Dictionary<CloudStorageType, string> roots, CloudStorageType provider, string candidate)
@@ -721,8 +783,9 @@ namespace OsLib
 				if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
 					return Directory.EnumerateDirectories(path, pattern);
 			}
-			catch
+			catch (Exception ex)
 			{
+				LogError<OsDiagnosticsLogScope>(ex, "Failed to enumerate directories under {DirectoryPath} with pattern {DirectoryPattern}", path ?? string.Empty, pattern ?? string.Empty);
 			}
 
 			return Array.Empty<string>();
@@ -786,7 +849,14 @@ namespace OsLib
 				isInitializingConfig = true;
 				var configPath = GetDefaultConfigPath();
 				if (!File.Exists(configPath))
+				{
+					ReportStartupCritical<OsDiagnosticsLogScope>(
+						$"osconfig-missing:{configPath}",
+						$"RAIkeep startup configuration error: osconfig.json is missing at '{configPath}'. Startup continues in degraded mode with intrinsic and fallback paths. This configuration must be corrected.",
+						"Configuration file {ConfigPath} is missing. Startup continues in degraded mode with intrinsic and fallback paths.",
+						configPath);
 					return null;
+				}
 
 				if (config == null)
 					config = new OsConfigFile(configPath);
@@ -796,6 +866,9 @@ namespace OsLib
 					InvalidateConfiguredPathCaches();
 					ResetCloudStorageCache();
 				}
+
+				if (config.LastLoadStatus != OsConfigLoadStatus.Loaded)
+					return null;
 
 				return config;
 			}

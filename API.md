@@ -2,21 +2,34 @@
 
 This document provides a detailed, foldable API overview.
 
+## 3.5.0 scope note
+
+- The current supported cloud-backed provider claim for the `RAIkeep` package stack is `OneDrive`, `GoogleDrive`, and `Dropbox`.
+- JsonPit now uses `PitItem.Id` as its canonical identifier; legacy `Name`-only payloads are normalized to `Id` by JsonPit.
+
 ## core types
 
 - <details>
 	<summary>Os: OS-aware environment and path utilities.</summary>
 
-	- Responsibilities: platform detection, home/temp discovery, separator and escaping helpers, and provider-based cloud discovery.
+	- Responsibilities: platform detection, intrinsic runtime path resolution, config-driven directory resolution, separator and escaping helpers, and provider-based cloud discovery.
 	- <details>
-		<summary>HomeDir: user home directory detection (Windows/Unix).</summary>
+		<summary>UserHomeDir: intrinsic OS user home directory.</summary>
 
-		- Returns the current user's home directory with cross-platform fallback behavior.
+		- Returns the current user's home directory as `RaiPath` with cross-platform fallback behavior.
+		- This value is never taken from config.
 		</details>
 	- <details>
-		<summary>CloudStorageRoot: preferred discovered cloud root by default provider order.</summary>
+		<summary>AppRootDir: intrinsic runtime working directory.</summary>
 
-		- Uses GoogleDrive, ICloud, Dropbox, then OneDrive, and throws if nothing is configured or discovered.
+		- Resolves the runtime meaning of `.` as `RaiPath`.
+		- This value is never taken from config.
+		</details>
+	- <details>
+		<summary>CloudStorageRootDir: preferred discovered cloud root by default provider order.</summary>
+
+		- Uses the configured `defaultCloudOrder`, which defaults to OneDrive, Dropbox, and GoogleDrive, and throws if nothing is configured or discovered.
+		- Returns `RaiPath` so callers stay on `RaiPath`/`RaiFile` composition.
 		</details>
 	- <details>
 		<summary>GetCloudStorageRoots(refresh): discover all available provider roots.</summary>
@@ -30,7 +43,9 @@ This document provides a detailed, foldable API overview.
 
 		- `Config` exposes the reusable `OsConfigFile` wrapper.
 		- `LoadConfig()` restores the typed object from JSON, while `LoadConfig(refresh: true)` forces a reload.
-		- The config object includes `HomeDir`, `TempDir`, `LocalBackupDir`, `DefaultCloudOrder`, and nested `Cloud` settings, plus convenience cloud path accessors.
+		- Missing, unreadable, or malformed `osconfig.json` is treated as startup-critical and logged as degraded mode.
+		- The config object includes `TempDir`, `LocalBackupDir`, `DefaultCloudOrder`, and nested `Cloud` settings.
+		- Legacy `homeDir` is accepted only for compatibility, ignored at runtime, and logged as deprecated.
 		</details>
 	- <details>
 		<summary>GetDefaultConfigPath() / GetDefaultCloudConfigPath(): config file helpers.</summary>
@@ -47,6 +62,7 @@ This document provides a detailed, foldable API overview.
 		<summary>GetPreferredCloudStorageRoot(order): resolve a custom provider precedence.</summary>
 
 		- Returns the first available provider root from the supplied order.
+		- The `GetPreferredCloudStorageRootDir(order)` companion returns `RaiPath`.
 		</details>
 	- <details>
 		<summary>ResetCloudStorageCache(): force re-discovery after environment or config changes.</summary>
@@ -58,6 +74,7 @@ This document provides a detailed, foldable API overview.
 
 		- Lists each provider and the resolved root or a not-found marker.
 		- This is the recommended startup diagnostic for Ubuntu development environments with mounted Google Drive paths.
+		- Console output remains reserved for startup-critical configuration failures.
 		</details>
 	- <details>
 		<summary>NormPath(path): normalize path to current OS conventions.</summary>
@@ -120,6 +137,7 @@ This document provides a detailed, foldable API overview.
 		<summary>backup(copy): create dated backup file.</summary>
 
 		- Creates a timestamped backup in the resolved local backup location; `Os.LocalBackupDir` avoids discovered cloud roots and can be configured in `osconfig.json`.
+		- Backup path composition stays on `RaiPath`: `GetBackupRelativeDirectoryPath(...)` returns `RaiPath`, and `backup(copy)` composes the destination as `Os.LocalBackupDir / relativePath`.
 		</details>
 	</details>
 

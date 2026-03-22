@@ -9,7 +9,6 @@ public class CloudStorageProviderPathTests
 	[InlineData(CloudStorageType.Dropbox)]
 	[InlineData(CloudStorageType.OneDrive)]
 	[InlineData(CloudStorageType.GoogleDrive)]
-	[InlineData(CloudStorageType.ICloud)]
 	public void GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot(CloudStorageType provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
@@ -26,14 +25,13 @@ public class CloudStorageProviderPathTests
 	[InlineData(CloudStorageType.Dropbox)]
 	[InlineData(CloudStorageType.OneDrive)]
 	[InlineData(CloudStorageType.GoogleDrive)]
-	[InlineData(CloudStorageType.ICloud)]
 	public void RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(CloudStorageType provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "cloud-providers", out _);
 
 		var cloudDir = root / "Workspace" / "Project";
-		var localDir = new RaiPath(Os.TempDir) / "RAIkeep" / "cloud-providers" / "LocalFiles" / provider.ToString();
+		var localDir = Os.TempDir / "RAIkeep" / "cloud-providers" / "LocalFiles" / provider.ToString();
 		cloudDir.mkdir();
 		localDir.mkdir();
 

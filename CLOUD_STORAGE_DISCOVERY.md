@@ -1,12 +1,13 @@
 # Cloud Storage Discovery
 
-OsLib now resolves cloud roots through `Os.Config`, backed by a JSON config file that is created on demand and refreshed into an in-memory cache.
+OsLib resolves cloud roots through `Os.Config`, backed by `osconfig.json` and refreshed into an in-memory cache.
 
-Supported providers:
+The file is no longer treated as optional noise. Missing, unreadable, or malformed `osconfig.json` is a startup-critical configuration problem. OsLib can continue in degraded mode with intrinsic and fallback paths, but it logs an error and emits an explicit console startup diagnostic so operators can correct the configuration.
+
+Supported-and-documented providers in the `3.5.0` package line:
 - `Dropbox`
 - `OneDrive`
 - `GoogleDrive`
-- `ICloud`
 
 ## Current Model
 
@@ -19,14 +20,18 @@ Default locations:
 `Os.Config` wraps that file through `OsConfigFile`, and `Os.LoadConfig()` returns the typed `OsConfigModel`.
 
 The config is broader than cloud-only state. It can hold:
-- `homeDir`
 - `tempDir`
 - `localBackupDir`
 - `defaultCloudOrder`
 - `cloud.dropbox`
 - `cloud.onedrive`
 - `cloud.googledrive`
-- `cloud.icloud`
+
+Notes:
+
+- `UserHomeDir` is intrinsic and no longer config-driven.
+- Legacy `homeDir` values are accepted for compatibility, ignored at runtime, and logged as deprecated.
+- `AppRootDir` is intrinsic and resolves the runtime meaning of `.`.
 
 ## Public API
 
@@ -34,19 +39,24 @@ In `Os`:
 - `Config`: the reusable `OsConfigFile` wrapper
 - `LoadConfig(bool refresh = false)`: load or reload the typed `OsConfigModel`
 - `GetDefaultConfigPath()`: resolve the platform-specific config file path
+- `UserHomeDir`: intrinsic OS user home as `RaiPath`
+- `AppRootDir`: current working directory as `RaiPath`
+- `TempDir`: effective temp directory as `RaiPath`
+- `LocalBackupDir`: effective non-cloud backup directory as `RaiPath`
+- `CloudStorageRootDir`: preferred cloud root as `RaiPath`
 - `GetCloudStorageRoots(bool refresh = false)`: return all effective provider roots
 - `GetCloudStorageRoot(CloudStorageType provider, bool refresh = false)`: return one provider root
 - `GetPreferredCloudStorageRoot(params CloudStorageType[] preferredOrder)`: resolve a custom provider order
-- `CloudStorageRoot`: resolve the preferred provider root by default order
+- `GetCloudStorageRootDir(CloudStorageType provider, bool refresh = false)`: return one provider root as `RaiPath`
+- `GetPreferredCloudStorageRootDir(params CloudStorageType[] preferredOrder)`: resolve a custom provider order as `RaiPath`
 - `ResetCloudStorageCache()`: clear the effective root cache
 - `GetCloudDiscoveryReport(bool refresh = false)`: emit readable diagnostics
 - `GetCloudStorageSetupGuidance()`: emit a short setup hint that points here
 
 Default preferred order:
-1. `GoogleDrive`
-2. `ICloud`
-3. `Dropbox`
-4. `OneDrive`
+1. `OneDrive`
+2. `Dropbox`
+3. `GoogleDrive`
 
 ## Discovery Order
 
@@ -64,15 +74,13 @@ Example `osconfig.json`:
 
 ```json
 {
-	"homeDir": "/Users/me",
 	"tempDir": "/var/folders/.../T/",
 	"localBackupDir": "/Users/me/Library/Application Support/OsLib/Backup/",
-	"defaultCloudOrder": ["GoogleDrive", "ICloud", "Dropbox", "OneDrive"],
+	"defaultCloudOrder": ["OneDrive", "Dropbox", "GoogleDrive"],
 	"cloud": {
 		"dropbox": "/Users/me/Library/CloudStorage/Dropbox/",
 		"onedrive": "/Users/me/Library/CloudStorage/OneDrive-Contoso/",
-		"googledrive": "/Users/me/Library/CloudStorage/GoogleDrive-me@example.com/My Drive/",
-		"icloud": "/Users/me/Library/Mobile Documents/com~apple~CloudDocs/"
+		"googledrive": "/Users/me/Library/CloudStorage/GoogleDrive-me@example.com/My Drive/"
 	}
 }
 ```
@@ -87,7 +95,6 @@ Probes include:
 - Dropbox: `~/.dropbox/info.json`, `~/Dropbox`, `~/Library/CloudStorage/Dropbox`
 - OneDrive: `~/OneDrive*`, `~/Library/CloudStorage/OneDrive*`
 - Google Drive: `~/Library/CloudStorage/GoogleDrive*`, preferring `My Drive` when present, then `~/GoogleDrive` and `~/Google Drive`
-- iCloud: `~/Library/Mobile Documents/com~apple~CloudDocs`, plus a few common fallback paths
 
 ### Windows
 
@@ -95,7 +102,6 @@ Probes include:
 - Dropbox: `%APPDATA%\Dropbox\info.json`, `%LOCALAPPDATA%\Dropbox\info.json`
 - OneDrive: common `OneDrive*` locations under the user profile and cloud-storage folder
 - Google Drive: `%USERPROFILE%\Google Drive`, `%USERPROFILE%\My Drive`
-- iCloud: `%USERPROFILE%\iCloudDrive`
 
 ### Ubuntu / Linux
 
@@ -103,13 +109,33 @@ Probes include:
 - Dropbox: `~/.dropbox/info.json`, `~/Dropbox`
 - OneDrive: `~/OneDrive`, `~/OneDrive - Personal`
 - Google Drive: `~/Google Drive`, `~/GoogleDrive`
-- iCloud: common mount-style paths such as `~/iCloudDrive`, `~/Cloud/iCloud`, `~/rclone/iCloud`
 
 For Linux machines with custom cloud mounts, edit `osconfig.json` directly instead of relying on probes.
 
 ## Local Backup Behavior
 
 `Os.LocalBackupDir` now comes from config first, then falls back to OS-local defaults. If the configured backup directory is itself inside a discovered cloud root, OsLib rejects it and falls back to a non-cloud local path.
+
+Fallback selection is logged through `ILogger<T>` as a serious configuration warning, but it does not print to the console during normal operation.
+
+## Logging And Startup Diagnostics
+
+OsLib path and config diagnostics use `ILogger<T>` message templates.
+
+Normal behavior:
+
+- no library console chatter
+- fallback path usage is log-only
+- path resolution details are debug/info/warning logs depending on severity
+
+Startup-critical behavior:
+
+- missing `osconfig.json`
+- unreadable `osconfig.json`
+- malformed `osconfig.json`
+- missing preferred cloud root when a cloud root is required
+
+These conditions log errors and also emit a console startup diagnostic that explicitly says startup continues in degraded mode if that is the chosen behavior.
 
 ## Cloud-Aware File IO
 
@@ -123,7 +149,7 @@ That behavior now applies consistently whether the root came from:
 ## Recommended Setup
 
 For stable machine behavior:
-1. Let OsLib create `osconfig.json` on first use.
+1. Create and maintain `osconfig.json` explicitly instead of relying on silent runtime creation.
 2. Edit `cloud.*` entries for any provider whose probe path is not the path you want to standardize on.
 3. Set `localBackupDir` if you need backups in a specific non-cloud location.
 4. Call `ResetCloudStorageCache()` after changing config at runtime.

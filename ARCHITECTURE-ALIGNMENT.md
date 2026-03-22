@@ -2,6 +2,12 @@
 
 This repository aligns with private internal architecture decisions maintained outside this public repository.
 
+## 3.5.0 release alignment
+
+- The supported cloud-backed provider claim for the packaged `RAIkeep` stack is `OneDrive`, `GoogleDrive`, and `Dropbox`.
+- OsLib remains the shared configuration and path-resolution foundation for those providers.
+- JsonPit now treats `Id` as the canonical identifier, and OsLib documentation aligns with that cross-package contract.
+
 ## intent for OsLib
 
 - Keep OsLib focused on generic foundations and contracts.
