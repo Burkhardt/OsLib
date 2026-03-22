@@ -2,10 +2,11 @@
 
 This document provides a detailed, foldable API overview.
 
-## 3.5.0 scope note
+## 3.5.2 scope note
 
 - The current supported cloud-backed provider claim for the `RAIkeep` package stack is `OneDrive`, `GoogleDrive`, and `Dropbox`.
 - JsonPit now uses `PitItem.Id` as its canonical identifier; legacy `Name`-only payloads are normalized to `Id` by JsonPit.
+- `OsLibCore 3.5.2` is the upstream package step that should settle on NuGet before downstream fallback package updates.
 
 ## core types
 
