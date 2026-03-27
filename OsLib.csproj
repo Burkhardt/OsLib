@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-		<Version>3.5.4</Version>
+		<Version>3.5.5</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-		<PackageReleaseNotes>3.5.3 simplifies CanonicalFile and deprecates CanonicalPath, improving functionality and clarity in path conventions.</PackageReleaseNotes>
+		<PackageReleaseNotes>3.5.5 simplifies CanonicalFile and deprecates CanonicalPath, improving functionality and clarity in path conventions.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 
