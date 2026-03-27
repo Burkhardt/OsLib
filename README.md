@@ -4,9 +4,9 @@
 
 _formerly_ __OsLibCore__
 
-## 3.5.3
+## 3.6.0
 
-- Advances the OsLib documentation line to `3.5.3` for the current docs-only patch.
+- Fixes `CanonicalFile` constructor crash caused by infinite recursion in the `Name` getter/setter override.
 - Documents the supported cloud-backed provider claim as `OneDrive`, `GoogleDrive`, and `Dropbox`.
 - Keeps `osconfig.json` and `defaultCloudOrder` as the shared machine-local contract used across the `RAIkeep` package stack.
 - Separates intrinsic OS/runtime directories from config-driven directories: `UserHomeDir` and `AppRootDir` are intrinsic, while `TempDir`, `LocalBackupDir`, and `CloudStorageRootDir` are resolved through config plus safe fallbacks.
@@ -15,6 +15,7 @@ _formerly_ __OsLibCore__
 - Aligns OsLib documentation with JsonPit's `Id`-based identifier contract and legacy `Name` normalization policy.
 - Refreshes the packaged NuGet icon asset to a square `128x128` PNG.
 - Documents `CanonicalPath` as deprecated legacy API surface; prefer direct `RaiPath` composition.
+- Adds `PathConventionsTests` constructor tests for directory-style cloud-storage paths.
 
 ## namespace 
 
@@ -156,13 +157,13 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.5.3.md](RELEASE_NOTES_3.5.3.md)
+- Current release notes: [RELEASE_NOTES_3.6.0.md](RELEASE_NOTES_3.6.0.md)
 
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.5.3`)
+- Trigger: push a version tag in format `v*` (example: `v3.6.0`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.5.3 -m "v3.5.3" && git push origin v3.5.3`
+	- `git tag -a v3.6.0 -m "v3.6.0" && git push origin v3.6.0`
