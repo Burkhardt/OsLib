@@ -4,9 +4,9 @@
 
 _formerly_ __OsLibCore__
 
-## 3.6.0
+## 3.6.1
 
-- Fixes `CanonicalFile` constructor crash caused by infinite recursion in the `Name` getter/setter override.
+- Patch: corrects NuGet publish order so OsLibCore lands on NuGet before downstream packages (RaiUtils, RaiImage, JsonPit).
 - Documents the supported cloud-backed provider claim as `OneDrive`, `GoogleDrive`, and `Dropbox`.
 - Keeps `osconfig.json` and `defaultCloudOrder` as the shared machine-local contract used across the `RAIkeep` package stack.
 - Separates intrinsic OS/runtime directories from config-driven directories: `UserHomeDir` and `AppRootDir` are intrinsic, while `TempDir`, `LocalBackupDir`, and `CloudStorageRootDir` are resolved through config plus safe fallbacks.
@@ -157,13 +157,13 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.6.0.md](RELEASE_NOTES_3.6.0.md)
+- Current release notes: [RELEASE_NOTES_3.6.1.md](RELEASE_NOTES_3.6.1.md)
 
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.6.0`)
+- Trigger: push a version tag in format `v*` (example: `v3.6.1`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.6.0 -m "v3.6.0" && git push origin v3.6.0`
+	- `git tag -a v3.6.1 -m "v3.6.1" && git push origin v3.6.1`

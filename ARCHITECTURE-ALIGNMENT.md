@@ -2,13 +2,10 @@
 
 This repository aligns with private internal architecture decisions maintained outside this public repository.
 
-## 3.6.0 release alignment
+## 3.6.1 release alignment
 
-- The supported cloud-backed provider claim for the packaged `RAIkeep` stack is `OneDrive`, `GoogleDrive`, and `Dropbox`.
-- OsLib remains the shared configuration and path-resolution foundation for those providers.
-- JsonPit treats `Id` as the canonical identifier, and OsLib documentation aligns with that cross-package contract.
-- `OsLib 3.6.0` fixes the `CanonicalFile` constructor crash and updates path-convention tests.
-- `CanonicalPath` remains documented as deprecated legacy surface rather than recommended active design.
+- Patch release: corrects the NuGet publish order so OsLibCore is available before RaiUtils, RaiImage, and JsonPit reference it.
+- No API or behavioral changes beyond `3.6.0`.
 
 ## intent for OsLib
 

@@ -2,11 +2,10 @@
 
 This document provides a detailed, foldable API overview.
 
-## 3.6.0 scope note
+## 3.6.1 scope note
 
-- The current supported cloud-backed provider claim for the `RAIkeep` package stack is `OneDrive`, `GoogleDrive`, and `Dropbox`.
-- JsonPit uses `PitItem.Id` as its canonical identifier; legacy `Name`-only payloads are normalized to `Id` by JsonPit.
-- `OsLib 3.6.0` fixes the `CanonicalFile` constructor crash and aligns with the `3.6.0` `RAIkeep` package line.
+- Patch release: corrects NuGet publish order.
+- `OsLib 3.6.1` continues the `CanonicalFile` fix from `3.6.0` with no further API changes.
 - `CanonicalPath` remains available for compatibility but is deprecated; prefer direct `RaiPath` composition.
 
 ## core types
