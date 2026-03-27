@@ -2,12 +2,13 @@
 
 This repository aligns with private internal architecture decisions maintained outside this public repository.
 
-## 3.5.2 release alignment
+## 3.5.3 release alignment
 
 - The supported cloud-backed provider claim for the packaged `RAIkeep` stack is `OneDrive`, `GoogleDrive`, and `Dropbox`.
 - OsLib remains the shared configuration and path-resolution foundation for those providers.
 - JsonPit now treats `Id` as the canonical identifier, and OsLib documentation aligns with that cross-package contract.
-- The next downstream package-id migrations should follow only after the upstream `OsLibCore 3.5.2` package has settled on NuGet.
+- `OsLib 3.5.3` is a documentation-focused patch line for the current public package narrative.
+- `CanonicalPath` remains documented as deprecated legacy surface rather than recommended active design.
 
 ## intent for OsLib
 

@@ -2,11 +2,12 @@
 
 This document provides a detailed, foldable API overview.
 
-## 3.5.2 scope note
+## 3.5.3 scope note
 
 - The current supported cloud-backed provider claim for the `RAIkeep` package stack is `OneDrive`, `GoogleDrive`, and `Dropbox`.
 - JsonPit now uses `PitItem.Id` as its canonical identifier; legacy `Name`-only payloads are normalized to `Id` by JsonPit.
-- `OsLibCore 3.5.2` is the upstream package step that should settle on NuGet before downstream fallback package updates.
+- `OsLib 3.5.3` is the current documentation patch line for this package surface.
+- `CanonicalPath` remains available for compatibility but is deprecated; prefer direct `RaiPath` composition.
 
 ## core types
 
@@ -319,7 +320,7 @@ This document provides a detailed, foldable API overview.
 	</details>
 
 - <details>
-	<summary>CanonicalPath: canonical folder convention.</summary>
+	<summary>CanonicalPath: deprecated canonical folder convention retained for compatibility.</summary>
 
 	- <details>
 		<summary>RootPath / FileStem: canonical path inputs.</summary>
@@ -330,6 +331,7 @@ This document provides a detailed, foldable API overview.
 		<summary>Apply(): enforce canonical folder structure.</summary>
 
 		- Resulting path is `RootPath/FileStem/`.
+		- Prefer direct `RaiPath` composition for new code.
 		</details>
 	</details>
 
@@ -342,9 +344,9 @@ This document provides a detailed, foldable API overview.
 		- Identifies active path convention.
 		</details>
 	- <details>
-		<summary>ApplyPathConvention(): enforce canonical path via CanonicalPath.</summary>
+		<summary>ApplyPathConvention(): enforce canonical-by-name path behavior.</summary>
 
-		- Moves/creates underlying file placement according to canonical layout.
+		- Maintains canonical layout behavior for compatibility with existing callers.
 		</details>
 	</details>
 

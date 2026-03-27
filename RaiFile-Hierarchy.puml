@@ -21,7 +21,7 @@ class RaiPath {
   +operator /(self : RaiPath, subDir : string) : RaiPath
 }
 
-class CanonicalPath {
+class "CanonicalPath\n<<deprecated>>" as CanonicalPath {
   +RootPath : string
   +FileStem : string
   +Apply()
@@ -146,6 +146,11 @@ note right of CanonicalFile
   file is stored in folder named like the file stem.
   Example: /Root/AfricaStage.pit -> /Root/AfricaStage/AfricaStage.pit
   Convention is enforced in constructor.
+end note
+
+note right of CanonicalPath
+  Deprecated legacy type.
+  Prefer direct RaiPath composition.
 end note
 
 note right of ImageTreeFile
