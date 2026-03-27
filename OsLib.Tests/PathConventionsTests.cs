@@ -97,12 +97,30 @@ public class PathConventionsTests
 	}
 
 	[Fact]
-	public void CanonicalPath_Appends_FileStem_Folder()
+	public void CanonicalFile_Appends_Folder()
 	{
-		var root = new RaiPath("/tmp/storage/").Path;
-		var sut = new CanonicalPath(root, "AfricaStage");
+		var root = new RaiPath("/tmp/storage/");
+		var p = root / "otw.software";  // this is a path
+		var can1 = new CanonicalFile(p, "AfricaStage.json");
+		var can2 = new CanonicalFile(p, "AfricaStage", "json");
+		var can3 = new CanonicalFile(p, "Nomsa.net", "json");
+		var can4 = new CanonicalFile(p / "Nomsa.net", "Nomsa.net.json");
+		var can5 = new CanonicalFile(p / "Nomsa.net", "Nomsa.net", "json");
+		var can6 = new CanonicalFile(p / "Nomsa.net", "Nomsa.net");	// the second "Nomsa.net" will be interpreted as Name.Ext and split into Name="Nomsa" and Ext="net"
+		var can7 = new CanonicalFile("/tmp/storage/otw.software/Nomsa.net/Nomsa.net.json");
 
-		Assert.Equal(new RaiPath(root + "AfricaStage/").Path, sut.Path);
+		Assert.Equal("/tmp/storage/otw.software/AfricaStage/AfricaStage.json", can1.FullName);
+		Assert.Equal("json", can2.Ext);
+		Assert.Equal("/tmp/storage/otw.software/AfricaStage/AfricaStage.json", can2.FullName);
+		Assert.Equal("/tmp/storage/otw.software/Nomsa.net/Nomsa.net.json", can3.FullName);
+		Assert.Equal("/tmp/storage/otw.software/Nomsa.net/Nomsa.net.json", can4.FullName);
+		Assert.Equal("/tmp/storage/otw.software/Nomsa.net/Nomsa.net.json", can5.FullName);
+		Assert.Equal("json", can5.Ext);
+		Assert.Equal("/tmp/storage/otw.software/Nomsa.net/Nomsa/Nomsa.net", can6.FullName);
+		Assert.Equal("net", can6.Ext);
+		Assert.Equal("/tmp/storage/otw.software/Nomsa.net/Nomsa.net.json", can7.FullName);
+		Assert.Equal("json", can7.Ext);
+
 	}
 
 	[Fact]
@@ -128,7 +146,7 @@ public class PathConventionsTests
 			Assert.Equal("pit", sut.Ext);
 			Assert.Equal(concatenatedPath.Path, sut.Path);
 			Assert.Equal(new RaiFile(concatenatedPath, "AfricaStage.pit").FullName, sut.FullName);
-			Assert.True(new RaiFile(sut.FullName).Exists());	// why would the file exist? Was it saved?
+			//Assert.True(new RaiFile(sut.FullName).Exists());	// BS: creating a CanonicalFile object does not create the file on disk, calling .Save() does
 		}
 		finally
 		{
@@ -137,7 +155,7 @@ public class PathConventionsTests
 	}
 
 	[Fact]
-	public void CanonicalFile_WithoutExtension_UsesDefaultExtension()
+	public void CanonicalFile_WithoutExtension()
 	{
 		var root = NewTestRoot();
 		EnsureDir(root);
@@ -147,9 +165,9 @@ public class PathConventionsTests
 			var sut = new CanonicalFile(input);
 			var concatenatedPath = root / "NoExt";
 
-			Assert.Equal("json", sut.Ext);
-			Assert.Equal(new RaiFile(concatenatedPath, "NoExt.json").FullName, sut.FullName);
-			Assert.True(new RaiFile(sut.FullName).Exists());
+			Assert.True(string.IsNullOrEmpty(sut.Ext));
+			Assert.EndsWith($"{Os.DIRSEPERATOR}NoExt{Os.DIRSEPERATOR}NoExt", sut.FullName);
+			// Assert.True(new RaiFile(sut.FullName).Exists()); // BS: creating a CanonicalFile object does not create the file on disk, calling .Save() does
 		}
 		finally
 		{
@@ -193,5 +211,31 @@ public class PathConventionsTests
 		Assert.Equal(PathConventionType.CanonicalByName, canonical.ConventionName);
 
 		CleanupDir(root);
+	}
+
+	[Fact]
+	public void CanonicalFile_StringConstructor_WithNomsaNetDirectoryPath_PreservesDirectoryPath()
+	{
+		var fullName = "/Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/Nomsa.net/";
+
+		var sut = new CanonicalFile(fullName);
+
+		Assert.Equal(fullName, sut.Path);
+		Assert.Equal(string.Empty, sut.Name);
+		Assert.Equal(string.Empty, sut.Ext);
+		Assert.Equal(fullName, sut.FullName);
+	}
+
+	[Fact]
+	public void CanonicalFile_RaiPathConstructor_WithNomsaNetDirectoryPathAndName_KeepsCanonicalByStem()
+	{
+		var path = new RaiPath("/Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/Nomsa.net/");
+
+		var sut = new CanonicalFile(path, "Nomsa.net");
+
+		Assert.Equal("Nomsa", sut.Name);
+		Assert.Equal("net", sut.Ext);
+		Assert.Equal("/Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/Nomsa.net/Nomsa/", sut.Path);
+		Assert.Equal("/Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/Nomsa.net/Nomsa/Nomsa.net", sut.FullName);
 	}
 }
