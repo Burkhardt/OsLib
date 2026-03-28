@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -90,9 +91,31 @@ namespace OsLib
 
 		public List<string> Read()
 		{
-			lines = File.Exists(FullName) ? new List<string>(File.ReadAllLines(FullName)) : new List<string>();
+			lines = Exists() ? new List<string>(File.ReadAllLines(FullName)) : new List<string>();
 			Changed = false;
 			return Lines;
+		}
+		/// <summary>
+		/// reads directly from disk into the first line of Lines,
+		/// replacing the in-memory cache
+		/// is faster if you want to read the entire content of a file and need it as a single string
+		/// rather than line by line with direct access to the Lines.
+		/// Falls back to reading from Lines if only memory representation is available,
+		/// which is also the behavior for the second call to ReadAllText().
+		/// </summary>
+		/// <returns>string containing the entire content of the file</returns>
+		public string ReadAllText()
+		{
+			var exists = Exists();
+			if (exists)
+			{
+				Lines = new List<string>() { File.ReadAllText(FullName) };
+				Changed = true;
+				return Lines[0];
+			}
+			if (Lines.Count == 0)
+				return string.Empty;
+			return string.Join("\n", Lines);
 		}
 
 		/// <summary>
@@ -131,12 +154,15 @@ namespace OsLib
 		/// </summary>
 		/// <param name="path"></param>
 		/// <param name="name">"text", "text.txt", "text.ini, ..."</param>
+		/// <param name="ext">file extension, default is txt, json, json5 or alike are supported</param>
 		/// <param name="content">to add</param>
-		public TextFile(RaiPath path, string name, string content = null)
+		/// <param name="fastRead">if true, ReadAllText() will bypass the in-memory cache</param>
+		public TextFile(RaiPath path, string name, string ext = "txt", string content = null, bool fastRead = false)
 			: base(path, name)
 		{
+			this.readOnly = fastRead;	// enables ReadAllText() to bypass in-memory cache
 			if (string.IsNullOrEmpty(Ext))
-				Ext = "txt";	// default for TextFile
+				Ext = ext;
 			if (content != null)
 			{
 				Append(content);
