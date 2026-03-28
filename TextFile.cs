@@ -156,11 +156,9 @@ namespace OsLib
 		/// <param name="name">"text", "text.txt", "text.ini, ..."</param>
 		/// <param name="ext">file extension, default is txt, json, json5 or alike are supported</param>
 		/// <param name="content">to add</param>
-		/// <param name="fastRead">if true, ReadAllText() will bypass the in-memory cache</param>
-		public TextFile(RaiPath path, string name, string ext = "txt", string content = null, bool fastRead = false)
+		public TextFile(RaiPath path, string name, string ext = "txt", string content = null)
 			: base(path, name)
 		{
-			this.readOnly = fastRead;	// enables ReadAllText() to bypass in-memory cache
 			if (string.IsNullOrEmpty(Ext))
 				Ext = ext;
 			if (content != null)
