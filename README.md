@@ -4,6 +4,11 @@
 
 _formerly_ __OsLibCore__
 
+## 3.7.2
+
+- Patch: includes the RaiPath bug fix from commit `RaiPath fix`.
+- Keeps NuGet publish order so OsLibCore lands on NuGet before downstream packages (RaiUtils, RaiImage, JsonPit).
+
 ## 3.7.1
 
 - Patch: corrects NuGet publish order so OsLibCore lands on NuGet before downstream packages (RaiUtils, RaiImage, JsonPit).
@@ -157,13 +162,13 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.7.1.md](RELEASE_NOTES_3.7.1.md)
+- Current release notes: [RELEASE_NOTES_3.7.2.md](RELEASE_NOTES_3.7.2.md)
 
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.7.1`)
+- Trigger: push a version tag in format `v*` (example: `v3.7.2`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.7.1 -m "v3.7.1" && git push origin v3.7.1`
+	- `git tag -a v3.7.2 -m "v3.7.2" && git push origin v3.7.2`
