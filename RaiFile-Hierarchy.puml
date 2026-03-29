@@ -1,5 +1,5 @@
 @startuml OsLib-RaiFile-Hierarchy
-' Release: 3.6.1
+' Release: 3.7.0
 
 skinparam classAttributeIconSize 0
 show fields

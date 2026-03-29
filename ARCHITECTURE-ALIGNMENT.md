@@ -2,10 +2,10 @@
 
 This repository aligns with private internal architecture decisions maintained outside this public repository.
 
-## 3.6.1 release alignment
+## 3.7.0 release alignment
 
-- Patch release: corrects the NuGet publish order so OsLibCore is available before RaiUtils, RaiImage, and JsonPit reference it.
-- No API or behavioral changes beyond `3.6.0`.
+- Minor release: aligns path and canonicalization behavior used by JsonPit cloud integration workflows.
+- Public API remains stable for downstream libraries.
 
 ## intent for OsLib
 

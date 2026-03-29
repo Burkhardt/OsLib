@@ -1,5 +1,5 @@
 @startuml OsLib-Os-ClassDiagram
-' Release: 3.6.1
+' Release: 3.7.0
 title OsLib Os Class Diagram
 
 skinparam backgroundColor white
