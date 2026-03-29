@@ -481,7 +481,7 @@ namespace OsLib     // aka OsLibCore
 			}
 			if (s == ".")
 				s = Os.AppRootDir.Path;	// where the binary is running that executes this code
-			Path = s[^1] == Os.DIRSEPERATOR[0] ? s : s + Os.DIRSEPERATOR;
+			Path = new RaiFile(s).Path;
 		}
 
 		/// <summary>
@@ -1018,7 +1018,7 @@ namespace OsLib     // aka OsLibCore
 			path = string.Empty;
 			name = string.Empty;
 			ext = string.Empty;
-			if (!string.IsNullOrEmpty(filename))
+			if (!string.IsNullOrWhiteSpace(filename))
 			{
 				#region some unix conventions for convenience
 				if (filename.StartsWith("~/"))

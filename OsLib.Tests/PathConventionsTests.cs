@@ -32,7 +32,7 @@ public class PathConventionsTests
 	}
 
 	[Obsolete("hallucinated? use new RaiFile(path, nameWithExt).FullName")]
-	private static string 	FileAt(RaiPath path, string nameWithExt) => new RaiFile(path, nameWithExt).FullName;
+	private static string FileAt(RaiPath path, string nameWithExt) => new RaiFile(path, nameWithExt).FullName;
 
 	private static string SanitizeSegment(string? value)
 	{
@@ -48,6 +48,13 @@ public class PathConventionsTests
 		return string.IsNullOrWhiteSpace(cleaned) ? "test" : cleaned;
 	}
 
+	[Fact]
+	public void RaiPath_CreateFromFullName()
+	{
+		var p = new RaiPath("/Users/RSB/Projects/PitSeeder/pits/sample/Person.json5");
+		Assert.Equal("/Users/RSB/Projects/PitSeeder/pits/sample/", p.ToString());
+		Assert.Equal("/Users/RSB/Projects/PitSeeder/pits/sample/", p.Path);
+	}
 	[Fact]
 	public void RaiPath_Mkdir_CreatesDirectory_ForPathCompositionStyle()
 	{
