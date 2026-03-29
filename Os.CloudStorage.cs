@@ -28,22 +28,22 @@ namespace OsLib
 		[JsonProperty("googledrive")]
 		private string GoogleDriveRootSerialized
 		{
-			get => GoogleDriveRoot?.Path ?? string.Empty;
-			set => GoogleDriveRoot = ToRaiPath(value);
+			get => GoogleDriveRoot?.ToString() ?? string.Empty;
+			set => GoogleDriveRoot = new RaiPath(value);
 		}
 
 		[JsonProperty("dropbox")]
 		private string DropboxRootSerialized
 		{
-			get => DropboxRoot?.Path ?? string.Empty;
-			set => DropboxRoot = ToRaiPath(value);
+			get => DropboxRoot?.ToString() ?? string.Empty;
+			set => DropboxRoot = new RaiPath(value);
 		}
 
 		[JsonProperty("onedrive")]
 		private string OneDriveRootSerialized
 		{
-			get => OneDriveRoot?.Path ?? string.Empty;
-			set => OneDriveRoot = ToRaiPath(value);
+			get => OneDriveRoot?.ToString() ?? string.Empty;
+			set => OneDriveRoot = new RaiPath(value);
 		}
 
 		[JsonIgnore]
@@ -81,7 +81,7 @@ namespace OsLib
 
 		internal void SetRoot(CloudStorageType provider, string value)
 		{
-			var normalized = ToRaiPath(value);
+			var normalized = new RaiPath(value);
 			switch (provider)
 			{
 				case CloudStorageType.GoogleDrive:
@@ -118,21 +118,16 @@ namespace OsLib
 		{
 			return new CloudModel
 			{
-				GoogleDriveRoot = ToRaiPath(GoogleDriveRoot?.Path),
-				DropboxRoot = ToRaiPath(DropboxRoot?.Path),
-				OneDriveRoot = ToRaiPath(OneDriveRoot?.Path),
+				GoogleDriveRoot = new RaiPath(GoogleDriveRoot?.ToString()),
+				DropboxRoot = new RaiPath(DropboxRoot?.ToString()),
+				OneDriveRoot = new RaiPath(OneDriveRoot?.ToString()),
 			};
 		}
 
 		internal void Normalize()
 		{
 			foreach (var provider in Enum.GetValues<CloudStorageType>())
-				SetRoot(provider, GetRoot(provider)?.Path);
-		}
-
-		private static RaiPath ToRaiPath(string value)
-		{
-			return string.IsNullOrWhiteSpace(value) ? null : new RaiPath(Os.ExpandUserHomePathForConfig(value));
+				SetRoot(provider, GetRoot(provider)?.ToString());
 		}
 
 		private static void TryAdd(Dictionary<CloudStorageType, RaiPath> roots, CloudStorageType provider, RaiPath value)
@@ -147,22 +142,22 @@ namespace OsLib
 		[JsonProperty("homeDir")]
 		private string HomeDirSerialized
 		{
-			get => HomeDir?.Path ?? string.Empty;
-			set => HomeDir = ToRaiPath(value);
+			get => HomeDir?.ToString() ?? string.Empty;
+			set => HomeDir = new RaiPath(value);
 		}
 
 		[JsonProperty("tempDir")]
 		private string TempDirSerialized
 		{
-			get => TempDir?.Path ?? string.Empty;
-			set => TempDir = ToRaiPath(value);
+			get => TempDir?.ToString() ?? string.Empty;
+			set => TempDir = new RaiPath(value);
 		}
 
 		[JsonProperty("localBackupDir")]
 		private string LocalBackupDirSerialized
 		{
-			get => LocalBackupDir?.Path ?? string.Empty;
-			set => LocalBackupDir = ToRaiPath(value);
+			get => LocalBackupDir?.ToString() ?? string.Empty;
+			set => LocalBackupDir = new RaiPath(value);
 		}
 
 		[JsonIgnore]
@@ -202,9 +197,9 @@ namespace OsLib
 		{
 			return new OsConfigModel
 			{
-				HomeDir = ToRaiPath(HomeDir?.Path),
-				TempDir = ToRaiPath(TempDir?.Path),
-				LocalBackupDir = ToRaiPath(LocalBackupDir?.Path),
+				HomeDir = new RaiPath(HomeDir?.ToString()),
+				TempDir = new RaiPath(TempDir?.ToString()),
+				LocalBackupDir = new RaiPath(LocalBackupDir?.ToString()),
 				DefaultCloudOrder = DefaultCloudOrder?.ToList() ?? Os.CreateDefaultCloudOrder().ToList(),
 				Cloud = Cloud?.Clone() ?? new CloudModel()
 			};
@@ -213,18 +208,13 @@ namespace OsLib
 		internal void Normalize()
 		{
 			HomeDir = null;
-			TempDir = ToRaiPath(TempDir?.Path);
-			LocalBackupDir = ToRaiPath(LocalBackupDir?.Path);
+			TempDir = new RaiPath(TempDir?.ToString());
+			LocalBackupDir = new RaiPath(LocalBackupDir?.ToString());
 			DefaultCloudOrder = (DefaultCloudOrder == null || DefaultCloudOrder.Count == 0)
 				? Os.CreateDefaultCloudOrder().ToList()
 				: DefaultCloudOrder.Distinct().ToList();
 			Cloud ??= new CloudModel();
 			Cloud.Normalize();
-		}
-
-		private static RaiPath ToRaiPath(string value)
-		{
-			return string.IsNullOrWhiteSpace(value) ? null : new RaiPath(Os.ExpandUserHomePathForConfig(value));
 		}
 	}
 
@@ -539,9 +529,6 @@ namespace OsLib
 			return NormalizeConfigPath(string.IsNullOrWhiteSpace(configPathOverride) ? defaultConfigPath : configPathOverride);
 		}
 
-		[Obsolete("Use GetDefaultConfigPath() instead.")]
-		public static string GetDefaultCloudConfigPath() => GetDefaultConfigPath();
-
 		internal static IReadOnlyList<CloudStorageType> CreateDefaultCloudOrder()
 		{
 			return new[]
@@ -743,11 +730,6 @@ namespace OsLib
 				return expanded;
 
 			return home.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + DIRSEPERATOR + expanded.Substring(2);
-		}
-
-		internal static string ExpandUserHomePathForConfig(string path)
-		{
-			return ExpandUserHomePath(path);
 		}
 
 		private static string NormalizePathForComparison(string value)

@@ -474,7 +474,7 @@ namespace OsLib     // aka OsLibCore
 		/// <param name="s">if value of s does not end with a directory separator, one will be added; "." gets current directory</param>
 		public RaiPath(string s = ".")
 		{
-			if (string.IsNullOrEmpty(s))
+			if (string.IsNullOrWhiteSpace(s))
 			{
 				Path = string.Empty;
 				return;
@@ -580,6 +580,12 @@ namespace OsLib     // aka OsLibCore
 		{
 			get { return Path + NameWithExtension; }
 		}
+
+		public override string ToString()
+		{
+			return FullName;
+		}
+
 		/// <summary>
 		/// Check if the file currently exists in the file system
 		/// </summary>
