@@ -1,3 +1,5 @@
+using System;
+
 namespace OsLib
 {
 	public class TmpFile : RaiFile
@@ -21,7 +23,7 @@ namespace OsLib
 		/// <param name="fileName">No file name given: the OS chooses a temp file name.</param>
 		/// <param name="ext">Changes the system-generated or given filename, if not null.</param>
 		public TmpFile(string fileName = null, string ext = null)
-			: base(fileName ?? System.IO.Path.GetTempFileName())
+			: base(fileName ?? (Os.TempDir / $@"Temp{DateTime.UtcNow:yyyyMMddHH}").Path + Guid.NewGuid().ToString("N"))
 		{
 			// ImageServer needs access if this library is used from within an IIS app.
 			if (ext != null)

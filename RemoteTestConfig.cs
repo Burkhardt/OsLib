@@ -172,7 +172,7 @@ namespace OsLib
 
 		public static string GetDefaultRemoteTestConfigPath()
 		{
-			var configDir = new RaiPath(new RaiFile(GetDefaultConfigPath()).Path);
+			var configDir = new RaiPath(new RaiFile(defaultConfigFileLocation).Path);
 			return new RaiFile(configDir, defaultRemoteTestConfigFileName).FullName;
 		}
 
