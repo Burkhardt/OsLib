@@ -22,11 +22,18 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive);
 		env.WriteConfig(dropbox: dropbox, oneDrive: oneDrive, googleDrive: googleDrive);
 
-		var roots = Os.GetCloudStorageRoots(refresh: true);
+		_ = Os.LoadConfig();
 
-		Assert.Equal(new RaiPath(dropbox).Path, roots[CloudStorageType.Dropbox]);
-		Assert.Equal(new RaiPath(oneDrive).Path, roots[CloudStorageType.OneDrive]);
-		Assert.Equal(new RaiPath(googleDrive).Path, roots[CloudStorageType.GoogleDrive]);
+		try
+		{
+			Assert.Equal(new RaiPath(dropbox).Path, new RaiPath((string)Os.Config.Cloud.Dropbox).Path);
+			Assert.Equal(new RaiPath(oneDrive).Path, new RaiPath((string)Os.Config.Cloud.OneDrive).Path);
+			Assert.Equal(new RaiPath(googleDrive).Path, new RaiPath((string)Os.Config.Cloud.GoogleDrive).Path);
+		}
+		catch (Exception ex)
+		{
+			Assert.Fail($"Config access failed. Verify PascalCase cloud keys (Cloud/Dropbox/OneDrive/GoogleDrive). Error: {ex.Message}");
+		}
 	}
 
 	[Fact]
@@ -41,8 +48,8 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive);
 		env.WriteConfig(dropbox: dropbox, googleDrive: googleDrive);
 
-		var preferredDropbox = Os.GetPreferredCloudStorageRoot(CloudStorageType.Dropbox, CloudStorageType.GoogleDrive);
-		var preferredGoogle = Os.GetPreferredCloudStorageRoot(CloudStorageType.GoogleDrive, CloudStorageType.Dropbox);
+		var preferredDropbox = Os.GetCloudStorageRoot(Cloud.Dropbox).Path;
+		var preferredGoogle = Os.GetCloudStorageRoot(Cloud.GoogleDrive).Path;
 
 		Assert.Equal(new RaiPath(dropbox).Path, preferredDropbox);
 		Assert.Equal(new RaiPath(googleDrive).Path, preferredGoogle);
@@ -58,10 +65,16 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive);
 		env.WriteConfig(googleDrive: googleDrive);
 
-		var config = Os.LoadConfig(refresh: true);
+		_ = Os.LoadConfig();
 
-		Assert.Equal(new RaiPath(googleDrive).Path, config.GooglePath!.Path);
-		Assert.Equal(new RaiPath(googleDrive).Path, config.GetCloudDirPath(CloudStorageType.GoogleDrive)!.Path);
+		try
+		{
+			Assert.Equal(new RaiPath(googleDrive).Path, new RaiPath((string)Os.Config.Cloud.GoogleDrive).Path);
+		}
+		catch (Exception ex)
+		{
+			Assert.Fail($"Config access failed. Verify PascalCase cloud keys (Cloud/GoogleDrive). Error: {ex.Message}");
+		}
 	}
 
 	[Fact]
@@ -77,9 +90,16 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive);
 		env.WriteConfig(googleDrive: googleDrive);
 
-		var config = Os.LoadConfig(refresh: true);
+		_ = Os.LoadConfig();
 
-		Assert.Equal(new RaiPath(googleDrive).Path, config.GooglePath!.Path);
+		try
+		{
+			Assert.Equal(new RaiPath(googleDrive).Path, new RaiPath((string)Os.Config.Cloud.GoogleDrive).Path);
+		}
+		catch (Exception ex)
+		{
+			Assert.Fail($"Config access failed. Verify PascalCase cloud keys (Cloud/GoogleDrive). Error: {ex.Message}");
+		}
 	}
 
 	[Fact]
@@ -95,13 +115,11 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive.Path);
 		env.DeleteConfig();
 
-		var config = Os.LoadConfig(refresh: true);
+		_ = Os.LoadConfig();
 		var configPath = Os.GetDefaultConfigPath();
 
 		Assert.False(File.Exists(configPath));
-		Assert.Null(config.GooglePath);
-		Assert.Equal(new RaiPath(Os.ResolveSystemTempDir()).Path, config.TempDir!.Path);
-		Assert.Equal(new RaiPath(Os.ResolveSystemLocalBackupDir()).Path, config.LocalBackupDir!.Path);
+		Assert.Null(Os.Config);
 	}
 
 	[Fact]
@@ -117,17 +135,17 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive.Path);
 		env.WriteConfig(googleDrive: "/manual/path/");
 
-		_ = Os.GetCloudStorageRoots(refresh: true);
+		_ = Os.LoadConfig();
 
 		var config = JObject.Parse(File.ReadAllText(Os.GetDefaultConfigPath()));
-		Assert.Equal("/manual/path/", config["cloud"]!["googledrive"]!.ToString());
+		Assert.Equal("/manual/path/", config["Cloud"]!["GoogleDrive"]!.ToString());
 		Assert.DoesNotContain(new RaiPath(googleDrive.Path).Path, File.ReadAllText(Os.GetDefaultConfigPath()));
 	}
 
 	[Theory]
-	[InlineData(CloudStorageType.GoogleDrive, "ConfiguredGoogleDrive", "Google Drive")]
-	[InlineData(CloudStorageType.OneDrive, "ConfiguredOneDrive", "OneDrive - Personal")]
-	public void GetCloudStorageRoots_PrefersConfiguredProviderValue_WithoutProbeFallback(CloudStorageType provider, string configuredDirName, string discoveredDirName)
+	[InlineData(Cloud.GoogleDrive, "ConfiguredGoogleDrive", "Google Drive")]
+	[InlineData(Cloud.OneDrive, "ConfiguredOneDrive", "OneDrive - Personal")]
+	public void GetCloudStorageRoots_PrefersConfiguredProviderValue_WithoutProbeFallback(Cloud provider, string configuredDirName, string discoveredDirName)
 	{
 		if (!Os.IsUnixLike)
 			return;
@@ -141,10 +159,10 @@ public class CloudStorageConfigMechanicsTests
 
 		switch (provider)
 		{
-			case CloudStorageType.GoogleDrive:
+			case Cloud.GoogleDrive:
 				env.WriteConfig(googleDrive: configuredRoot);
 				break;
-			case CloudStorageType.OneDrive:
+			case Cloud.OneDrive:
 				env.WriteConfig(oneDrive: configuredRoot);
 				break;
 			default:
@@ -153,8 +171,8 @@ public class CloudStorageConfigMechanicsTests
 
 		var effectiveRoot = Os.GetCloudStorageRoot(provider, refresh: true);
 
-		Assert.Equal(new RaiPath(configuredRoot).Path, effectiveRoot);
-		Assert.NotEqual(new RaiPath(discoveredRoot).Path, effectiveRoot);
+		Assert.Equal(new RaiPath(configuredRoot).Path, effectiveRoot.Path);
+		Assert.NotEqual(new RaiPath(discoveredRoot).Path, effectiveRoot.Path);
 	}
 
 	[Fact]
@@ -168,45 +186,26 @@ public class CloudStorageConfigMechanicsTests
 	}
 
 	[Fact]
-	public void GetMacGoogleDriveProbeTarget_PrefersMyDrive_WhenPresent()
+	public void GetCloudStorageRoot_ReturnsConfiguredGoogleDrivePath()
 	{
 		var root = OsTestEnvironment.NewTestRoot("cloud-config");
-		root.mkdir();
+		using var env = new OsTestEnvironment(root);
+		var googleDrive = (root / "GoogleDriveProbeTarget").Path;
+		Directory.CreateDirectory(googleDrive);
+		env.WriteConfig(googleDrive: googleDrive);
 
-		var container = root / "GoogleDrive-rainer.burkhardt@gmail.com";
-		var myDrive = container / "My Drive";
-		Directory.CreateDirectory(myDrive.Path);
-
-		try
-		{
-			var resolved = Os.GetMacGoogleDriveProbeTarget(container.Path);
-
-			Assert.Equal(myDrive.Path, resolved);
-		}
-		finally
-		{
-			OsTestEnvironment.Cleanup(root);
-		}
+		Assert.Equal(new RaiPath(googleDrive).Path, Os.GetCloudStorageRoot(Cloud.GoogleDrive).Path);
 	}
 
 	[Fact]
-	public void GetMacGoogleDriveProbeTarget_FallsBackToContainer_WhenMyDriveIsMissing()
+	public void GetCloudStorageRoot_ReturnsConfiguredDropboxPath()
 	{
 		var root = OsTestEnvironment.NewTestRoot("cloud-config");
-		root.mkdir();
+		using var env = new OsTestEnvironment(root);
+		var dropbox = (root / "DropboxProbeTarget").Path;
+		Directory.CreateDirectory(dropbox);
+		env.WriteConfig(dropbox: dropbox);
 
-		var container = root / "GoogleDrive-rainer.burkhardt@gmail.com";
-		Directory.CreateDirectory(container.Path);
-
-		try
-		{
-			var resolved = Os.GetMacGoogleDriveProbeTarget(container.Path);
-
-			Assert.Equal(container.Path, resolved);
-		}
-		finally
-		{
-			OsTestEnvironment.Cleanup(root);
-		}
+		Assert.Equal(new RaiPath(dropbox).Path, Os.GetCloudStorageRoot(Cloud.Dropbox).Path);
 	}
 }

@@ -10,26 +10,26 @@ namespace OsLib
 			UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
 			UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
 
-		public TextFile File { get; }
+		public TextFile ScriptFile { get; }
 
-		public string FullName => File.FullName;
+		public string FullName => ScriptFile.FullName;
 
 		public Script(RaiPath path, string name, string content)
 			: base(new RaiFile(path, name).FullName)
 		{
-			File = new TextFile(path, name, content);
+			ScriptFile = new TextFile(path, name, content);
 			EnsureExecutable();
 		}
 
 		public Script Append(string line)
 		{
-			File.Append(line);
+			ScriptFile.Append(line);
 			return this;
 		}
 
 		public Script Save(bool backup = false)
 		{
-			File.Save(backup);
+			ScriptFile.Save(backup);
 			EnsureExecutable();
 			return this;
 		}

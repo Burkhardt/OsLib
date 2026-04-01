@@ -134,16 +134,42 @@ public class OsEnvironmentPathTests
 	}
 
 	[Fact]
+	public void GetDefaultRemoteTestConfigPath_UsesFixedRAIkeepConfigLocation()
+	{
+		OsTestEnvironment.ResetOsCaches();
+
+		var home = Environment.GetEnvironmentVariable("HOME");
+		if (string.IsNullOrWhiteSpace(home))
+			home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty;
+		var expected = Path.Combine(home, ".config", "RAIkeep", "remote-test-config.json");
+
+		Assert.Equal(expected, Os.GetDefaultRemoteTestConfigPath());
+	}
+
+	[Fact]
+	public void GetDefaultRemoteTestConfigPath_IgnoresDeprecatedHomeDirConfig()
+	{
+		var root = OsTestEnvironment.NewTestRoot("env-paths");
+		using var env = new OsTestEnvironment(root);
+		env.WriteConfig(homeDir: "/Users");
+
+		var expected = Path.Combine(env.Home, ".config", "RAIkeep", "remote-test-config.json");
+
+		Assert.Equal(expected, Os.GetDefaultRemoteTestConfigPath());
+	}
+
+	[Fact]
 	public void ConfiguredOnlyCloudResolution_DoesNotCreateMissingConfigFile()
 	{
 		var root = OsTestEnvironment.NewTestRoot("env-paths");
 		using var env = new OsTestEnvironment(root);
 		env.DeleteConfig();
-		using var configuredCloud = Os.PushCloudRootResolutionMode(CloudRootResolutionMode.ConfiguredOnly);
 
-		var roots = Os.GetCloudStorageRoots(refresh: true);
+		Assert.False(File.Exists(env.ConfigPath));
 
-		Assert.Empty(roots);
+		var isCloud = Os.IsCloudPath((root / "some-path").Path);
+
+		Assert.False(isCloud);
 		Assert.False(File.Exists(env.ConfigPath));
 	}
 
@@ -156,7 +182,8 @@ public class OsEnvironmentPathTests
 		using (var env1 = new OsTestEnvironment(root1))
 		{
 			env1.WriteConfig(googleDrive: google1);
-			Assert.Equal(new RaiPath(google1).Path, Os.LoadConfig(refresh: true).GooglePath!.Path);
+			dynamic config = Os.LoadConfig();
+			Assert.Equal(new RaiPath(google1).Path, new RaiPath((string)config.cloud.googledrive).Path);
 		}
 
 		var root2 = OsTestEnvironment.NewTestRoot("env-paths", "second");
@@ -165,7 +192,8 @@ public class OsEnvironmentPathTests
 		using var env2 = new OsTestEnvironment(root2);
 		env2.WriteConfig(googleDrive: google2);
 
-		Assert.Equal(new RaiPath(google2).Path, Os.LoadConfig(refresh: true).GooglePath!.Path);
+		dynamic configAfterSwitch = Os.LoadConfig();
+		Assert.Equal(new RaiPath(google2).Path, new RaiPath((string)configAfterSwitch.cloud.googledrive).Path);
 	}
 
 	[Fact]

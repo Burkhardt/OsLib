@@ -12,17 +12,17 @@ namespace OsLib
 		public string SshTarget { get; internal set; } = string.Empty;
 
 		[JsonProperty("cloudRoots")]
-		public Dictionary<CloudStorageType, string> CloudRoots { get; internal set; } = new();
+		public Dictionary<Cloud, string> CloudRoots { get; internal set; } = new();
 
 		internal void Normalize()
 		{
 			SshTarget = SshTarget?.Trim() ?? string.Empty;
-			CloudRoots = (CloudRoots ?? new Dictionary<CloudStorageType, string>())
+			CloudRoots = (CloudRoots ?? new Dictionary<Cloud, string>())
 				.Where(kvp => !string.IsNullOrWhiteSpace(kvp.Value))
 				.ToDictionary(kvp => kvp.Key, kvp => new RaiPath(kvp.Value).Path);
 		}
 
-		internal string GetCloudRoot(CloudStorageType provider)
+		internal string GetCloudRoot(Cloud provider)
 		{
 			return CloudRoots != null && CloudRoots.TryGetValue(provider, out var root)
 				? root
@@ -49,7 +49,7 @@ namespace OsLib
 	public sealed class RemoteScenarioModel
 	{
 		[JsonProperty("provider")]
-		public CloudStorageType Provider { get; internal set; } = CloudStorageType.GoogleDrive;
+		public Cloud Provider { get; internal set; } = Cloud.GoogleDrive;
 
 		[JsonProperty("observer")]
 		public string Observer { get; internal set; } = string.Empty;
@@ -172,8 +172,9 @@ namespace OsLib
 
 		public static string GetDefaultRemoteTestConfigPath()
 		{
-			var configDir = new RaiPath(new RaiFile(defaultConfigFileLocation).Path);
-			return new RaiFile(configDir, defaultRemoteTestConfigFileName).FullName;
+			var configPath = GetDefaultConfigPath();
+			var configDirPath = Path.GetDirectoryName(configPath) ?? string.Empty;
+			return Path.Combine(configDirPath, defaultRemoteTestConfigFileName);
 		}
 
 		public static string GetRemoteTestConfigurationDiagnosticReport(bool refresh = false)

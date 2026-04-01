@@ -22,13 +22,22 @@ namespace OsLib.Tests
 			foreach (var candidate in GetConfigCandidates())
 				Console.WriteLine($"- {candidate}: {(File.Exists(candidate) ? "found" : "missing")}");
 
-			Os.ResetCloudStorageCache();
 			var report = Os.GetCloudConfigurationDiagnosticReport(refresh: true);
 			Console.WriteLine(report);
 
-			foreach (var provider in Enum.GetValues<CloudStorageType>())
+			foreach (var provider in Enum.GetValues<Cloud>())
 			{
-				var root = Os.TryGetConfiguredCloudStorageRoot(provider, out var configuredRoot) ? configuredRoot : string.Empty;
+				var configuredRoot = string.Empty;
+				try
+				{
+					configuredRoot = Os.GetCloudStorageRoot(provider)?.Path ?? string.Empty;
+				}
+				catch
+				{
+					configuredRoot = string.Empty;
+				}
+
+				var root = configuredRoot;
 				var status = string.IsNullOrWhiteSpace(root)
 					? "not configured"
 					: Directory.Exists(root) ? "directory exists" : "configured but directory missing";

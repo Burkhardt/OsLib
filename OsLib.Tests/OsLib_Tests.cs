@@ -319,7 +319,7 @@ namespace OsLib.Tests
 				var script = RaiSystem.CreateScript(root, name, content);
 
 				Assert.True(File.Exists(script.FullName));
-				Assert.Contains("hello", string.Join("\n", script.File.Read()));
+				Assert.Contains("hello", string.Join("\n", script.ScriptFile.Read()));
 
 				if (OperatingSystem.IsWindows())
 					return;

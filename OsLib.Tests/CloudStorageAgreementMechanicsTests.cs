@@ -17,13 +17,24 @@ public class CloudStorageAgreementMechanicsTests
 		Directory.CreateDirectory(dropbox);
 		Directory.CreateDirectory(googleDrive);
 		env.WriteConfig(dropbox: dropbox, googleDrive: googleDrive);
-		var configFile = new OsConfigFile(env.ConfigPath);
-		var expectedRoot = configFile.Data.DefaultCloudOrder
-			.Select(provider => configFile.Data.GetCloudDirPath(provider)?.Path)
-			.First(path => !string.IsNullOrWhiteSpace(path));
+
+		_ = Os.LoadConfig();
+		var expectedRoot = string.Empty;
+		foreach (var providerName in ((IEnumerable<object>)Os.Config.DefaultCloudOrder).Select(x => x?.ToString()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x!))
+		{
+			if (!Enum.TryParse(providerName, ignoreCase: true, out Cloud provider))
+				continue;
+
+			var candidate = Os.GetCloudStorageRoot(provider)?.Path ?? string.Empty;
+			if (!string.IsNullOrWhiteSpace(candidate))
+			{
+				expectedRoot = candidate;
+				break;
+			}
+		}
 
 		Assert.Equal(expectedRoot, Os.CloudStorageRootDir.Path);
-		Assert.Equal(new RaiPath(googleDrive).Path, Os.GetCloudStorageRoot(CloudStorageType.GoogleDrive));
+		Assert.Equal(new RaiPath(googleDrive).Path, Os.GetCloudStorageRoot(Cloud.GoogleDrive).Path);
 	}
 
 	[Fact]
@@ -48,10 +59,21 @@ public class CloudStorageAgreementMechanicsTests
 		Directory.CreateDirectory(configuredGoogle);
 		env.WriteConfig(googleDrive: configuredGoogle);
 
-		var roots = Os.GetCloudStorageRoots(refresh: true);
+		var googleRoot = Os.GetCloudStorageRoot(Cloud.GoogleDrive, refresh: true).Path;
+		Assert.Equal(new RaiPath(configuredGoogle).Path, googleRoot);
 
-		Assert.Equal(new RaiPath(configuredGoogle).Path, roots[CloudStorageType.GoogleDrive]);
-		Assert.False(roots.ContainsKey(CloudStorageType.Dropbox));
+		var dropboxConfigured = true;
+		try
+		{
+			var dropboxRoot = Os.GetCloudStorageRoot(Cloud.Dropbox, refresh: true).Path;
+			dropboxConfigured = !string.IsNullOrWhiteSpace(dropboxRoot);
+		}
+		catch
+		{
+			dropboxConfigured = false;
+		}
+
+		Assert.False(dropboxConfigured);
 	}
 
 	[Fact]
@@ -62,12 +84,13 @@ public class CloudStorageAgreementMechanicsTests
 
 		var root = OsTestEnvironment.NewTestRoot("cloud-agreement");
 		using var env = new OsTestEnvironment(root);
-		env.WriteConfig();
+
 
 		var oneDriveVariant = new RaiPath(env.Home) / "OneDrive - Mzansi";
 		Directory.CreateDirectory(oneDriveVariant.Path);
+		env.WriteConfig(oneDrive: oneDriveVariant.Path);
 
-		Assert.Equal(oneDriveVariant.Path, Os.GetCloudStorageRoot(CloudStorageType.OneDrive, refresh: true));
+		Assert.Equal(oneDriveVariant.Path, Os.GetCloudStorageRoot(Cloud.OneDrive, refresh: true).Path);
 	}
 
 	[Fact]
@@ -101,10 +124,10 @@ public class CloudStorageAgreementMechanicsTests
 	}
 
 	[Theory]
-	[InlineData(CloudStorageType.Dropbox, "DropboxRoot")]
-	[InlineData(CloudStorageType.OneDrive, "OneDriveRoot")]
-	[InlineData(CloudStorageType.GoogleDrive, "GoogleDriveRoot")]
-	public void Backup_StripsConfiguredCloudRoot_FromBackupTargetPath(CloudStorageType provider, string rootName)
+	[InlineData(Cloud.Dropbox, "DropboxRoot")]
+	[InlineData(Cloud.OneDrive, "OneDriveRoot")]
+	[InlineData(Cloud.GoogleDrive, "GoogleDriveRoot")]
+	public void Backup_StripsConfiguredCloudRoot_FromBackupTargetPath(Cloud provider, string rootName)
 	{
 		var root = OsTestEnvironment.NewTestRoot("cloud-agreement");
 		using var env = new OsTestEnvironment(root);
@@ -117,13 +140,13 @@ public class CloudStorageAgreementMechanicsTests
 
 		switch (provider)
 		{
-			case CloudStorageType.Dropbox:
+			case Cloud.Dropbox:
 				env.WriteConfig(localBackupDir: localBackup, dropbox: cloudRoot);
 				break;
-			case CloudStorageType.OneDrive:
+			case Cloud.OneDrive:
 				env.WriteConfig(localBackupDir: localBackup, oneDrive: cloudRoot);
 				break;
-			case CloudStorageType.GoogleDrive:
+			case Cloud.GoogleDrive:
 				env.WriteConfig(localBackupDir: localBackup, googleDrive: cloudRoot);
 				break;
 		}

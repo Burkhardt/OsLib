@@ -8,10 +8,10 @@ namespace OsLib.Tests;
 public class CloudRemoteSyncTests
 {
 	[Theory]
-	[InlineData(CloudStorageType.GoogleDrive)]
-	[InlineData(CloudStorageType.Dropbox)]
-	[InlineData(CloudStorageType.OneDrive)]
-	public void TextFile_SyncsWithMzansi(CloudStorageType provider)
+	[InlineData(Cloud.GoogleDrive)]
+	[InlineData(Cloud.Dropbox)]
+	[InlineData(Cloud.OneDrive)]
+	public void TextFile_SyncsWithMzansi(Cloud provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		Console.WriteLine(Os.GetCloudConfigurationDiagnosticReport(refresh: true));
@@ -28,7 +28,7 @@ public class CloudRemoteSyncTests
 		var remoteDir = probe.GetRemoteDirectory(relativeDir);
 		var remoteFile = new RaiFile(probe.GetRemoteFullName(relativeFile));
 		var propagationTimeout = TimeSpan.FromMinutes(2);
-		var deletePropagationTimeout = provider == CloudStorageType.GoogleDrive
+		var deletePropagationTimeout = provider == Cloud.GoogleDrive
 			? TimeSpan.FromMinutes(5)
 			: propagationTimeout;
 		var keepArtifactsForInspection = false;

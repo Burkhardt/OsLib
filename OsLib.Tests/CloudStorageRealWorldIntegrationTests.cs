@@ -11,10 +11,10 @@ namespace OsLib.Tests
 	public class CloudStorageRealWorldIntegrationTests
 	{
 		[Theory]
-		[InlineData(CloudStorageType.Dropbox)]
-		[InlineData(CloudStorageType.OneDrive)]
-		[InlineData(CloudStorageType.GoogleDrive)]
-		public void RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider(CloudStorageType provider)
+		[InlineData(Cloud.Dropbox)]
+		[InlineData(Cloud.OneDrive)]
+		[InlineData(Cloud.GoogleDrive)]
+		public void RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider(Cloud provider)
 		{
 			using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 			var root = PrepareWritableIntegrationRoot(provider, out var providerRoot);
@@ -77,10 +77,10 @@ namespace OsLib.Tests
 		}
 
 		[Theory]
-		[InlineData(CloudStorageType.Dropbox)]
-		[InlineData(CloudStorageType.OneDrive)]
-		[InlineData(CloudStorageType.GoogleDrive)]
-		public void TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider(CloudStorageType provider)
+		[InlineData(Cloud.Dropbox)]
+		[InlineData(Cloud.OneDrive)]
+		[InlineData(Cloud.GoogleDrive)]
+		public void TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider(Cloud provider)
 		{
 			using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 			var root = PrepareWritableIntegrationRoot(provider, out var providerRoot);
@@ -117,7 +117,7 @@ namespace OsLib.Tests
 			}
 		}
 
-		private static RaiPath PrepareWritableIntegrationRoot(CloudStorageType provider, out string providerRoot)
+		private static RaiPath PrepareWritableIntegrationRoot(Cloud provider, out string providerRoot)
 		{
 			var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "oslib-cloud-integration-tests", out providerRoot);
 

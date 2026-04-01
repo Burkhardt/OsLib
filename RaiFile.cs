@@ -14,359 +14,8 @@ using Newtonsoft.Json.Serialization;
 /*
  *	based on RsbFile (C++ version from 1991, C# version 2005)
  */
-namespace OsLib     // aka OsLibCore
+namespace OsLib
 {
-	public enum EscapeMode { noEsc, blankEsc, paramEsc, backslashed };
-	public enum OsType { Windows, MacOS, Ubuntu };
-		public enum CloudStorageType { Dropbox, OneDrive, GoogleDrive };
-	/// <summary>
-	/// Provides OS-aware environment and path utilities, including platform detection,
-	/// home/temp directory discovery, separator normalization, and cloud-root lookup.
-	/// </summary>
-	public static partial class Os
-	{
-		private static readonly string defaultConfigFileLocation = "~/.config/RAIkeep/osconfig.json";   // see Os.CloudStorage.cs for ConfigFile<OsConfigModel>
-		public static RaiPath UserHomeDir
-		{
-			get
-			{
-				userHomeDir ??= new RaiPath("~");
-				LogDebug<OsDiagnosticsLogScope>("Resolved user home directory to {UserHomeDir}", userHomeDir.Path);
-				return userHomeDir;
-			}
-		}
-		public static RaiPath AppRootDir
-		{
-			get
-			{
-				appRootDir = new RaiPath(".");
-				LogDebug<OsDiagnosticsLogScope>("Resolved application root directory to {AppRootDir}", appRootDir.Path);
-				return appRootDir;
-			}
-		}
-		public static RaiPath CloudStorageRootDir
-		{
-			get
-			{
-				string provider = null;
-				try
-				{
-					provider = Config.DefaultCloudOrder.FirstOrDefault()?.ToString();
-					switch (provider)
-					{
-						case "googledrive":
-							cloudStorageRootDir = new RaiPath(Config.cloud.googledrive);
-							break;
-						case "dropbox":
-							cloudStorageRootDir = new RaiPath(Config.cloud.dropbox);
-							break;
-						case "onedrive":
-							cloudStorageRootDir = new RaiPath(Config.cloud.onedrive);
-							break;
-						default:
-							throw new InvalidDataException($"Invalid cloud storage type '{provider}' in configuration file '{defaultConfigFileLocation}'.");
-					}
-				}
-				catch (Exception ex)
-				{
-					LogError<OsDiagnosticsLogScope>(ex, "Failed to resolve cloud storage root directory for provider {Provider}", provider);
-				}
-				return cloudStorageRootDir;
-			}
-		}
-		public static bool IsWindows => Type == OsType.Windows;
-		public static bool IsMacOS => Type == OsType.MacOS;
-		public static OsType Type
-		{
-			get
-			{
-				if (type == null)
-					type = DetectOsType();
-				return (OsType)type;
-			}
-		}
-		public static bool IsUnixLike => Type != OsType.Windows;
-		public static bool IsLinuxLike => Type == OsType.Ubuntu;
-		private static RaiPath userHomeDir = null;
-		private static RaiPath appRootDir = null;
-		private static RaiPath cloudStorageRootDir = null;
-		private static OsType? type = null;
-		public static RaiPath TempDir
-		{
-			get
-			{
-				try
-				{
-					if (tempDir == null)
-					{
-						var tempDir = Config.tempDir;
-					}
-				}
-				catch (Exception ex)
-				{
-					tempDir = new RaiPath(ResolveSystemTempDir());
-					LogError<OsDiagnosticsLogScope>(ex, "Failed to resolve configured temp directory. Falling back to operating system temp directory {TempDir}", tempDir.Path);
-				}
-				return tempDir;
-			}
-		}
-		public static string NewShortId(int length = 4)
-		{
-			if (length < 1)
-				length = 1;
-			if (length > 32)
-				length = 32;
-
-			return Guid.NewGuid().ToString("N").Substring(0, length);
-		}
-		private static RaiPath tempDir = null;
-		public static RaiPath LocalBackupDir
-		{
-			get
-			{
-				if (localBackupDir == null)
-					localBackupDir = ResolveConfiguredOrDefaultLocalBackupDir();
-				return localBackupDir;
-			}
-		}
-		public static string DIRSEPERATOR
-		{
-			get
-			{
-				if (dIRSEPERATOR == null)
-					dIRSEPERATOR = System.IO.Path.DirectorySeparatorChar.ToString();
-				return dIRSEPERATOR;
-			}
-		}
-		private static string dIRSEPERATOR = null;       // changed internal representation; use EscapeMode.backslashed to convert to "\\"
-		public const string ESCAPECHAR = "\\";
-		public const string DATEFORMAT = "yyyy-MM-dd HH.mm.ss"; // missing in older versions
-		public static DateTimeOffset ParseDateTime(string datetimeInDATEFORMAT)
-		{
-			var a = datetimeInDATEFORMAT.Split(new char[] { '-', '.', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-			return new DateTimeOffset(new DateTime(int.Parse(a[0]), int.Parse(a[1]), int.Parse(a[2]), int.Parse(a[3]), int.Parse(a[4]), int.Parse(a[5])));
-		}
-		public static string escapeParam(string param)
-		{        // "..."
-			if (param[0] == '\"')
-				return param;
-			return '\"' + param + '\"';
-		}
-		public static string escapeBlank(string name)
-		{     // every whitespace char will be escaped by insertion of ESCAPECHAR
-			var s = name;
-			for (int i = 0; i < s.Length; i++)
-			{
-				if (s[i] == ' ')
-				{
-					s = s.Insert(i, Os.ESCAPECHAR);
-					i++;
-				}
-			}
-			return s;
-		}
-		public static string winInternal(string fullname)
-		{  // every / is replaced by a \ in the copy
-			char dirChar = Os.DIRSEPERATOR[0];
-			if (fullname != null && dirChar != '/')
-				fullname = fullname.Replace('/', dirChar); //fullname = fullname.Replace('/', '\\');
-			return fullname;
-		}
-		/// <summary>
-		/// Use NormPath when a new path is created, not for internal functions that use the Os context
-		/// </summary>
-		/// <param name="path"></param>
-		/// <returns>Path adjusted to the operating system the code is currently running on</returns>
-		/// <remarks>It is probably fair to assume that the use of unix conventions for paths are standard throughout the code. If the system runs on Windows, NormPath will adjust the path accordingly.</remarks>
-		public static string NormPath(string path)
-		{
-			switch (Os.type)
-			{
-				case OsType.Windows:    // most of the time this means that the path has to get converted
-										// check if the path is already in unix format, no : no \
-					if (path != null && !path.Contains(':') && !path.Contains('\\'))
-						return path;
-					if (path != null)
-						path = path.Replace('/', DIRSEPERATOR[0]);
-					break;
-			}
-			return path;
-		}
-		public static string Escape(string s, EscapeMode mode)
-		{
-			if (mode == EscapeMode.noEsc)
-				return s;
-			if (mode == EscapeMode.blankEsc)
-				return Os.escapeBlank(s);
-			if (mode == EscapeMode.paramEsc)
-				return Os.escapeParam(s);
-			if (mode == EscapeMode.backslashed)
-				return Os.winInternal(s);
-			return s;
-		}
-		public static string NormSeperator(string s)
-		{
-			return s.Replace(@"\", DIRSEPERATOR);
-		}
-
-		private static RaiPath localBackupDir = null;
-
-		internal static string ResolveSystemHomeDir()
-		{
-			var resolved = string.Empty;
-			if (Type == OsType.Windows)
-			{
-				resolved = Environment.GetEnvironmentVariable("USERPROFILE");
-				if (string.IsNullOrEmpty(resolved))
-				{
-					var homeDrive = Environment.GetEnvironmentVariable("HOMEDRIVE");
-					var homePath = Environment.GetEnvironmentVariable("HOMEPATH");
-					if (!string.IsNullOrEmpty(homeDrive) && !string.IsNullOrEmpty(homePath))
-						resolved = homeDrive + homePath;
-				}
-			}
-			else
-			{
-				resolved = Environment.GetEnvironmentVariable("HOME");
-			}
-
-			if (string.IsNullOrEmpty(resolved))
-				resolved = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty;
-
-			if (string.IsNullOrWhiteSpace(resolved))
-				LogWarningOnce<OsDiagnosticsLogScope>("fallback:userhome:empty", "User home directory could not be resolved from environment variables. SpecialFolder fallback returned an empty value.");
-
-			return resolved;
-		}
-
-		internal static string ResolveSystemTempDir()
-		{
-			return System.IO.Path.GetTempPath();
-		}
-
-		internal static string ResolveSystemLocalBackupDir()
-		{
-			foreach (var candidate in GetLocalBackupDirCandidates())
-			{
-				var normalized = NormalizeBackupDirectoryCandidate(candidate);
-				if (!string.IsNullOrWhiteSpace(normalized))
-					return normalized;
-			}
-
-			return (new RaiPath(ResolveSystemTempDir()) / "OsLib" / "Backup").Path;
-		}
-
-		private static RaiPath ResolveConfiguredOrDefaultLocalBackupDir()
-		{
-			try
-			{
-				if (TryLoadExistingConfig(out var configured, refresh: false) && configured?.LocalBackupDir != null)
-				{
-					var configuredPath = configured.LocalBackupDir.Path;
-					if (!IsCloudPath(configuredPath))
-					{
-						LogInformation<OsDiagnosticsLogScope>("Using configured local backup directory {LocalBackupDir}", configuredPath);
-						return new RaiPath(configuredPath);
-					}
-
-					LogWarningOnce<OsDiagnosticsLogScope>("fallback:localbackup:cloud", "Configured local backup directory {LocalBackupDir} is cloud-backed. Falling back to a non-cloud directory.", configuredPath);
-				}
-			}
-			catch (Exception ex)
-			{
-				LogError<OsDiagnosticsLogScope>(ex, "Failed to resolve configured local backup directory. Falling back to an operating system local directory.");
-			}
-
-			foreach (var candidate in GetLocalBackupDirCandidates())
-			{
-				var normalized = NormalizeBackupDirectoryCandidate(candidate);
-				if (!string.IsNullOrWhiteSpace(normalized) && !IsCloudPath(normalized))
-				{
-					LogWarningOnce<OsDiagnosticsLogScope>("fallback:localbackup", "LocalBackupDir is not configured. Falling back to local directory {LocalBackupDir}", normalized);
-					return new RaiPath(normalized);
-				}
-			}
-
-			var systemFallback = ResolveSystemLocalBackupDir();
-			LogWarningOnce<OsDiagnosticsLogScope>("fallback:localbackup:system", "No preferred local backup directory candidate was available. Falling back to system backup directory {LocalBackupDir}", systemFallback);
-			return new RaiPath(systemFallback);
-		}
-
-		private static IEnumerable<string> GetLocalBackupDirCandidates()
-		{
-			var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-			if (!string.IsNullOrWhiteSpace(localAppData))
-				yield return Path.Combine(localAppData, "OsLib", "Backup");
-
-			if (Type == OsType.Windows)
-			{
-				var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
-				if (!string.IsNullOrWhiteSpace(userProfile))
-					yield return Path.Combine(userProfile, "AppData", "Local", "OsLib", "Backup");
-			}
-			else
-			{
-				yield return "~/.local/share/OsLib/Backup";
-				yield return "~/.oslib/backup";
-				yield return "~/Backup";
-			}
-
-			yield return Path.Combine(ResolveSystemTempDir(), "OsLib", "Backup");
-		}
-
-		private static string NormalizeBackupDirectoryCandidate(string candidate)
-		{
-			if (string.IsNullOrWhiteSpace(candidate))
-				return null;
-
-			var expanded = candidate.Trim();
-			if (expanded.StartsWith("~/"))
-				expanded = $"{UserHomeDir.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)}{expanded.Substring(1)}";
-
-			return new RaiPath(expanded).Path;
-		}
-
-		private static OsType DetectOsType()
-		{
-			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
-				return OsType.Windows;
-
-			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
-				return OsType.MacOS;
-
-			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
-				return OsType.Ubuntu;
-
-			return OsType.Ubuntu;
-		}
-
-		private static bool IsUbuntuRuntime()
-		{
-			try
-			{
-				const string osRelease = "/etc/os-release";
-				if (!File.Exists(osRelease))
-					return false;
-
-				foreach (var line in File.ReadAllLines(osRelease))
-				{
-					if (!line.StartsWith("ID=", StringComparison.OrdinalIgnoreCase) &&
-						!line.StartsWith("ID_LIKE=", StringComparison.OrdinalIgnoreCase))
-						continue;
-
-					var value = line.Substring(line.IndexOf('=') + 1).Trim().Trim('"');
-					if (value.Contains("ubuntu", StringComparison.OrdinalIgnoreCase))
-						return true;
-				}
-			}
-			catch
-			{
-			}
-
-			return false;
-		}
-	}
-
 	/// <summary>
 	/// Convenience extensions for string and CSV handling.
 	/// </summary>
@@ -444,81 +93,6 @@ namespace OsLib     // aka OsLibCore
 		}
 	}
 	/// <summary>
-	/// RaiPath – uses operator/ to add a subdirectory to a path
-	/// just the path, no filename, no extension
-	/// </summary>
-	/// <summary>
-	/// Represents a directory path and enforces a trailing directory separator.
-	/// </summary>
-	public class RaiPath
-	{
-		public string Path
-		{
-			get
-			{
-				return path.Path;
-			}
-			set
-			{
-				// make sure the last character of the passed path is a directory separator
-				path = new RaiFile(value);
-				path.Name = string.Empty;
-				path.Ext = string.Empty;
-			}
-		}
-		private RaiFile path;
-		/// <summary>
-		/// Using the / operator to add a subdirectory to a path
-		/// </summary>
-		/// <param name="self"></param>
-		/// <param name="subDir">string</param>
-		/// <returns>RaiPath object for daisy chaining reasons</returns>
-		public static RaiPath operator /(RaiPath self, string subDir)
-		{
-			return new RaiPath(self.path.Path + subDir + Os.DIRSEPERATOR);
-		}
-		/// <summary>
-		/// Using the / operator to add a subdirectory to a path
-		/// </summary>
-		/// <param name="self"></param>
-		/// <param name="subDir">RaiPath</param>
-		/// <returns>RaiPath object for daisy chaining reasons</returns>
-		public static RaiPath operator /(RaiPath self, RaiPath subDir)
-		{
-			return new RaiPath(self.path.Path + subDir.Path);
-		}
-
-		/// <summary>
-		/// Constructor that takes a string path; the caller knows that this is a directory path; it does not have to exist yet in the file system.
-		/// </summary>
-		/// <param name="s">if value of s does not end with a directory separator, one will be added; "." gets current directory</param>
-		public RaiPath(string s = ".")
-		{
-			if (string.IsNullOrWhiteSpace(s))
-			{
-				Path = string.Empty;
-				return;
-			}
-			if (s == ".")
-				s = Os.AppRootDir.Path;	// where the binary is running that executes this code
-			Path = new RaiFile(s).Path;
-		}
-
-		/// <summary>
-		/// Constructor that takes a RaiFile object; uses its Path and ignores Name and Ext.
-		/// </summary>
-		public RaiPath(RaiFile f)
-		{
-			path = f;
-			path.Name = string.Empty;
-			path.Ext = string.Empty;
-		}
-		public bool Exists() => Directory.Exists(path.Path);
-		public RaiPath mkdir() => new RaiFile(Path).mkdir();
-		public void rmdir(int depth = 0, bool deleteFiles = false) => new RaiFile(Path).rmdir(depth, deleteFiles);
-		public override string ToString() => Path;
-	}
-	/// <summary>
 	/// File and directory utility with path parsing and cloud-aware behaviors.
 	/// </summary>
 	public class RaiFile
@@ -537,7 +111,7 @@ namespace OsLib     // aka OsLibCore
 			set
 			{   // sets name and ext; override to set more name components
 				name = Os.NormSeperator(value);
-				var pos = name.LastIndexOf("/");
+				var pos = name.LastIndexOf(Os.DIRSEPERATOR);
 				if (pos >= 0 && name.Length > pos)
 					name = name.Remove(0, pos + 1);
 				pos = name.LastIndexOf(".");
@@ -745,6 +319,14 @@ namespace OsLib     // aka OsLibCore
 			return 0;
 		}
 		public bool IsDirectory() => FullName.EndsWith(Os.DIRSEPERATOR);
+		public TimeSpan FileAge
+		{
+			get
+			{
+				var info = new System.IO.FileInfo(FullName);
+				return DateTimeOffset.UtcNow - info.CreationTimeUtc;
+			}
+		}
 		/// <summary>
 		/// Change current working directory to the path in the RaiFile or the FullName if it is a directory
 		/// </summary>
@@ -1010,14 +592,15 @@ namespace OsLib     // aka OsLibCore
 		{
 			var sourceDirectory = new RaiPath(sourceDirectoryPath).Path;
 			var provider = Os.GetCloudStorageProviderForPath(sourceDirectory);
-			if (provider != null)
+			var providerRoot = Os.GetCloudStorageRoot(provider);
+			if (providerRoot != null)
 			{
-				var providerRoot = Os.GetCloudStorageRoot(provider.Value);
-				var normalizedProviderRoot = new RaiPath(providerRoot).Path;
+				var normalizedProviderRoot = providerRoot.Path;
 				return new RaiPath(sourceDirectory.Substring(normalizedProviderRoot.Length));
 			}
 
-			var idx = (sourceDirectory.Length > 2 && sourceDirectory[1] == ':') ? 3 : 0;     // works as expected for c:/123 or c:\123, but not for c:123
+			// Fallback for local paths with drive letters
+			var idx = (sourceDirectory.Length > 2 && sourceDirectory[1] == ':') ? 3 : 0;
 			return new RaiPath(sourceDirectory.Substring(idx));
 		}
 

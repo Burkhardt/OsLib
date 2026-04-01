@@ -11,7 +11,6 @@ namespace OsLib.Tests;
 internal sealed class OsTestEnvironment : IDisposable
 {
 	private readonly Dictionary<string, string?> before = new();
-	private readonly IDisposable configPathOverrideScope;
 	private readonly object? originalType;
 	private readonly OsType? forcedType;
 
@@ -22,12 +21,11 @@ internal sealed class OsTestEnvironment : IDisposable
 		Home = (root / "home").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 		AppData = (root / "app-data").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 		LocalAppData = (root / "local-app-data").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-		ConfigPath = new RaiFile(root / "config" / "RAIkeep", "osconfig", "json").FullName;
+		ConfigPath = new RaiFile(new RaiPath(Home) / ".config" / "RAIkeep", "osconfig", "json").FullName;
 
 		new RaiPath(Home).mkdir();
 		new RaiPath(AppData).mkdir();
 		new RaiPath(LocalAppData).mkdir();
-		configPathOverrideScope = Os.PushConfigPathOverride(ConfigPath);
 
 		SetEnvironmentVariable("HOME", Home);
 		SetEnvironmentVariable("USERPROFILE", Home);
@@ -60,7 +58,7 @@ internal sealed class OsTestEnvironment : IDisposable
 		string? homeDir = null,
 		string? tempDir = null,
 		string? localBackupDir = null,
-		IEnumerable<CloudStorageType>? defaultCloudOrder = null)
+		IEnumerable<Cloud>? defaultCloudOrder = null)
 	{
 		var cloud = new JObject
 		{
@@ -91,7 +89,7 @@ internal sealed class OsTestEnvironment : IDisposable
 		};
 		textFile.Changed = true;
 		textFile.Save();
-		Os.LoadConfig(refresh: true);
+		Os.LoadConfig();
 	}
 
 	internal void DeleteConfig()
@@ -135,7 +133,7 @@ internal sealed class OsTestEnvironment : IDisposable
 		osType.GetField("localBackupDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("config", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("remoteTestConfig", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-		Os.ResetCloudStorageCache();
+		//Os.ResetCloudStorageCache();
 		Os.ResetDiagnosticsForTesting();
 	}
 
@@ -144,7 +142,6 @@ internal sealed class OsTestEnvironment : IDisposable
 		typeof(Os).GetField("type", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, originalType);
 		foreach (var kvp in before)
 			Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
-		configPathOverrideScope.Dispose();
 		ResetOsCaches();
 		Cleanup(Root);
 	}

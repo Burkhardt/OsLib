@@ -149,7 +149,7 @@ namespace OsLib
 
 	public sealed class RemoteCloudSyncProbe
 	{
-		private RemoteCloudSyncProbe(CloudStorageType provider, RaiPath localCloudRoot, RaiPath remoteCloudRoot, SshFileProbe observer)
+		private RemoteCloudSyncProbe(Cloud provider, RaiPath localCloudRoot, RaiPath remoteCloudRoot, SshFileProbe observer)
 		{
 			Provider = provider;
 			LocalCloudRoot = localCloudRoot;
@@ -157,7 +157,7 @@ namespace OsLib
 			Observer = observer;
 		}
 
-		public CloudStorageType Provider { get; }
+		public Cloud Provider { get; }
 		public RaiPath LocalCloudRoot { get; }
 		public RaiPath RemoteCloudRoot { get; }
 		public SshFileProbe Observer { get; }
@@ -183,12 +183,12 @@ namespace OsLib
 			return normalizedLocalFullName.Substring(LocalCloudRoot.Path.Length);
 		}
 
-		public static bool TryCreate(CloudStorageType provider, string observerName, out RemoteCloudSyncProbe probe, out string reason)
+		public static bool TryCreate(Cloud provider, string observerName, out RemoteCloudSyncProbe probe, out string reason)
 		{
 			probe = default!;
 
 			var localCloudRoot = Os.GetCloudStorageRoot(provider, refresh: true);
-			if (string.IsNullOrWhiteSpace(localCloudRoot) || !Directory.Exists(localCloudRoot))
+			if (string.IsNullOrWhiteSpace(localCloudRoot.Path) || !localCloudRoot.Exists())
 			{
 				reason = $"{provider} is not configured or not accessible on this machine. {Os.GetCloudStorageSetupGuidance()}";
 				return false;
@@ -225,7 +225,7 @@ namespace OsLib
 				return false;
 			}
 
-			probe = new RemoteCloudSyncProbe(provider, new RaiPath(localCloudRoot), new RaiPath(normalizedRemoteCloudRoot), observer);
+			probe = new RemoteCloudSyncProbe(provider, localCloudRoot, new RaiPath(normalizedRemoteCloudRoot), observer);
 			reason = string.Empty;
 			return true;
 		}
@@ -242,7 +242,7 @@ namespace OsLib
 			return normalized;
 		}
 
-		private static string ResolveRemoteCloudRoot(SshFileProbe observer, RemoteObserverModel observerModel, CloudStorageType provider, out string reason)
+		private static string ResolveRemoteCloudRoot(SshFileProbe observer, RemoteObserverModel observerModel, Cloud provider, out string reason)
 		{
 			var configuredRoot = observerModel.GetCloudRoot(provider);
 			if (!string.IsNullOrWhiteSpace(configuredRoot))
@@ -269,9 +269,9 @@ namespace OsLib
 				var config = JObject.Parse(remoteConfigResult.StandardOutput);
 				var cloudKey = provider switch
 				{
-					CloudStorageType.Dropbox => "dropbox",
-					CloudStorageType.OneDrive => "onedrive",
-					CloudStorageType.GoogleDrive => "googledrive",
+					Cloud.Dropbox => "dropbox",
+					Cloud.OneDrive => "onedrive",
+					Cloud.GoogleDrive => "googledrive",
 					_ => string.Empty
 				};
 
@@ -292,13 +292,13 @@ namespace OsLib
 			}
 		}
 
-		private static bool TryVerifyLocalWriteAccess(string localCloudRoot, out string failure)
+		private static bool TryVerifyLocalWriteAccess(RaiPath localCloudRoot, out string failure)
 		{
-			var probeDirectory = (new RaiPath(localCloudRoot) / "RAIkeep" / ".write-access-probe" / Os.NewShortId()).Path;
+			var probeDirectory = (localCloudRoot / "RAIkeep" / ".write-access-probe" / Os.NewShortId());
 			try
 			{
-				Directory.CreateDirectory(probeDirectory);
-				Directory.Delete(probeDirectory, recursive: true);
+				probeDirectory.mkdir();
+				probeDirectory.rmdir(2, true);
 				failure = string.Empty;
 				return true;
 			}

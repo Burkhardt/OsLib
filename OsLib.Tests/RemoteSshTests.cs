@@ -30,7 +30,7 @@ public class RemoteSshTests
 		Console.WriteLine(Os.GetCloudConfigurationDiagnosticReport(refresh: true));
 		Console.WriteLine(Os.GetRemoteTestConfigurationDiagnosticReport(refresh: true));
 
-		if (!RemoteCloudSyncProbe.TryCreate(CloudStorageType.GoogleDrive, "mzansi", out var probe, out var reason))
+		if (!RemoteCloudSyncProbe.TryCreate(Cloud.GoogleDrive, "mzansi", out var probe, out var reason))
 			Assert.Skip(reason + Environment.NewLine + Os.GetCloudConfigurationDiagnosticReport() + Environment.NewLine + Os.GetRemoteTestConfigurationDiagnosticReport());
 
 		Assert.True(probe.Observer.DirectoryExists(probe.RemoteCloudRoot.Path), probe.LastFailure);

@@ -8,21 +8,30 @@ internal static class CloudStorageRealTestEnvironment
 {
 	internal static IDisposable BeginConfiguredCloudResolution()
 	{
-		return Os.PushCloudRootResolutionMode(CloudRootResolutionMode.ConfiguredOnly);
+		return new StringReader(string.Empty);
 	}
 
 	internal static RaiPath GetConfiguredCloudTestRoot(
-		CloudStorageType provider,
+		Cloud provider,
 		string area,
 		out string providerRoot,
 		[CallerMemberName] string testName = "")
 	{
-		Os.ResetCloudStorageCache();
 		var configPath = Os.GetDefaultConfigPath();
 		if (!File.Exists(configPath))
 			throw new FileNotFoundException($"Required cloud config file is missing: {configPath}. {Os.GetCloudStorageSetupGuidance()}", configPath);
 
-		if (!Os.TryGetConfiguredCloudStorageRoot(provider, out providerRoot, refresh: true) || string.IsNullOrWhiteSpace(providerRoot))
+		dynamic config = Os.LoadConfig();
+		dynamic cloud = config.Cloud;
+		providerRoot = provider switch
+		{
+			Cloud.Dropbox => (string)cloud.Dropbox,
+			Cloud.OneDrive => (string)cloud.OneDrive,
+			Cloud.GoogleDrive => (string)cloud.GoogleDrive,
+			_ => string.Empty
+		};
+
+		if (string.IsNullOrWhiteSpace(providerRoot))
 			throw new InvalidOperationException($"Provider {provider} is not configured in {configPath}. {Os.GetCloudStorageSetupGuidance()}");
 
 		providerRoot = new RaiPath(providerRoot).Path;

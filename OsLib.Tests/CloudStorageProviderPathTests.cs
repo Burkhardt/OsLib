@@ -6,10 +6,10 @@ namespace OsLib.Tests;
 public class CloudStorageProviderPathTests
 {
 	[Theory]
-	[InlineData(CloudStorageType.Dropbox)]
-	[InlineData(CloudStorageType.OneDrive)]
-	[InlineData(CloudStorageType.GoogleDrive)]
-	public void GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot(CloudStorageType provider)
+	[InlineData(Cloud.Dropbox)]
+	[InlineData(Cloud.OneDrive)]
+	[InlineData(Cloud.GoogleDrive)]
+	public void GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot(Cloud provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "cloud-providers", out var providerRoot);
@@ -22,10 +22,10 @@ public class CloudStorageProviderPathTests
 	}
 
 	[Theory]
-	[InlineData(CloudStorageType.Dropbox)]
-	[InlineData(CloudStorageType.OneDrive)]
-	[InlineData(CloudStorageType.GoogleDrive)]
-	public void RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(CloudStorageType provider)
+	[InlineData(Cloud.Dropbox)]
+	[InlineData(Cloud.OneDrive)]
+	[InlineData(Cloud.GoogleDrive)]
+	public void RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(Cloud provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "cloud-providers", out _);

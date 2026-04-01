@@ -10,24 +10,43 @@ public class CloudStorageAgreementTests
 	public void CloudStorageRoot_UsesDocumentedDefaultOrder_ForAvailableConfiguredProviders()
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
-		var roots = Os.GetCloudStorageRoots(refresh: true);
-		var configuredOrder = Os.TryLoadExistingConfig(out var config, refresh: true)
-			? config.DefaultCloudOrder ?? Os.CreateDefaultCloudOrder().ToList()
-			: Os.CreateDefaultCloudOrder().ToList();
-		var expectedProvider = configuredOrder.FirstOrDefault(roots.ContainsKey);
+		_ = Os.LoadConfig();
 
-		if (!roots.Any())
+		var configuredOrder = ((IEnumerable<object>)Os.Config.DefaultCloudOrder)
+			.Select(x => x?.ToString())
+			.Where(x => !string.IsNullOrWhiteSpace(x))
+			.Select(x => x!)
+			.ToList();
+
+		if (!configuredOrder.Any())
+			configuredOrder = new[] { nameof(Cloud.OneDrive), nameof(Cloud.Dropbox), nameof(Cloud.GoogleDrive) }.ToList();
+
+		var expectedRoot = string.Empty;
+		foreach (var providerName in configuredOrder)
+		{
+			if (!Enum.TryParse(providerName, ignoreCase: true, out Cloud provider))
+				continue;
+
+			var candidate = Os.GetCloudStorageRoot(provider)?.Path ?? string.Empty;
+			if (string.IsNullOrWhiteSpace(candidate) || !Directory.Exists(candidate))
+				continue;
+
+			expectedRoot = candidate;
+			break;
+		}
+
+		if (string.IsNullOrWhiteSpace(expectedRoot))
 			Assert.Skip($"No configured provider roots are available. {Os.GetCloudStorageSetupGuidance()}");
 
-		Assert.Equal(roots[expectedProvider], Os.CloudStorageRootDir.Path);
+		Assert.Equal(expectedRoot, Os.CloudStorageRootDir.Path);
 		Assert.True(Os.IsCloudPath(Os.CloudStorageRootDir.Path));
 	}
 
 	[Theory]
-	[InlineData(CloudStorageType.Dropbox)]
-	[InlineData(CloudStorageType.OneDrive)]
-	[InlineData(CloudStorageType.GoogleDrive)]
-	public void RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag(CloudStorageType provider)
+	[InlineData(Cloud.Dropbox)]
+	[InlineData(Cloud.OneDrive)]
+	[InlineData(Cloud.GoogleDrive)]
+	public void RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag(Cloud provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "cloud-agreement", out _);

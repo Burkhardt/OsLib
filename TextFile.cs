@@ -146,6 +146,7 @@ namespace OsLib
 			if (content != null)
 			{
 				Append(content);
+				Changed = true;
 				Save();
 			}
 		}

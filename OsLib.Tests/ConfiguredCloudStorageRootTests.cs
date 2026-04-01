@@ -6,36 +6,35 @@ namespace OsLib.Tests;
 public class ConfiguredCloudStorageRootTests
 {
 	[Theory]
-	[InlineData(CloudStorageType.Dropbox)]
-	[InlineData(CloudStorageType.OneDrive)]
-	[InlineData(CloudStorageType.GoogleDrive)]
-	public void GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths(CloudStorageType provider)
-	{
-		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
-		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "configured-cloud-roots", out var providerRoot);
-
-		var roots = Os.GetCloudStorageRoots(refresh: true);
-
-		Assert.True(roots.ContainsKey(provider));
-		Assert.Equal(new RaiPath(providerRoot).Path, roots[provider]);
-		Assert.True(Directory.Exists(providerRoot));
-		Assert.True(Os.IsCloudPath(providerRoot));
-		Assert.True(Os.IsCloudPath(root.Path));
-	}
-
-	[Theory]
-	[InlineData(CloudStorageType.Dropbox)]
-	[InlineData(CloudStorageType.OneDrive)]
-	[InlineData(CloudStorageType.GoogleDrive)]
-	public void GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable(CloudStorageType provider)
+	[InlineData(Cloud.Dropbox)]
+	[InlineData(Cloud.OneDrive)]
+	[InlineData(Cloud.GoogleDrive)]
+	public void GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths(Cloud provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "configured-cloud-roots", out var providerRoot);
 
 		var resolvedRoot = Os.GetCloudStorageRoot(provider, refresh: true);
 
-		Assert.Equal(new RaiPath(providerRoot).Path, resolvedRoot);
-		Assert.True(Os.IsCloudPath(resolvedRoot));
+		Assert.Equal(new RaiPath(providerRoot).Path, resolvedRoot.Path);
+		Assert.True(Directory.Exists(providerRoot));
+		Assert.True(Os.IsCloudPath(providerRoot));
+		Assert.True(Os.IsCloudPath(root.Path));
+	}
+
+	[Theory]
+	[InlineData(Cloud.Dropbox)]
+	[InlineData(Cloud.OneDrive)]
+	[InlineData(Cloud.GoogleDrive)]
+	public void GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable(Cloud provider)
+	{
+		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
+		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "configured-cloud-roots", out var providerRoot);
+
+		var resolvedRoot = Os.GetCloudStorageRoot(provider, refresh: true);
+
+		Assert.Equal(new RaiPath(providerRoot).Path, resolvedRoot.Path);
+		Assert.True(Os.IsCloudPath(resolvedRoot.Path));
 		Assert.True(Os.IsCloudPath(root.Path));
 	}
 }
