@@ -25,26 +25,55 @@ namespace OsLib     // aka OsLibCore
 	/// </summary>
 	public static partial class Os
 	{
+		private static readonly string defaultConfigFileLocation = "~/.config/RAIkeep/osconfig.json";   // see Os.CloudStorage.cs for ConfigFile<OsConfigModel>
 		public static RaiPath UserHomeDir
 		{
 			get
 			{
-				userHomeDir ??= new RaiPath(ResolveSystemHomeDir());
+				userHomeDir ??= new RaiPath("~");
 				LogDebug<OsDiagnosticsLogScope>("Resolved user home directory to {UserHomeDir}", userHomeDir.Path);
 				return userHomeDir;
 			}
 		}
-
 		public static RaiPath AppRootDir
 		{
 			get
 			{
-				appRootDir = new RaiPath(Directory.GetCurrentDirectory());
+				appRootDir = new RaiPath(".");
 				LogDebug<OsDiagnosticsLogScope>("Resolved application root directory to {AppRootDir}", appRootDir.Path);
 				return appRootDir;
 			}
 		}
-
+		public static RaiPath CloudStorageRootDir
+		{
+			get
+			{
+				string provider = null;
+				try
+				{
+					provider = Config.DefaultCloudOrder.FirstOrDefault()?.ToString();
+					switch (provider)
+					{
+						case "googledrive":
+							cloudStorageRootDir = new RaiPath(Config.cloud.googledrive);
+							break;
+						case "dropbox":
+							cloudStorageRootDir = new RaiPath(Config.cloud.dropbox);
+							break;
+						case "onedrive":
+							cloudStorageRootDir = new RaiPath(Config.cloud.onedrive);
+							break;
+						default:
+							throw new InvalidDataException($"Invalid cloud storage type '{provider}' in configuration file '{defaultConfigFileLocation}'.");
+					}
+				}
+				catch (Exception ex)
+				{
+					LogError<OsDiagnosticsLogScope>(ex, "Failed to resolve cloud storage root directory for provider {Provider}", provider);
+				}
+				return cloudStorageRootDir;
+			}
+		}
 		public static bool IsWindows => Type == OsType.Windows;
 		public static bool IsMacOS => Type == OsType.MacOS;
 		public static OsType Type
@@ -60,31 +89,23 @@ namespace OsLib     // aka OsLibCore
 		public static bool IsLinuxLike => Type == OsType.Ubuntu;
 		private static RaiPath userHomeDir = null;
 		private static RaiPath appRootDir = null;
+		private static RaiPath cloudStorageRootDir = null;
 		private static OsType? type = null;
 		public static RaiPath TempDir
 		{
 			get
 			{
-				if (tempDir == null)
+				try
 				{
-					try
+					if (tempDir == null)
 					{
-						if (TryLoadExistingConfig(out var configured, refresh: false) && configured?.TempDir != null)
-						{
-							tempDir = new RaiPath(configured.TempDir.Path);
-							LogInformation<OsDiagnosticsLogScope>("Using configured temp directory {TempDir}", tempDir.Path);
-						}
-						else
-						{
-							tempDir = new RaiPath(ResolveSystemTempDir());
-							LogWarningOnce<OsDiagnosticsLogScope>("fallback:tempdir", "TempDir is not configured. Falling back to operating system temp directory {TempDir}", tempDir.Path);
-						}
+						var tempDir = Config.tempDir;
 					}
-					catch (Exception ex)
-					{
-						tempDir = new RaiPath(ResolveSystemTempDir());
-						LogError<OsDiagnosticsLogScope>(ex, "Failed to resolve configured temp directory. Falling back to operating system temp directory {TempDir}", tempDir.Path);
-					}
+				}
+				catch (Exception ex)
+				{
+					tempDir = new RaiPath(ResolveSystemTempDir());
+					LogError<OsDiagnosticsLogScope>(ex, "Failed to resolve configured temp directory. Falling back to operating system temp directory {TempDir}", tempDir.Path);
 				}
 				return tempDir;
 			}
@@ -108,7 +129,6 @@ namespace OsLib     // aka OsLibCore
 				return localBackupDir;
 			}
 		}
-
 		public static string DIRSEPERATOR
 		{
 			get
