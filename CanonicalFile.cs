@@ -12,18 +12,18 @@ namespace OsLib
 	/// <remarks>
 	/// see unit test CanonicalFile_Appends_Folder() for expected behavior 
 	/// </remarks>
-	public class CanonicalFile : RaiFile, IPathConventionFile
+	public class CanonicalFile : RaiFile, IPathConvention
 	{
 		public int mv(CanonicalFile src, bool replace = false, bool keepBackup = false) => mv((RaiFile)src, replace, keepBackup);
-		public PathConventionType ConventionName => PathConventionType.CanonicalByName;
+		public PathConventionType Convention => PathConventionType.CanonicalByName;
 		/// <summary>
 		/// Only apply when the Name property is set and the Path does not already end with the Name followed by a directory separator.
 		/// </summary>
 		public void ApplyPathConvention()
 		{
-			if (!string.IsNullOrEmpty(Name) && !Path.EndsWith(Name + Os.DIRSEPERATOR, StringComparison.Ordinal))
+			if (!string.IsNullOrEmpty(Name) && !Path.ToString().EndsWith(Name + Os.DIR, StringComparison.Ordinal))
 			{
-				Path = Path + Name + Os.DIRSEPERATOR;
+				Path = Path / Name;
 			}
 		}
 		public override string Name {

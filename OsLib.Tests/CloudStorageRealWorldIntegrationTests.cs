@@ -26,9 +26,9 @@ namespace OsLib.Tests
 				incomingDir.mkdir();
 				archiveDir.mkdir();
 
-				var source = new RaiFile("source.txt") { Path = incomingDir.Path };
-				var copy = new RaiFile("copy.txt") { Path = incomingDir.Path };
-				var moved = new RaiFile("moved.txt") { Path = archiveDir.Path };
+				var source = new RaiFile(incomingDir, "source.txt");
+				var copy = new RaiFile(incomingDir, "copy.txt");
+				var moved = new RaiFile(archiveDir, "moved.txt");
 				var sourceText = new TextFile(source.FullName);
 				var copyText = new TextFile(copy.FullName);
 				var movedText = new TextFile(moved.FullName);

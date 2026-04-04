@@ -10,9 +10,9 @@ namespace OsLib
 		ItemIdTree8x2
 	}
 
-	public interface IPathConventionFile
+	public interface IPathConvention
 	{
-		PathConventionType ConventionName { get; }
+		PathConventionType Convention { get; }
 		void ApplyPathConvention();
 	}
 }

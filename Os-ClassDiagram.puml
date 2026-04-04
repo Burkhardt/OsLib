@@ -1,10 +1,10 @@
 @startuml OsLib-Os-ClassDiagram
-' Release: 3.7.0
+' Release: 3.7.3
+
 title OsLib Os Class Diagram
 
 skinparam backgroundColor white
 skinparam shadowing false
-skinparam linetype ortho
 skinparam DiagramFontName "Casual"
 skinparam DiagramFontSize 36
 skinparam ClassFontName "Casual"
@@ -17,7 +17,6 @@ skinparam ClassAttributeFontSize 12
 skinparam ClassMethodFontName "Casual"
 skinparam ClassMethodFontSize 12
 skinparam ClassMethodFontWeight 500
-skinparam ClassFontName "Casual"
 skinparam ClassAttributeFontStyle normal
 skinparam ClassBorderColor #0f766e
 skinparam ClassBackgroundColor #ccfbf1
@@ -27,25 +26,14 @@ skinparam EnumBackgroundColor #fef3c7
 skinparam EnumFontColor #7c2d12
 skinparam NoteBackgroundColor #fff7d6
 skinparam NoteBorderColor #d4b106
+skinparam ArrowColor #9b2c2c
+skinparam ArrowFontColor #374151
+skinparam ArrowFontName "Casual"
 
 show circle
 
 together {
-	enum OsType << (E,#f59e0b) >> {
-		Windows
-		MacOS
-		Ubuntu
-	}
-		enum CloudRootResolutionMode << (E,#f59e0b) >> {
-			ConfiguredAndProbed
-			ConfiguredOnly
-		}
-	enum CloudStorageType << (E,#f59e0b) >> {
-		Dropbox
-		OneDrive
-		GoogleDrive
-	}
-	class "Legend<size:10>ⓈⒶⓅ</size>" as LegendSample {
+	class "<size:16>Legend</size>ⓈⒶⓅ" as LegendSample {
 		+{static} staticMethod() : void
 		-{static} staticProperty : string
 		==
@@ -55,162 +43,103 @@ together {
 		Ⓟartial
 		--
 		- privateField : string
-		+ publicField : string
+		+ PublicField : string
 		# protectedField : string
 		~ internalField : string
 		--
 		- privateMethod() : void
-		+ publicMethod() : void
+		+ PublicMethod() : void
 		# protectedMethod() : void
 		~ internalMethod() : void
 	}
 }
 
-abstract class "<size:18>ConfigFile</size>Ⓐ<TData>" as ConfigFile << (C,#14b8a6) >> {
-	+ Data : TData
-	--
-	+ Load() : TData
-	# CreateDefaultData() : TData
-	# NormalizeData(data : TData) : TData
-	+ Save() : void
-	~ SetFullName(fullName : string) : bool
-}
+package "OsLib" {
+	enum EscapeMode << (E,#f59e0b) >> {
+		noEsc
+		blankEsc
+		paramEsc
+		backslashed
+	}
 
-class "<size:18>CloudModel</size>" as CloudModel << (C,#14b8a6) >> {
-	+ DropboxRoot : RaiPath
-	+ OneDriveRoot : RaiPath
-	+ GoogleDriveRoot : RaiPath
-	+ Roots : IReadOnlyDictionary<CloudStorageType, RaiPath>
-	--
-	+ GetRoot(provider : CloudStorageType) : RaiPath
-	~ SetRoot(provider : CloudStorageType, value : string) : void
-	~ MergeMissingDiscoveredRoots(discoveredRoots : IReadOnlyDictionary<CloudStorageType, string>) : bool
-	~ Clone() : CloudModel
-	~ Normalize() : void
-}
+	enum OsType << (E,#f59e0b) >> {
+		Windows
+		MacOS
+		Ubuntu
+	}
 
-class "<size:18>OsConfigModel</size>" as OsConfigModel << (C,#14b8a6) >> {
-	+ HomeDir : RaiPath
-	+ TempDir : RaiPath
-	+ LocalBackupDir : RaiPath
-	+ DefaultCloudOrder : List<CloudStorageType>
-	+ Cloud : CloudModel
-	+ DropboxPath : RaiPath
-	+ OneDrivePath : RaiPath
-	+ GooglePath : RaiPath
-	+ CloudDirPaths : IReadOnlyDictionary<CloudStorageType, RaiPath>
-	--
-	+ GetCloudDirPath(provider : CloudStorageType) : RaiPath
-	~ Clone() : OsConfigModel
-	~ Normalize() : void
-}
+	enum Cloud << (E,#f59e0b) >> {
+		Dropbox
+		OneDrive
+		GoogleDrive
+	}
 
-class "<size:18>OsConfigFile</size>" as OsConfigFile << (C,#14b8a6) >> {
-	--
-	# CreateDefaultData() : OsConfigModel
-	# NormalizeData(data : OsConfigModel) : OsConfigModel
-}
+	class "RaiPath" as RaiPath << (C,#14b8a6) >>
+	class "RaiFile" as RaiFile << (C,#14b8a6) >>
 
-class "<size:24>Os</size>ⓈⓅ " as Os << (C,#14b8a6) >> {
-	-{static} userHomeDir : RaiPath
-	-{static} appRootDir : RaiPath
-	-{static} type : OsType?
-	-{static} tempDir : RaiPath
-	-{static} localBackupDir : RaiPath
-	-{static} dIRSEPERATOR : string
-	-{static} config : OsConfigFile
-	-{static} remoteTestConfig : RemoteTestConfigFile
-	-{static} configPathOverride : string
-	-{static} cloudRootsCache : Dictionary<CloudStorageType, string>
-	-{static} cloudRootResolutionMode : CloudRootResolutionMode
-	-{static} isDiscoveringCloudRoots : bool
-	-{static} isInitializingConfig : bool
-	-{static} cloudDiscoveryGuidePath : string
-	-{static} defaultConfigPath : string
-	-{static} defaultRemoteTestConfigFileName : string
-	==
-	+{static} DIRSEPERATOR : string
-	+{static} ESCAPECHAR : string
-	+{static} DATEFORMAT : string
-	+{static} Type : OsType
-	+{static} IsWindows : bool
-	+{static} IsMacOS : bool
-	+{static} IsUnixLike : bool
-	+{static} IsLinuxLike : bool
-	+{static} UserHomeDir : RaiPath
-	+{static} AppRootDir : RaiPath
-	+{static} LocalBackupDir : RaiPath
-	+{static} TempDir : RaiPath
-	+{static} Config : OsConfigFile
-	+{static} CloudStorageRootDir : RaiPath
-	+{static} CloudStorageRoot : string
-	--
-	+{static} ParseDateTime(datetimeInDATEFORMAT : string) : DateTimeOffset
-	+{static} escapeParam(param : string) : string
-	+{static} escapeBlank(name : string) : string
-	+{static} winInternal(fullname : string) : string
-	+{static} NormPath(path : string) : string
-	+{static} Escape(s : string, mode : EscapeMode) : string
-	+{static} NormSeperator(s : string) : string
-	+{static} LoadConfig(refresh : bool = false) : OsConfigModel
-	+{static} GetCloudConfigurationDiagnosticReport(refresh : bool = false) : string
-	+{static} GetCloudStorageRoots(refresh : bool = false) : IReadOnlyDictionary<CloudStorageType, string>
-	+{static} GetPreferredCloudStorageRoot(preferredOrder : CloudStorageType[]) : string
-	+{static} GetCloudStorageRoot(provider : CloudStorageType, refresh : bool = false) : string
-	+{static} ResetCloudStorageCache() : void
-	+{static} GetCloudDiscoveryReport(refresh : bool = false) : string
-	+{static} GetCloudStorageSetupGuidance() : string
-	+{static} GetDefaultConfigPath() : string
-	+{static} GetDefaultCloudConfigPath() : string
-	+{static} RemoteTestConfig : RemoteTestConfigFile
-	+{static} LoadRemoteTestConfig(refresh : bool = false) : RemoteTestConfigModel
-	+{static} GetDefaultRemoteTestConfigPath() : string
-	+{static} GetRemoteTestConfigurationDiagnosticReport(refresh : bool = false) : string
-	==
-	~{static} IsCloudPath(candidatePath : string) : bool
-	~{static} PushConfigPathOverride(configPath : string) : IDisposable
-	~{static} PushCloudRootResolutionMode(mode : CloudRootResolutionMode) : IDisposable
-	~{static} TryLoadExistingConfig(data : OsConfigModel, refresh : bool = false) : bool
-	~{static} GetConfiguredCloudStorageRoots(refresh : bool = false) : IReadOnlyDictionary<CloudStorageType, string>
-	~{static} TryGetConfiguredCloudStorageRoot(provider : CloudStorageType, root : string, refresh : bool = false) : bool
-	~{static} ExpandUserHomePathForConfig(path : string) : string	
-	-{static} CreateDefaultCloudOrder() : IReadOnlyList<CloudStorageType>
-	-{static} InvalidateConfiguredPathCaches() : void
-	-{static} NormalizeConfigPath(path : string) : string
-	-{static} EnsureConfigLoaded() : OsConfigFile
-	-{static} TryGetExistingConfig(refresh : bool = false) : OsConfigFile
-	-{static} DiscoverCloudStorageRoots() : Dictionary<CloudStorageType, string>
-	-{static} PersistDiscoveredCloudRoots(roots : IReadOnlyDictionary<CloudStorageType, string>) : void
-	-{static} ApplyConfiguredRoots(roots : Dictionary<CloudStorageType, string>, cloudConfig : CloudModel) : void
-	-{static} ApplyProviderProbes(roots : Dictionary<CloudStorageType, string>) : void
-	-{static} ProbeDropbox(roots : Dictionary<CloudStorageType, string>) : void
-	-{static} GetDropboxInfoFileCandidates() : IEnumerable<string>
-	-{static} ProbeOneDrive(roots : Dictionary<CloudStorageType, string>) : void
-	-{static} ProbeGoogleDrive(roots : Dictionary<CloudStorageType, string>) : void
-	-{static} TryAddRoot(roots : Dictionary<CloudStorageType, string>, provider : CloudStorageType, candidate : string) : bool
-	-{static} ExpandPath(candidate : string) : string
-	-{static} ExpandUserHomePath(path : string) : string
-	-{static} NormalizePathForComparison(value : string) : string
-	-{static} IsDropboxMetadataPath(normalizedPath : string) : bool
-	-{static} SafeEnumerateDirectories(path : string, pattern : string) : IEnumerable<string>
+	class "Os  <small>ⓈⓅ</small>" as Os << (C,#14b8a6) >> {
+		+{static} DIR : string
+		+{static} DIRSEPERATOR : string
+		+{static} ESCAPECHAR : string
+		+{static} DATEFORMAT : string
+		+{static} Type : OsType
+		+{static} IsWindows : bool
+		+{static} IsMacOS : bool
+		+{static} IsUnixLike : bool
+		+{static} IsLinuxLike : bool
+		+{static} UserHomeDir : RaiPath
+		+{static} AppRootDir : RaiPath
+		+{static} TempDir : RaiPath
+		+{static} LocalBackupDir : RaiPath
+		+{static} CloudStorageRootDir : RaiPath
+		+{static} CloudProviders : string[]
+		+{static} Config : dynamic
+		+{static} ConfigFileFullName : string
+		+{static} RemoteConfigs : IReadOnlyDictionary<string, dynamic>
+		--
+		+{static} ConfigureDiagnostics(loggerFactory : ILoggerFactory, startupDiagnosticSink : IStartupDiagnosticSink = null) : void
+		+{static} ParseDateTime(datetimeInDATEFORMAT : string) : DateTimeOffset
+		+{static} Escape(s : string, mode : EscapeMode) : string
+		+{static} NormPath(path : string) : string
+		+{static} NormSeperator(s : string) : string
+		+{static} NewShortId(length : int = 4) : string
+		+{static} IsCloudPath(path : string) : bool
+		+{static} IsCloudPath(path : RaiPath) : bool
+		+{static} LoadConfig(configFullName : string = null) : dynamic
+		+{static} EscapeParam(param : string) : string
+		+{static} EscapeBlank(name : string) : string
+		+{static} WinInternal(fullname : string) : string
+		== helpers for cloud storage management ==
+		+{static} GetCloudStorageRoot(provider : Cloud, refresh : bool = false) : RaiPath
+		+{static} GetCloudStorageProviderForPath(path : RaiPath) : Cloud
+		+{static} GetCloudDiscoveryReport(refresh : bool = false) : string
+		+{static} GetCloudConfigurationDiagnosticReport(refresh : bool = false) : string
+		+{static} GetCloudStorageSetupGuidance() : string
+		+{static} GetObserverSshTarget(observerName : string) : string
+		+{static} GetRemoteConfig(observer : string, refresh : bool = false) : dynamic
+		+{static} GetRemoteCloudRootFromConfig(observerName : string, provider : Cloud? = null, refresh : bool = false) : string
+		+{static} GetRemoteTempDirFromConfig(observerName : string, refresh : bool = false) : string
+		+{static} TryGetRemoteConfig(observerName : string, remoteConfig : dynamic) : bool
+		+{static} InvalidateRemoteConfig(observerName : string = null) : void
+	}
 }
 
 Os ..> OsType : uses
-Os ..> CloudRootResolutionMode : uses
-Os ..> CloudStorageType : uses
-ConfigFile <|-- OsConfigFile
-OsConfigFile --> OsConfigModel : stores
-OsConfigModel --> CloudModel : contains
-CloudModel ..> CloudStorageType : keyed by
-Os ..> OsConfigFile : config wrapper
-Os ..> OsConfigModel : loads
+Os ..> EscapeMode : uses
+Os ..> Cloud : cloud provider selection
+Os ..> RaiPath : path contracts
+Os ..> RaiFile : config file resolution
 
 note bottom of Os
-	`Os` is a static partial class 
-	composed from
-	RaiFile.cs and 
-	Os.CloudStorage.cs and
-	RemoteTestConfig.cs.
+	Os is a static partial 
+	class composed from:
+	* Os.cs
+	* Os.CloudStorage.cs
+	* Os.Diagnostics.cs
+	Current config model is 
+	dynamic (osconfig.json5),
+	not a dedicated 
+	OsConfigFile type.
 end note
 
 @enduml

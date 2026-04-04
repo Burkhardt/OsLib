@@ -1,0 +1,216 @@
+@startuml OsLib-Os-Verbose-ClassDiagram
+' Release: 3.7.3
+
+title OsLib Os Verbose Class Diagram
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam DiagramFontName "Casual"
+skinparam DiagramFontSize 36
+skinparam ClassFontName "Casual"
+skinparam ClassFontSize 36
+skinparam ClassAttributeIconSize 10
+skinparam ClassAttributeFontName Casual
+skinparam ClassAttributeFontColor #053583
+skinparam ClassAttributeFontWeight normal
+skinparam ClassAttributeFontSize 12
+skinparam ClassMethodFontName "Casual"
+skinparam ClassMethodFontSize 12
+skinparam ClassMethodFontWeight 500
+skinparam ClassAttributeFontStyle normal
+skinparam ClassBorderColor #0f766e
+skinparam ClassBackgroundColor #ccfbf1
+skinparam ClassFontColor #111827
+skinparam EnumBorderColor #b45309
+skinparam EnumBackgroundColor #fef3c7
+skinparam EnumFontColor #7c2d12
+skinparam NoteBackgroundColor #fff7d6
+skinparam NoteBorderColor #d4b106
+skinparam ArrowColor #9b2c2c
+skinparam ArrowFontColor #374151
+skinparam ArrowFontName "Casual"
+
+show circle
+
+class "Legend<size:10>ⓈⒶⓅ</size>" as LegendSample {
+	+{static} staticMethod() : void
+	-{static} staticProperty : string
+	==
+	~<i>Note on class markers :</i>
+	<size:10>Ⓢ</size>tatic
+	<size:10>Ⓐ</size>bstract
+	Ⓟartial
+	--
+	- privateField : string
+	+ publicField : string
+	# protectedField : string
+	~ internalField : string
+	--
+	- privateMethod() : void
+	+ publicMethod() : void
+	# protectedMethod() : void
+	~ internalMethod() : void
+}
+
+package "OsLib" {
+	enum "<size:18>EscapeMode</size>" as EscapeMode << (E,#f59e0b) >> {
+		noEsc
+		blankEsc
+		paramEsc
+		backslashed
+	}
+
+	enum "<size:18>OsType</size>" as OsType << (E,#f59e0b) >> {
+		Windows
+		MacOS
+		Ubuntu
+	}
+
+	enum "<size:18>Cloud</size>" as Cloud << (E,#f59e0b) >> {
+		Dropbox
+		OneDrive
+		GoogleDrive
+	}
+
+	interface "<size:18>IStartupDiagnosticSink</size>" as IStartupDiagnosticSink {
+		+WriteError(message : string) : void
+	}
+
+	class "<size:18>ConsoleErrorStartupDiagnosticSink</size>" as ConsoleErrorStartupDiagnosticSink {
+		+WriteError(message : string) : void
+	}
+
+	class "<size:18>OsDiagnosticsLogScope</size>" as OsDiagnosticsLogScope {
+		-internal OsDiagnosticsLogScope(category : string)
+		+Dispose() : void
+		--
+		-category : string
+	}
+	class "<size:18>RaiPath</size>" as RaiPath
+	class "<size:18>RaiFile</size>" as RaiFile
+
+	class "<size:18>DisposableScope</size>" as Os_DisposableScope {
+		-internal DisposableScope(onDispose : Action)
+		+Dispose() : void
+		--
+		-onDispose : Action
+		-disposed : bool
+	}
+
+	class "<size: 24>Os</size> ⓈⓅ" as Os {
+		+{static} DIR : string
+		+{static} DIRSEPERATOR : string
+		+{static} ESCAPECHAR : string
+		+{static} DATEFORMAT : string
+		+{static} Type : OsType
+		+{static} IsWindows : bool
+		+{static} IsMacOS : bool
+		+{static} IsUnixLike : bool
+		+{static} IsLinuxLike : bool
+		+{static} UserHomeDir : RaiPath
+		+{static} AppRootDir : RaiPath
+		+{static} TempDir : RaiPath
+		+{static} LocalBackupDir : RaiPath
+		+{static} CloudStorageRootDir : RaiPath
+		+{static} CloudProviders : string[]
+		+{static} Config : dynamic
+		+{static} ConfigFileFullName : string
+		+{static} RemoteConfigs : IReadOnlyDictionary<string, dynamic>
+		--
+		+{static} ConfigureDiagnostics(loggerFactory : ILoggerFactory, startupDiagnosticSink : IStartupDiagnosticSink = null) : void
+		+{static} ParseDateTime(datetimeInDATEFORMAT : string) : DateTimeOffset
+		+{static} escapeParam(param : string) : string
+		+{static} escapeBlank(name : string) : string
+		+{static} winInternal(fullname : string) : string
+		+{static} NormPath(path : string) : string
+		+{static} Escape(s : string, mode : EscapeMode) : string
+		+{static} NormSeperator(s : string) : string
+		+{static} NewShortId(length : int = 4) : string
+		+{static} IsCloudPath(path : RaiPath) : bool
+		+{static} IsCloudPath(path : string) : bool
+		+{static} LoadConfig(configFullName : string = null) : dynamic
+		+{static} GetCloudDiscoveryReport(refresh : bool = false) : string
+		+{static} GetCloudConfigurationDiagnosticReport(refresh : bool = false) : string
+		+{static} GetCloudStorageSetupGuidance() : string
+		+{static} GetCloudStorageProviderForPath(path : RaiPath) : Cloud
+		+{static} GetCloudStorageRoot(provider : Cloud, refresh : bool = false) : RaiPath
+		+{static} GetObserverSshTarget(observerName : string) : string
+		+{static} GetRemoteConfig(observer : string, refresh : bool = false) : dynamic
+		+{static} GetRemoteCloudRootFromConfig(observerName : string, provider : Cloud? = null, refresh : bool = false) : string
+		+{static} GetRemoteTempDirFromConfig(observerName : string, refresh : bool = false) : string
+		+{static} TryGetRemoteConfig(observerName : string, remoteConfig : dynamic) : bool
+		+{static} InvalidateRemoteConfig(observerName : string = null) : void
+		~{static} ParseCloudRootFromConfigJson(json : string, provider : Cloud) : string
+		~{static} ParseTempDirFromConfigJson(json : string) : string
+		~{static} GetLogger<TCategory>() : ILogger<TCategory>
+		~{static} LogDebug<TCategory>(message : string, args : object[]) : void
+		~{static} LogInformation<TCategory>(message : string, args : object[]) : void
+		~{static} LogWarning<TCategory>(message : string, args : object[]) : void
+		~{static} LogWarningOnce<TCategory>(key : string, message : string, args : object[]) : void
+		~{static} LogError<TCategory>(ex : Exception, message : string, args : object[]) : void
+		~{static} ReportStartupCritical<TCategory>(key : string, consoleMessage : string, logMessage : string, args : object[]) : void
+		~{static} ReportStartupCritical<TCategory>(key : string, ex : Exception, consoleMessage : string, logMessage : string, args : object[]) : void
+		~{static} ResetDiagnosticsForTesting() : void
+		~{static} EnsureTrailingDirectorySeparator(s : string) : string
+		~{static} ParentDirectory(s : string) : string
+		~{static} ExpandLeadingDirectorySymbols(s : string) : string
+		-{static} defaultConfigFileLocation : string
+		-{static} defaultCloudOrder : Cloud[]
+		-{static} cloudDiscoveryGuidePath : string
+		-{static} config : dynamic
+		-{static} remoteConfigs : ConcurrentDictionary<string, dynamic>
+		-{static} configLoadDepth : int
+		-{static} userHomeDir : RaiPath
+		-{static} appRootDir : RaiPath
+		-{static} cloudStorageRootDir : RaiPath
+		-{static} type : OsType?
+		-{static} tempDir : RaiPath
+		-{static} localBackupDir : RaiPath
+		-{static} dIRSEPERATOR : string
+		-{static} loggerFactory : ILoggerFactory
+		-{static} startupDiagnosticSink : IStartupDiagnosticSink
+		-{static} emittedDiagnostics : HashSet<string>
+		-{static} IsConfigLoading : bool
+		-{static} InvalidateConfiguredPathCaches() : void
+		-{static} TryAddRoot(roots : Dictionary<Cloud, string>, provider : Cloud, candidate : string) : bool
+		-{static} NormalizePathForComparison(value : string) : string
+		-{static} GetIntrinsicUserHomePath() : string
+		-{static} PathIsUnderCloudRoot(normalizedCandidate : string, root : string) : bool
+		-{static} IsDropboxMetadataPath(normalizedPath : string) : bool
+		-{static} SafeEnumerateDirectories(path : string, pattern : string) : IEnumerable<string>
+		-{static} GetEffectiveDefaultCloudOrder(activeConfig : dynamic = null) : IReadOnlyList<Cloud>
+		-{static} GetConfiguredCloudRootOrEmpty(activeConfig : dynamic, provider : Cloud) : string
+		-{static} DetectOsType() : OsType
+		-{static} IsUbuntuRuntime() : bool
+		-{static} TryRegisterDiagnostic(key : string) : bool
+		-{static} WriteStartupDiagnosticOnce(key : string, message : string) : void
+		-{static} ResetDiagnosticState() : void
+	}
+}
+
+ConsoleErrorStartupDiagnosticSink ..|> IStartupDiagnosticSink
+Os ..> EscapeMode : uses
+Os ..> OsType : uses
+Os ..> Cloud : cloud provider selection
+Os ..> RaiPath : path contracts
+Os ..> RaiFile : config file resolution
+Os ..> IStartupDiagnosticSink : diagnostics sink
+Os ..> OsDiagnosticsLogScope : log category
+Os ..> Os_DisposableScope : scoped overrides
+
+note bottom of Os
+
+	This is the verbose 
+	view and intentionally 
+	includes
+	- public
+	- internal
+	- private 
+	members aggregated
+	from Os.cs
+	Os.CloudStorage.cs
+	Os.Diagnostics.cs
+
+end note
+
+@enduml

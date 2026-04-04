@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xunit;
 using OsLib;
@@ -13,19 +12,7 @@ namespace OsLib.Tests
 	{
 		private static void ResetOsCaches()
 		{
-			var osType = typeof(Os);
-			osType.GetField("userHomeDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-			osType.GetField("appRootDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-			osType.GetField("tempDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-			osType.GetField("localBackupDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-			osType.GetField("type", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-			osType.GetField("dIRSEPERATOR", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-			osType.GetField("config", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-			osType.GetField("configPathOverride", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-			osType.GetField("cloudRootsCache", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-			osType.GetField("isDiscoveringCloudRoots", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, false);
-			osType.GetField("isInitializingConfig", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, false);
-			Os.ResetDiagnosticsForTesting();
+			OsTestEnvironment.ResetOsCaches();
 		}
 
 		private static RaiPath CreateTempDir([CallerMemberName] string testName = "")
@@ -92,7 +79,7 @@ namespace OsLib.Tests
 		public void Os_DirSeparator_MatchesSystemDirectorySeparatorChar()
 		{
 			ResetOsCaches();
-			Assert.Equal(Path.DirectorySeparatorChar.ToString(), Os.DIRSEPERATOR);
+			Assert.Equal(Path.DirectorySeparatorChar.ToString(), Os.DIR);
 		}
 
 		[Fact]
@@ -148,8 +135,12 @@ namespace OsLib.Tests
 		[Fact]
 		public void RaiPath_AppendsDirectorySeparator()
 		{
-			var path = new RaiPath("/tmp/railpath");
-			Assert.EndsWith(Os.DIRSEPERATOR, path.Path);
+			var path0 = new RaiPath("/tmp/raipath");
+			Assert.EndsWith(Os.DIR, path0.Path);
+			Assert.EndsWith("tmp" + Os.DIR, path0.Path);
+			var path = new RaiPath("/tmp/raipath" + Os.DIR);    // would not work without it
+			Assert.EndsWith(Os.DIR, path.Path);
+			Assert.EndsWith("raipath" + Os.DIR, path.Path);
 		}
 
 		[Fact]
@@ -157,7 +148,7 @@ namespace OsLib.Tests
 		{
 			var basePath = new RaiPath("/tmp/base");
 			var subPath = basePath / "child";
-			Assert.EndsWith("child" + Os.DIRSEPERATOR, subPath.Path);
+			Assert.EndsWith("child" + Os.DIR, subPath.Path);
 		}
 
 		[Fact]
@@ -169,7 +160,7 @@ namespace OsLib.Tests
 				var rf = new RaiFile(root, "file.test", "txt");
 				Assert.Equal("file.test", rf.Name);
 				Assert.Equal("txt", rf.Ext);
-				Assert.EndsWith(Os.DIRSEPERATOR, rf.Path);
+				Assert.EndsWith(Os.DIR, rf.Path.Path);
 			}
 			finally
 			{
@@ -183,7 +174,7 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var source = new TextFile(root, "source.txt", "data");
+				var source = new TextFile(root, "source.txt", content: "data");
 				var copy = new TextFile(root, "copy.txt");
 				copy.cp(source);
 				Assert.True(copy.Exists());
@@ -210,8 +201,8 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var source = new TextFile(root, "source.txt", "src");
-				var dest = new TextFile(root, "dest.txt", "dest");
+				var source = new TextFile(root, "source.txt", content: "src");
+				var dest = new TextFile(root, "dest.txt", content: "dest");
 
 				Assert.Throws<IOException>(() => dest.mv(source, replace: false, keepBackup: false));
 			}
@@ -227,8 +218,8 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var source = new TextFile(root, "source.txt", "src");
-				var dest = new TextFile(root, "dest.txt", "dest");
+				var source = new TextFile(root, "source.txt", content: "src");
+				var dest = new TextFile(root, "dest.txt", content: "dest");
 
 				dest.mv(source, replace: true, keepBackup: true);
 				Assert.True(File.Exists(dest.FullName));
@@ -251,8 +242,8 @@ namespace OsLib.Tests
 			var root = CreateTempDir();
 			try
 			{
-				var source = new TextFile(root, "source.txt", "src");
-				var dest = new TextFile(root, "dest.txt", "dest");
+				var source = new TextFile(root, "source.txt", content: "src");
+				var dest = new TextFile(root, "dest.txt", content: "dest");
 
 				dest.mv(source, replace: true, keepBackup: false);
 				Assert.True(File.Exists(dest.FullName));
@@ -276,7 +267,7 @@ namespace OsLib.Tests
 			{
 				var dirPath = root / "rmdir-throws";
 				dirPath.mkdir();
-				new TextFile(dirPath, "a", "x").Save();
+				new TextFile(dirPath, "a", content: "x").Save();
 				Assert.Throws<IOException>(() => dirPath.rmdir(depth: 2, deleteFiles: false));
 			}
 			finally
@@ -293,7 +284,7 @@ namespace OsLib.Tests
 			{
 				var dirPath = root / "rmdir-ok";
 				dirPath.mkdir();
-				new TextFile(dirPath, "a.txt", "x");
+				new TextFile(dirPath, "a.txt", content: "x");
 				(dirPath / "child").mkdir();
 
 				var rf = new RaiFile(dirPath.Path);
@@ -387,7 +378,7 @@ namespace OsLib.Tests
 		[Fact]
 		public void RaiSystem_CommandAndArgsConstructor_SupportsExecutablePathsWithSpaces()
 		{
-			var root = CreateTempDir();
+			var root = CreateTempDir("ShellScript");
 			try
 			{
 				string scriptPath;
@@ -399,7 +390,7 @@ namespace OsLib.Tests
 				}
 				else
 				{
-					scriptPath = CreateExecutableScript(root, "echo args.sh", "#!/bin/sh\necho \"$1\"\n");
+					scriptPath = CreateExecutableScript(root, "args.sh", "#!/bin/sh\necho \"$1\"\n");
 					args = "hello";
 				}
 
@@ -429,7 +420,7 @@ namespace OsLib.Tests
 				}
 				else
 				{
-					scriptPath = CreateExecutableScript(root, "echo args.sh", "#!/bin/sh\necho \"$1\"\n");
+					scriptPath = CreateExecutableScript(root, "echoargs.sh", "#!/bin/sh\necho \"$1\"\n");
 					commandLine = $"\"{scriptPath}\" hello";
 				}
 
@@ -455,7 +446,7 @@ namespace OsLib.Tests
 			{
 				var nested = root / "nested";
 				nested.mkdir();
-				var sample = new TextFile(nested, "sample.txt", "data");
+				var sample = new TextFile(nested, "sample.txt", content: "data").Save();
 				var filePath = sample.FullName;
 
 				var forwardSlashPath = filePath.Replace('\\', '/');

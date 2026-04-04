@@ -84,26 +84,6 @@ public class OsConfigurationDiagnosticsTests
 	}
 
 	[Fact]
-	public void LoadConfig_IgnoresDeprecatedHomeDir_AndLogsWarning()
-	{
-		var root = OsTestEnvironment.NewTestRoot("os-diagnostics");
-		using var env = new OsTestEnvironment(root);
-		env.WriteConfig(homeDir: "/tmp/ignored-home");
-
-		var loggerFactory = new TestLoggerFactory();
-		var startupSink = new TestStartupDiagnosticSink();
-		OsTestEnvironment.ResetOsCaches();
-		Os.ConfigureDiagnostics(loggerFactory, startupSink);
-
-		var config = Os.LoadConfig();
-
-		Assert.Null(config.HomeDir);
-		Assert.NotEqual("/tmp/ignored-home/", Os.UserHomeDir.Path);
-		Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Warning && entry.Message.Contains("deprecated homeDir", StringComparison.OrdinalIgnoreCase));
-		Assert.Empty(startupSink.Messages);
-	}
-
-	[Fact]
 	public void CloudStorageRootDir_WhenUnavailable_LogsError_AndWritesStartupDiagnostic()
 	{
 		var root = OsTestEnvironment.NewTestRoot("os-diagnostics");

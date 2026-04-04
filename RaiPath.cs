@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading.Channels;
 
 namespace OsLib
 {
@@ -12,11 +14,12 @@ namespace OsLib
 	/// </summary>
 	public class RaiPath
 	{
+		public override string ToString() => Path;
 		public string Path
 		{
 			get
 			{
-				return path.Path;
+				return path.ToString();
 			}
 			set
 			{
@@ -35,7 +38,7 @@ namespace OsLib
 		/// <returns>RaiPath object for daisy chaining reasons</returns>
 		public static RaiPath operator /(RaiPath self, string subDir)
 		{
-			return new RaiPath(self.path.Path + subDir + Os.DIRSEPERATOR);
+			return new RaiPath(self.path.Path + subDir + Os.DIR);
 		}
 		/// <summary>
 		/// Using the / operator to add a subdirectory to a path
@@ -47,11 +50,20 @@ namespace OsLib
 		{
 			return new RaiPath(self.path.Path + subDir.Path);
 		}
-		private static string homePath
+		public List<RaiFile> GetFiles(string searchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly)
 		{
-			get
+			List<RaiFile> files = new List<RaiFile>();
+			foreach (var file in Directory.GetFiles(Path, searchPattern, searchOption))
 			{
-				return Os.ResolveSystemHomeDir();
+				files.Add(new RaiFile(file));
+			}
+			return files;
+		}
+		public IEnumerable<RaiFile> EnumerateFiles(string searchPattern, bool recursive = false)
+		{
+			foreach (var file in Directory.EnumerateFiles(Path, searchPattern, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
+			{
+				yield return new RaiFile(file);
 			}
 		}
 		/// <summary>
@@ -65,15 +77,11 @@ namespace OsLib
 				Path = string.Empty;
 				return;
 			}
-			if (s == ".")
-				s = Directory.GetCurrentDirectory();
-			if (s.StartsWith("./"))
-				s = System.IO.Path.Combine(Directory.GetCurrentDirectory(), s.Substring(2));
-			if (s == "~")
-				s = homePath;
-			if (s.StartsWith("~/"))
-				s = homePath + s.Substring(2); // relative to home directory
-			Path = new RaiFile(s).Path;
+			s = Os.ExpandLeadingDirectorySymbols(s);
+			var p = new RaiFile(s);
+			p.Name = string.Empty;
+			p.Ext = string.Empty;
+			Path = p.ToString();
 		}
 		/// <summary>
 		/// Constructor that takes a RaiFile object; uses its Path and ignores Name and Ext.
@@ -84,9 +92,9 @@ namespace OsLib
 			path.Name = string.Empty;
 			path.Ext = string.Empty;
 		}
-		public bool Exists() => Directory.Exists(path.Path);
-		public RaiPath mkdir() => new RaiFile(Path).mkdir();
-		public void rmdir(int depth = 0, bool deleteFiles = false) => new RaiFile(Path).rmdir(depth, deleteFiles);
-		public override string ToString() => Path;
+		public bool Exists() => Directory.Exists(path.ToString());
+		public RaiPath mkdir() => path.mkdir();
+		public void rmdir(int depth = 0, bool deleteFiles = false) => path.rmdir(depth, deleteFiles);
+		public static char[] InvalidFileNameChars => System.IO.Path.GetInvalidFileNameChars();
 	}
 }

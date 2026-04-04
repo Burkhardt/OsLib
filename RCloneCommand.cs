@@ -7,10 +7,10 @@ namespace OsLib
 {
 	public sealed class RCloneCommand : CliCommand
 	{
-		private readonly string rclonePath;
+		private readonly RaiPath rclonePath;
 		private readonly string commandName;
 
-		public RCloneCommand(string rclonePath = null, string commandName = "rclone")
+		public RCloneCommand(RaiPath rclonePath = null, string commandName = "rclone")
 			: base(commandName, packageName: "rclone")
 		{
 			this.rclonePath = rclonePath;
@@ -21,9 +21,10 @@ namespace OsLib
 		{
 			get
 			{
-				if (!string.IsNullOrWhiteSpace(rclonePath))
+				if (rclonePath != null)
 				{
-					var cmd = new RaiFile(commandName) { Path = rclonePath };
+					var cmd = new RaiFile(commandName);
+					cmd.Path = rclonePath;
 					yield return cmd.FullName;
 				}
 

@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json.Linq;
 
 namespace OsLib.Tests;
 
@@ -9,14 +10,19 @@ public class RemoteSshTests
 	public void Mzansi_Ssh_Readiness_Probe_Works()
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
-		Console.WriteLine(Os.GetCloudConfigurationDiagnosticReport(refresh: true));
-		Console.WriteLine(Os.GetRemoteTestConfigurationDiagnosticReport(refresh: true));
 
-		var observer = Os.LoadRemoteTestConfig(refresh: true).GetObserver("mzansi");
-		if (observer == null || string.IsNullOrWhiteSpace(observer.SshTarget))
-			Assert.Skip($"Configure observer 'mzansi' in {Os.GetDefaultRemoteTestConfigPath()}.{Environment.NewLine}{Os.GetRemoteTestConfigurationDiagnosticReport()}");
+		string sshTarget;
+		try
+		{
+			sshTarget = Os.GetObserverSshTarget("mzansi");
+		}
+		catch (InvalidOperationException ex)
+		{
+			Assert.Skip(ex.Message);
+			return;
+		}
 
-		var probe = new SshFileProbe(observer.SshTarget);
+		var probe = new SshFileProbe(sshTarget);
 		var result = probe.ExecuteScript("printf ready");
 
 		Assert.Equal(0, result.ExitCode);
@@ -27,11 +33,18 @@ public class RemoteSshTests
 	public void Mzansi_GoogleDrive_Root_Is_Readable_From_Remote_OsConfig()
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
-		Console.WriteLine(Os.GetCloudConfigurationDiagnosticReport(refresh: true));
-		Console.WriteLine(Os.GetRemoteTestConfigurationDiagnosticReport(refresh: true));
 
-		if (!RemoteCloudSyncProbe.TryCreate(Cloud.GoogleDrive, "mzansi", out var probe, out var reason))
-			Assert.Skip(reason + Environment.NewLine + Os.GetCloudConfigurationDiagnosticReport() + Environment.NewLine + Os.GetRemoteTestConfigurationDiagnosticReport());
+		RemoteCloudSyncProbe probe;
+		try
+		{
+			if (!RemoteCloudSyncProbe.TryCreate(Cloud.GoogleDrive, "mzansi", out probe, out var reason))
+				Assert.Skip(reason);
+		}
+		catch (InvalidOperationException ex)
+		{
+			Assert.Skip(ex.Message);
+			return;
+		}
 
 		Assert.True(probe.Observer.DirectoryExists(probe.RemoteCloudRoot.Path), probe.LastFailure);
 	}

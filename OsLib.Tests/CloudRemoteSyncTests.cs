@@ -14,11 +14,10 @@ public class CloudRemoteSyncTests
 	public void TextFile_SyncsWithMzansi(Cloud provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
-		Console.WriteLine(Os.GetCloudConfigurationDiagnosticReport(refresh: true));
-		Console.WriteLine(Os.GetRemoteTestConfigurationDiagnosticReport(refresh: true));
+		Console.WriteLine(Os.GetCloudConfigurationDiagnosticReport(refresh: false));	// really??? this is too much => setting refresh to false 
 
 		if (!RemoteCloudSyncProbe.TryCreate(provider, "mzansi", out var probe, out var reason))
-			Assert.Skip(reason + Environment.NewLine + Os.GetCloudConfigurationDiagnosticReport() + Environment.NewLine + Os.GetRemoteTestConfigurationDiagnosticReport());
+			Assert.Skip(reason + Environment.NewLine + Os.GetCloudConfigurationDiagnosticReport());
 
 		var providerKey = provider.ToString().ToLowerInvariant();
 		var relativeDir = $"RAIkeep/oslib-remote-sync-tests/{providerKey}/sample/";

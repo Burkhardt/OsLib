@@ -151,7 +151,7 @@ public class PathConventionsTests
 
 			Assert.Equal("AfricaStage", sut.Name);
 			Assert.Equal("pit", sut.Ext);
-			Assert.Equal(concatenatedPath.Path, sut.Path);
+			Assert.Equal(concatenatedPath.ToString(), sut.Path.ToString());
 			Assert.Equal(new RaiFile(concatenatedPath, "AfricaStage.pit").FullName, sut.FullName);
 			//Assert.True(new RaiFile(sut.FullName).Exists());	// BS: creating a CanonicalFile object does not create the file on disk, calling .Save() does
 		}
@@ -173,7 +173,7 @@ public class PathConventionsTests
 			var concatenatedPath = root / "NoExt";
 
 			Assert.True(string.IsNullOrEmpty(sut.Ext));
-			Assert.EndsWith($"{Os.DIRSEPERATOR}NoExt{Os.DIRSEPERATOR}NoExt", sut.FullName);
+			Assert.EndsWith($"{Os.DIR}NoExt{Os.DIR}NoExt", sut.FullName);
 			// Assert.True(new RaiFile(sut.FullName).Exists()); // BS: creating a CanonicalFile object does not create the file on disk, calling .Save() does
 		}
 		finally
@@ -215,7 +215,7 @@ public class PathConventionsTests
 		EnsureDir(root);
 		var canonical = new CanonicalFile(new RaiFile(root, "File.pit").FullName);
 
-		Assert.Equal(PathConventionType.CanonicalByName, canonical.ConventionName);
+		Assert.Equal(PathConventionType.CanonicalByName, canonical.Convention);
 
 		CleanupDir(root);
 	}
@@ -227,7 +227,7 @@ public class PathConventionsTests
 
 		var sut = new CanonicalFile(fullName);
 
-		Assert.Equal(fullName, sut.Path);
+		Assert.Equal(fullName, sut.Path.ToString());
 		Assert.Equal(string.Empty, sut.Name);
 		Assert.Equal(string.Empty, sut.Ext);
 		Assert.Equal(fullName, sut.FullName);
@@ -242,7 +242,7 @@ public class PathConventionsTests
 
 		Assert.Equal("Nomsa", sut.Name);
 		Assert.Equal("net", sut.Ext);
-		Assert.Equal("/Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/Nomsa.net/Nomsa/", sut.Path);
+		Assert.Equal("/Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/Nomsa.net/Nomsa/", sut.Path.ToString());
 		Assert.Equal("/Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/Nomsa.net/Nomsa/Nomsa.net", sut.FullName);
 	}
 }

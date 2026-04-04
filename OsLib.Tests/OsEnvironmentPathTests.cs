@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -6,6 +7,15 @@ namespace OsLib.Tests;
 [Collection("CloudStorageEnvironment")]
 public class OsEnvironmentPathTests
 {
+	private static string EnsureTrailingSeparator(string value)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+			return string.Empty;
+
+		var normalized = Os.NormSeperator(value);
+		return normalized.EndsWith(Os.DIR, StringComparison.Ordinal) ? normalized : normalized + Os.DIR;
+	}
+
 	[Fact]
 	public void TempDir_MatchesSystemTempPath_WhenNotConfigured()
 	{
@@ -68,7 +78,7 @@ public class OsEnvironmentPathTests
 
 		Assert.True(Path.IsPathRooted(Os.LocalBackupDir.Path));
 		Assert.False(new RaiFile(Os.LocalBackupDir.Path).Cloud);
-		Assert.Contains("backup", Os.LocalBackupDir.Path, StringComparison.OrdinalIgnoreCase);
+		Assert.Equal(Os.TempDir.Path, Os.LocalBackupDir.Path);
 	}
 
 	[Fact]
@@ -77,7 +87,7 @@ public class OsEnvironmentPathTests
 		var root = OsTestEnvironment.NewTestRoot("env-paths");
 		using var env = new OsTestEnvironment(root);
 
-		var overrideDir = (root / "override-backup").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		var overrideDir = (root / "override-backup").Path;
 		new RaiPath(overrideDir).mkdir();
 		env.WriteConfig(localBackupDir: overrideDir);
 
@@ -85,13 +95,13 @@ public class OsEnvironmentPathTests
 	}
 
 	[Fact]
-	public void LocalBackupDir_ReevaluatesAfterCacheReset_WhenConfigChanges()
+	public void LocalBackupDir_ReevaluatesAfterExplicitReload_WhenConfigChanges()
 	{
 		var root = OsTestEnvironment.NewTestRoot("env-paths");
 		using var env = new OsTestEnvironment(root);
 
-		var first = (root / "first-backup").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-		var second = (root / "second-backup").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		var first = (root / "first-backup").Path;
+		var second = (root / "second-backup").Path;
 		new RaiPath(first).mkdir();
 		new RaiPath(second).mkdir();
 		env.WriteConfig(localBackupDir: first);
@@ -99,9 +109,9 @@ public class OsEnvironmentPathTests
 		Assert.Equal(new RaiPath(first).Path, Os.LocalBackupDir.Path);
 
 		env.WriteConfig(localBackupDir: second);
-		Assert.Equal(new RaiPath(second).Path, Os.LocalBackupDir.Path);
+		Assert.Equal(new RaiPath(first).Path, Os.LocalBackupDir.Path);
 
-		OsTestEnvironment.ResetOsCaches();
+		_ = Os.LoadConfig();
 		Assert.Equal(new RaiPath(second).Path, Os.LocalBackupDir.Path);
 	}
 
@@ -110,7 +120,7 @@ public class OsEnvironmentPathTests
 	{
 		OsTestEnvironment.ResetOsCaches();
 
-		Assert.Equal(new RaiPath(Directory.GetCurrentDirectory()).Path, Os.AppRootDir.Path);
+		Assert.Equal(new RaiPath(EnsureTrailingSeparator(Directory.GetCurrentDirectory())).Path, Os.AppRootDir.Path);
 	}
 
 	[Fact]
@@ -119,9 +129,11 @@ public class OsEnvironmentPathTests
 		OsTestEnvironment.ResetOsCaches();
 
 		var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty;
-		var expected = new RaiFile(new RaiPath(home) / ".config" / "RAIkeep", "osconfig", "json").FullName;
+		var homeDir = EnsureTrailingSeparator(home);
+		var raiPath = new RaiPath(homeDir) / ".config" / "RAIkeep";
+		var expected = new RaiFile(raiPath, name: "osconfig", ext: "json5").FullName;
 
-		Assert.Equal(expected, Os.GetDefaultConfigPath());
+		Assert.Equal(expected, Os.ConfigFileFullName);
 	}
 
 	[Fact]
@@ -130,32 +142,27 @@ public class OsEnvironmentPathTests
 		var root = OsTestEnvironment.NewTestRoot("env-paths");
 		using var env = new OsTestEnvironment(root);
 
-		Assert.Equal(env.ConfigPath, Os.GetDefaultConfigPath());
+		Assert.Equal(env.ConfigPath, Os.ConfigFileFullName);
 	}
 
 	[Fact]
-	public void GetDefaultRemoteTestConfigPath_UsesFixedRAIkeepConfigLocation()
-	{
-		OsTestEnvironment.ResetOsCaches();
-
-		var home = Environment.GetEnvironmentVariable("HOME");
-		if (string.IsNullOrWhiteSpace(home))
-			home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty;
-		var expected = Path.Combine(home, ".config", "RAIkeep", "remote-test-config.json");
-
-		Assert.Equal(expected, Os.GetDefaultRemoteTestConfigPath());
-	}
-
-	[Fact]
-	public void GetDefaultRemoteTestConfigPath_IgnoresDeprecatedHomeDirConfig()
+	public void GetObserverSshTarget_ReturnsConfiguredValue()
 	{
 		var root = OsTestEnvironment.NewTestRoot("env-paths");
 		using var env = new OsTestEnvironment(root);
-		env.WriteConfig(homeDir: "/Users");
+		env.WriteConfig(observers: new Dictionary<string, string> { ["Mzansi"] = "admin@mzansi" });
 
-		var expected = Path.Combine(env.Home, ".config", "RAIkeep", "remote-test-config.json");
+		Assert.Equal("admin@mzansi", Os.GetObserverSshTarget("mzansi"));
+	}
 
-		Assert.Equal(expected, Os.GetDefaultRemoteTestConfigPath());
+	[Fact]
+	public void GetObserverSshTarget_ThrowsWhenObserverNotConfigured()
+	{
+		var root = OsTestEnvironment.NewTestRoot("env-paths");
+		using var env = new OsTestEnvironment(root);
+		env.WriteConfig();
+
+		Assert.Throws<InvalidOperationException>(() => Os.GetObserverSshTarget("mzansi"));
 	}
 
 	[Fact]
@@ -183,7 +190,7 @@ public class OsEnvironmentPathTests
 		{
 			env1.WriteConfig(googleDrive: google1);
 			dynamic config = Os.LoadConfig();
-			Assert.Equal(new RaiPath(google1).Path, new RaiPath((string)config.cloud.googledrive).Path);
+			Assert.Equal(new RaiPath(google1).Path, new RaiPath((string)config.Cloud.GoogleDrive).Path);
 		}
 
 		var root2 = OsTestEnvironment.NewTestRoot("env-paths", "second");
@@ -193,38 +200,23 @@ public class OsEnvironmentPathTests
 		env2.WriteConfig(googleDrive: google2);
 
 		dynamic configAfterSwitch = Os.LoadConfig();
-		Assert.Equal(new RaiPath(google2).Path, new RaiPath((string)configAfterSwitch.cloud.googledrive).Path);
+		Assert.Equal(new RaiPath(google2).Path, new RaiPath((string)configAfterSwitch.Cloud.GoogleDrive).Path);
 	}
 
 	[Fact]
-	public void LoadRemoteTestConfig_UsesUpdatedDefaultConfigPath_AfterEnvironmentSwitch()
+	public void GetObserverSshTarget_ReadsFromUpdatedConfig_AfterEnvironmentSwitch()
 	{
 		var root1 = OsTestEnvironment.NewTestRoot("env-paths", "first");
 		using (var env1 = new OsTestEnvironment(root1))
 		{
-			env1.WriteConfig();
-			WriteRemoteTestConfig(Os.GetDefaultRemoteTestConfigPath(), "alpha@host");
-			Assert.Equal("alpha@host", Os.LoadRemoteTestConfig(refresh: true).GetObserver("mzansi")!.SshTarget);
+			env1.WriteConfig(observers: new Dictionary<string, string> { ["Mzansi"] = "alpha@host" });
+			Assert.Equal("alpha@host", Os.GetObserverSshTarget("mzansi"));
 		}
 
 		var root2 = OsTestEnvironment.NewTestRoot("env-paths", "second");
 		using var env2 = new OsTestEnvironment(root2);
-		env2.WriteConfig();
-		WriteRemoteTestConfig(Os.GetDefaultRemoteTestConfigPath(), "beta@host");
+		env2.WriteConfig(observers: new Dictionary<string, string> { ["Mzansi"] = "beta@host" });
 
-		Assert.Equal("beta@host", Os.LoadRemoteTestConfig(refresh: true).GetObserver("mzansi")!.SshTarget);
-	}
-
-	private static void WriteRemoteTestConfig(string path, string sshTarget)
-	{
-		var file = new RaiFile(path);
-		RaiFile.mkdir(file.Path);
-		File.WriteAllText(
-			file.FullName,
-			"{\n" +
-			"  \"observers\": {\n" +
-			$"    \"mzansi\": {{ \"sshTarget\": \"{sshTarget}\" }}\n" +
-			"  }\n" +
-			"}\n");
+		Assert.Equal("beta@host", Os.GetObserverSshTarget("mzansi"));
 	}
 }

@@ -1,0 +1,87 @@
+@startuml RaiFile-Descendants-With-Namespaces
+' Generated: 2026-04-03
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam DiagramFontName "Casual"
+skinparam DiagramFontSize 36
+skinparam ClassFontName "Casual"
+skinparam ClassFontSize 28
+skinparam ClassAttributeIconSize 10
+skinparam ClassAttributeFontName Casual
+skinparam ClassAttributeFontColor #053583
+skinparam ClassAttributeFontWeight normal
+skinparam ClassAttributeFontSize 12
+skinparam ClassMethodFontName "Casual"
+skinparam ClassMethodFontSize 12
+skinparam ClassMethodFontWeight 500
+skinparam ClassAttributeFontStyle normal
+skinparam ClassBorderColor #0f766e
+skinparam ClassBackgroundColor #ccfbf1
+skinparam ClassFontColor #111827
+skinparam EnumBorderColor #b45309
+skinparam EnumBackgroundColor #fef3c7
+skinparam EnumFontColor #7c2d12
+skinparam NoteBackgroundColor #fff7d6
+skinparam NoteBorderColor #d4b106
+skinparam ArrowColor #9b2c2c
+skinparam ArrowFontColor #374151
+skinparam ArrowFontName "Casual"
+hide empty members
+
+title RaiFile/RaiPath Descendants with Namespaces
+
+package "OsLib" {
+	class RaiFile
+	class RaiPath
+
+	class TextFile
+	class CsvFile
+	class TmpFile
+	class CanonicalFile
+	abstract class "ConfigFile<TData>" as ConfigFileT
+
+	interface IPathConvention {
+		+Convention : PathConventionType
+		+ApplyPathConvention()
+	}
+
+	enum PathConventionType {
+		CanonicalByName
+		ItemIdTree3x3
+		ItemIdTree8x2
+	}
+}
+
+package "RaiImage" {
+	class ImageFile
+	class ImageTreeFile
+	class ItemTreePath
+}
+
+package "JsonPit" {
+	class PitFile
+	class MasterFlagFile
+	class ProcessFlagFile
+}
+
+TextFile --|> RaiFile
+CsvFile --|> TextFile
+TmpFile --|> RaiFile
+CanonicalFile --|> RaiFile
+ConfigFileT --|> RaiFile
+ImageFile --|> RaiFile
+ImageTreeFile --|> ImageFile
+PitFile --|> CanonicalFile
+MasterFlagFile --|> TextFile
+ProcessFlagFile --|> MasterFlagFile
+
+ItemTreePath --|> RaiPath
+
+CanonicalFile ..|> IPathConvention
+ImageTreeFile ..|> IPathConvention
+ItemTreePath ..|> IPathConvention
+
+IPathConvention ..> PathConventionType : uses
+
+@enduml

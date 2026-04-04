@@ -2,10 +2,10 @@
 
 This document provides a detailed, foldable API overview.
 
-## 3.7.0 scope note
+## 3.7.3 scope note
 
 - Minor release: path and canonicalization alignment for JsonPit integration.
-- `OsLib 3.7.0` keeps the public API surface stable while refining path behavior.
+- `OsLib 3.7.3` keeps the public API surface stable while refining path behavior.
 - `CanonicalPath` remains available for compatibility but is deprecated; prefer direct `RaiPath` composition.
 
 ## core types

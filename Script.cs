@@ -14,10 +14,10 @@ namespace OsLib
 
 		public string FullName => ScriptFile.FullName;
 
-		public Script(RaiPath path, string name, string content)
-			: base(new RaiFile(path, name).FullName)
+		public Script(RaiPath path, string name, string ext ="sh", string content = null)
+			: base(new RaiFile(path, name, ext).FullName)
 		{
-			ScriptFile = new TextFile(path, name, content);
+			ScriptFile = new TextFile(path: path, name: name, ext: ext, content: content);
 			EnsureExecutable();
 		}
 

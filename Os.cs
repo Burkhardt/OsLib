@@ -19,12 +19,35 @@ namespace OsLib     // aka OsLibCore
 	/// </summary>
 	public static partial class Os
 	{
-		private static readonly string defaultConfigFileLocation = "~/.config/RAIkeep/osconfig.json";   // see Os.CloudStorage.cs for ConfigFile<OsConfigModel>
+		private static readonly string defaultConfigFileLocation = "~/.config/RAIkeep/osconfig.json5";   // single machine-local config contract
 		public static RaiPath UserHomeDir
 		{
 			get
 			{
-				userHomeDir ??= new RaiPath(ResolveSystemHomeDir());
+				if (userHomeDir == null)
+				{
+					string resolved;
+					if (Type == OsType.Windows)
+					{
+						resolved = EnsureTrailingDirectorySeparator(Environment.GetEnvironmentVariable("USERPROFILE"));
+						if (string.IsNullOrWhiteSpace(resolved))
+						{
+							var homeDrive = Environment.GetEnvironmentVariable("HOMEDRIVE");
+							var homePath = EnsureTrailingDirectorySeparator(Environment.GetEnvironmentVariable("HOMEPATH"));
+							if (!string.IsNullOrEmpty(homeDrive) && !string.IsNullOrEmpty(homePath))
+								resolved = NormSeperator(homeDrive + homePath);
+						}
+					}
+					else
+					{
+						resolved = EnsureTrailingDirectorySeparator(Environment.GetEnvironmentVariable("HOME"));
+					}
+					if (string.IsNullOrEmpty(resolved))
+						resolved = EnsureTrailingDirectorySeparator(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty);
+					if (string.IsNullOrWhiteSpace(resolved))
+						LogWarningOnce<OsDiagnosticsLogScope>("fallback:userhome:empty", "User home directory could not be resolved from environment variables. SpecialFolder fallback returned an empty value.");
+					userHomeDir = new RaiPath(resolved);
+				}
 				LogDebug<OsDiagnosticsLogScope>("Resolved user home directory to {UserHomeDir}", userHomeDir.Path);
 				return userHomeDir;
 			}
@@ -33,7 +56,7 @@ namespace OsLib     // aka OsLibCore
 		{
 			get
 			{
-				appRootDir ??= new RaiPath(Directory.GetCurrentDirectory());
+				appRootDir ??= new RaiPath(EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory()));
 				LogDebug<OsDiagnosticsLogScope>("Resolved application root directory to {AppRootDir}", appRootDir.Path);
 				return appRootDir;
 			}
@@ -42,20 +65,45 @@ namespace OsLib     // aka OsLibCore
 		{
 			get
 			{
-				string provider = null;
-				try
-				{
-					provider = ((IEnumerable<string>)Config.DefaultCloudOrder).FirstOrDefault();
-					if (string.IsNullOrWhiteSpace(provider) || !Enum.TryParse<Cloud>(provider, true, out var parsedProvider))
-						throw new InvalidDataException($"Invalid cloud storage type '{provider}' in configuration file '{defaultConfigFileLocation}'.");
+				if (cloudStorageRootDir != null)
+					return cloudStorageRootDir;
 
-					cloudStorageRootDir = GetCloudStorageRoot(parsedProvider, refresh: false);
-				}
-				catch (Exception ex)
+				Exception? lastException = null;
+				foreach (var provider in GetEffectiveDefaultCloudOrder())
 				{
-					LogError<OsDiagnosticsLogScope>(ex, "Failed to resolve cloud storage root directory for provider {Provider}", provider);
+					try
+					{
+						var candidate = GetCloudStorageRoot(provider, refresh: false);
+						if (candidate != null && candidate.Exists())
+						{
+							cloudStorageRootDir = candidate;
+							return cloudStorageRootDir;
+						}
+					}
+					catch (Exception ex)
+					{
+						lastException = ex;
+					}
 				}
-				return cloudStorageRootDir;
+
+				var message = $"No cloud storage root could be discovered. {GetCloudStorageSetupGuidance()}";
+				if (lastException != null)
+				{
+					ReportStartupCritical<OsDiagnosticsLogScope>(
+						"cloud:root-unavailable",
+						lastException,
+						$"{message} Startup continues in degraded mode.",
+						"No cloud storage root could be discovered. Startup continues in degraded mode.");
+				}
+				else
+				{
+					ReportStartupCritical<OsDiagnosticsLogScope>(
+						"cloud:root-unavailable",
+						$"{message} Startup continues in degraded mode.",
+						"No cloud storage root could be discovered. Startup continues in degraded mode.");
+				}
+
+				throw new DirectoryNotFoundException(message);
 			}
 		}
 		public static bool IsWindows => Type == OsType.Windows;
@@ -84,14 +132,27 @@ namespace OsLib     // aka OsLibCore
 					string configuredTempDir = null;
 					try
 					{
-						configuredTempDir = (string)Config.TempDir;
+						var activeConfig = Config;
+						if (activeConfig != null)
+							configuredTempDir = (string)activeConfig.TempDir;
 					}
-					catch (Exception ex)
+					catch
 					{
-						LogError<OsDiagnosticsLogScope>(ex, "Failed to resolve configured temp directory. Falling back to operating system temp directory {TempDir}", tempDir.Path);
 						configuredTempDir = null;
 					}
-					tempDir = string.IsNullOrWhiteSpace(configuredTempDir) ? Os.TempDir : new RaiPath(configuredTempDir);
+
+					if (string.IsNullOrWhiteSpace(configuredTempDir))
+					{
+						var fallbackTempDir = EnsureTrailingDirectorySeparator(Path.GetTempPath());
+						if (string.IsNullOrWhiteSpace(fallbackTempDir))
+							fallbackTempDir = EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory());
+						tempDir = new RaiPath(fallbackTempDir);
+						LogWarningOnce<OsDiagnosticsLogScope>("config:tempdir-fallback", "TempDir missing or invalid in config. Falling back to operating system temp directory {TempDir}", tempDir.Path);
+					}
+					else
+					{
+						tempDir = new RaiPath(configuredTempDir);
+					}
 				}
 				return tempDir;
 			}
@@ -110,31 +171,36 @@ namespace OsLib     // aka OsLibCore
 		{
 			get
 			{
-				try
+				if (localBackupDir == null)
 				{
-					if (localBackupDir == null)
+					string configuredLocalBackupDir = null;
+					try
 					{
-						var localBackupDir = Config.localBackupDir;
+						var activeConfig = Config;
+						if (activeConfig != null)
+							configuredLocalBackupDir = (string)activeConfig.LocalBackupDir;
 					}
-				}
-				catch (Exception ex)
-				{
-					localBackupDir = TempDir;
-					LogError<OsDiagnosticsLogScope>(ex, "Failed to resolve configured local backup directory. Falling back to operating system temp directory {localBackupDir}", localBackupDir.Path);
+					catch
+					{
+						configuredLocalBackupDir = null;
+					}
+
+					localBackupDir = string.IsNullOrWhiteSpace(configuredLocalBackupDir)
+						? TempDir
+						: new RaiPath(configuredLocalBackupDir);
+
+					if (string.IsNullOrWhiteSpace(configuredLocalBackupDir))
+						LogWarningOnce<OsDiagnosticsLogScope>("config:localbackup-fallback", "LocalBackupDir missing or invalid in config. Falling back to operating system temp directory {LocalBackupDir}", localBackupDir.Path);
 				}
 				return localBackupDir;
 			}
 		}
-		public static string DIRSEPERATOR
-		{
-			get
-			{
-				if (dIRSEPERATOR == null)
-					dIRSEPERATOR = System.IO.Path.DirectorySeparatorChar.ToString();
-				return dIRSEPERATOR;
-			}
-		}
-		private static string dIRSEPERATOR = null;       // changed internal representation; use EscapeMode.backslashed to convert to "\\"
+		private static string dIRSEPERATOR = System.IO.Path.DirectorySeparatorChar.ToString();       // changed internal representation; use EscapeMode.backslashed to convert to "\\"
+		/// <summary>
+		/// for brevity: same as Os.DIRSEPERATOR, \ or / depending on the operating system
+		/// </summary>
+		public static string DIR => dIRSEPERATOR;
+		public static string DIRSEPERATOR => dIRSEPERATOR; // to save some ToString() calls
 		public const string ESCAPECHAR = "\\";
 		public const string DATEFORMAT = "yyyy-MM-dd HH.mm.ss"; // missing in older versions
 		public static DateTimeOffset ParseDateTime(string datetimeInDATEFORMAT)
@@ -142,13 +208,13 @@ namespace OsLib     // aka OsLibCore
 			var a = datetimeInDATEFORMAT.Split(new char[] { '-', '.', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 			return new DateTimeOffset(new DateTime(int.Parse(a[0]), int.Parse(a[1]), int.Parse(a[2]), int.Parse(a[3]), int.Parse(a[4]), int.Parse(a[5])));
 		}
-		public static string escapeParam(string param)
+		public static string EscapeParam(string param)
 		{        // "..."
 			if (param[0] == '\"')
 				return param;
 			return '\"' + param + '\"';
 		}
-		public static string escapeBlank(string name)
+		public static string EscapeBlank(string name)
 		{     // every whitespace char will be escaped by insertion of ESCAPECHAR
 			var s = name;
 			for (int i = 0; i < s.Length; i++)
@@ -161,9 +227,9 @@ namespace OsLib     // aka OsLibCore
 			}
 			return s;
 		}
-		public static string winInternal(string fullname)
+		public static string WinInternal(string fullname)
 		{  // every / is replaced by a \ in the copy
-			char dirChar = Os.DIRSEPERATOR[0];
+			char dirChar = Os.DIR[0];
 			if (fullname != null && dirChar != '/')
 				fullname = fullname.Replace('/', dirChar); //fullname = fullname.Replace('/', '\\');
 			return fullname;
@@ -183,7 +249,7 @@ namespace OsLib     // aka OsLibCore
 					if (path != null && !path.Contains(':') && !path.Contains('\\'))
 						return path;
 					if (path != null)
-						path = path.Replace('/', DIRSEPERATOR[0]);
+						path = path.Replace('/', DIR[0]);
 					break;
 			}
 			return path;
@@ -193,93 +259,68 @@ namespace OsLib     // aka OsLibCore
 			if (mode == EscapeMode.noEsc)
 				return s;
 			if (mode == EscapeMode.blankEsc)
-				return Os.escapeBlank(s);
+				return Os.EscapeBlank(s);
 			if (mode == EscapeMode.paramEsc)
-				return Os.escapeParam(s);
+				return Os.EscapeParam(s);
 			if (mode == EscapeMode.backslashed)
-				return Os.winInternal(s);
+				return Os.WinInternal(s);
 			return s;
 		}
 		public static string NormSeperator(string s)
 		{
-			return s.Replace(@"\", DIRSEPERATOR);
+			return s.Replace(@"\", DIR);
+		}
+		internal static string EnsureTrailingDirectorySeparator(string s)
+		{
+			if (string.IsNullOrWhiteSpace(s))
+				return string.Empty;
+
+			s = NormSeperator(s);
+			return s.EndsWith(DIR, StringComparison.Ordinal) ? s : s + DIR;
+		}
+		internal static string ParentDirectory(string s)
+		{
+			if (string.IsNullOrWhiteSpace(s))
+				return string.Empty;
+
+			var trimmed = NormSeperator(s).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+			if (string.IsNullOrWhiteSpace(trimmed))
+				return DIR;
+
+			var parent = Path.GetDirectoryName(trimmed);
+			if (string.IsNullOrWhiteSpace(parent))
+				parent = Path.GetPathRoot(trimmed) ?? string.Empty;
+
+			return EnsureTrailingDirectorySeparator(parent);
+		}
+		internal static string ExpandLeadingDirectorySymbols(string s)
+		{
+			if (string.IsNullOrWhiteSpace(s))
+				return s;
+
+			s = NormSeperator(s);
+			if (s == ".")
+				return EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory());
+			if (s == "~")
+				return EnsureTrailingDirectorySeparator(UserHomeDir.Path);
+			if (s.StartsWith("./", StringComparison.Ordinal))
+				return EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory()) + s.Substring(2);
+			if (s.StartsWith("~/", StringComparison.Ordinal))
+				return EnsureTrailingDirectorySeparator(UserHomeDir.Path) + s.Substring(2);
+			if (s.StartsWith("../", StringComparison.Ordinal))
+			{
+				var expanded = EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory());
+				while (s.StartsWith("../", StringComparison.Ordinal))
+				{
+					expanded = ParentDirectory(expanded);
+					s = s.Substring(3);
+				}
+				return expanded + s;
+			}
+
+			return s;
 		}
 		private static RaiPath localBackupDir = null;
-		internal static string ResolveSystemHomeDir()
-		{
-			var resolved = string.Empty;
-			if (Type == OsType.Windows)
-			{
-				resolved = Environment.GetEnvironmentVariable("USERPROFILE");
-				if (string.IsNullOrEmpty(resolved))
-				{
-					var homeDrive = Environment.GetEnvironmentVariable("HOMEDRIVE");
-					var homePath = Environment.GetEnvironmentVariable("HOMEPATH");
-					if (!string.IsNullOrEmpty(homeDrive) && !string.IsNullOrEmpty(homePath))
-						resolved = homeDrive + homePath;
-				}
-			}
-			else
-			{
-				resolved = Environment.GetEnvironmentVariable("HOME");
-			}
-			if (string.IsNullOrEmpty(resolved))
-				resolved = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty;
-			if (string.IsNullOrWhiteSpace(resolved))
-				LogWarningOnce<OsDiagnosticsLogScope>("fallback:userhome:empty", "User home directory could not be resolved from environment variables. SpecialFolder fallback returned an empty value.");
-			return resolved;
-		}
-		[Obsolete("Use Os.TempDir instead")]
-		internal static string ResolveSystemTempDir()
-		{
-			var resolved = Path.GetTempPath();
-			if (string.IsNullOrWhiteSpace(resolved))
-				resolved = Directory.GetCurrentDirectory();
-
-			return resolved;
-		}
-		[Obsolete("Use Os.LocalBackupDir instead")]
-		internal static string ResolveSystemLocalBackupDir()
-		{
-			throw new NotImplementedException();
-		}
-		[Obsolete("Use Os.LocalBackupDir instead")]
-		private static RaiPath ResolveConfiguredOrDefaultLocalBackupDir()
-		{
-			throw new NotImplementedException();
-		}
-		private static IEnumerable<string> GetLocalBackupDirCandidates()
-		{
-			var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-			if (!string.IsNullOrWhiteSpace(localAppData))
-				yield return Path.Combine(localAppData, "OsLib", "Backup");
-
-			if (Type == OsType.Windows)
-			{
-				var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
-				if (!string.IsNullOrWhiteSpace(userProfile))
-					yield return Path.Combine(userProfile, "AppData", "Local", "OsLib", "Backup");
-			}
-			else
-			{
-				yield return "~/.local/share/OsLib/Backup";
-				yield return "~/.oslib/backup";
-				yield return "~/Backup";
-			}
-
-			yield return Path.Combine(ResolveSystemTempDir(), "OsLib", "Backup");
-		}
-		private static string NormalizeBackupDirectoryCandidate(string candidate)
-		{
-			if (string.IsNullOrWhiteSpace(candidate))
-				return null;
-
-			var expanded = candidate.Trim();
-			if (expanded.StartsWith("~/"))
-				expanded = $"{UserHomeDir.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)}{expanded.Substring(1)}";
-
-			return new RaiPath(expanded).Path;
-		}
 		private static OsType DetectOsType()
 		{
 			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))

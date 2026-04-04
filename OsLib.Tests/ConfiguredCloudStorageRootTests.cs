@@ -14,7 +14,7 @@ public class ConfiguredCloudStorageRootTests
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "configured-cloud-roots", out var providerRoot);
 
-		var resolvedRoot = Os.GetCloudStorageRoot(provider, refresh: true);
+		var resolvedRoot = Os.GetCloudStorageRoot(provider);
 
 		Assert.Equal(new RaiPath(providerRoot).Path, resolvedRoot.Path);
 		Assert.True(Directory.Exists(providerRoot));
@@ -31,7 +31,7 @@ public class ConfiguredCloudStorageRootTests
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		var root = CloudStorageRealTestEnvironment.GetConfiguredCloudTestRoot(provider, "configured-cloud-roots", out var providerRoot);
 
-		var resolvedRoot = Os.GetCloudStorageRoot(provider, refresh: true);
+		var resolvedRoot = Os.GetCloudStorageRoot(provider);
 
 		Assert.Equal(new RaiPath(providerRoot).Path, resolvedRoot.Path);
 		Assert.True(Os.IsCloudPath(resolvedRoot.Path));

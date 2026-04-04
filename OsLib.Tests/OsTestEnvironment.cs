@@ -18,10 +18,10 @@ internal sealed class OsTestEnvironment : IDisposable
 	{
 		this.forcedType = forcedType;
 		Root = root;
-		Home = (root / "home").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-		AppData = (root / "app-data").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-		LocalAppData = (root / "local-app-data").Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-		ConfigPath = new RaiFile(new RaiPath(Home) / ".config" / "RAIkeep", "osconfig", "json").FullName;
+		Home = (root / "home").Path;
+		AppData = (root / "app-data").Path;
+		LocalAppData = (root / "local-app-data").Path;
+		ConfigPath = new RaiFile(new RaiPath(Home) / ".config" / "RAIkeep", "osconfig", "json5").FullName;
 
 		new RaiPath(Home).mkdir();
 		new RaiPath(AppData).mkdir();
@@ -55,41 +55,59 @@ internal sealed class OsTestEnvironment : IDisposable
 		string? dropbox = null,
 		string? oneDrive = null,
 		string? googleDrive = null,
-		string? homeDir = null,
 		string? tempDir = null,
 		string? localBackupDir = null,
-		IEnumerable<Cloud>? defaultCloudOrder = null)
+		IEnumerable<Cloud>? defaultCloudOrder = null,
+		Dictionary<string, string>? observers = null,
+		bool loadConfig = false)
 	{
 		var cloud = new JObject
 		{
-			["dropbox"] = NormalizeForJson(dropbox),
-			["onedrive"] = NormalizeForJson(oneDrive),
-			["googledrive"] = NormalizeForJson(googleDrive)
+			["Dropbox"] = NormalizeForJson(dropbox),
+			["OneDrive"] = NormalizeForJson(oneDrive),
+			["GoogleDrive"] = NormalizeForJson(googleDrive)
 		};
 
 		var json = new JObject
 		{
-			["cloud"] = cloud
+			["Cloud"] = cloud
 		};
 
-		if (!string.IsNullOrWhiteSpace(homeDir))
-			json["homeDir"] = new RaiPath(homeDir).Path;
 		if (!string.IsNullOrWhiteSpace(tempDir))
-			json["tempDir"] = new RaiPath(tempDir).Path;
+			json["TempDir"] = NormalizeDirectoryValue(tempDir);
 		if (!string.IsNullOrWhiteSpace(localBackupDir))
-			json["localBackupDir"] = new RaiPath(localBackupDir).Path;
+			json["LocalBackupDir"] = NormalizeDirectoryValue(localBackupDir);
 		if (defaultCloudOrder != null)
-			json["defaultCloudOrder"] = new JArray(defaultCloudOrder.Select(x => x.ToString()));
+			json["DefaultCloudOrder"] = new JArray(defaultCloudOrder.Select(x => x.ToString()));
+
+		if (observers != null && observers.Count > 0)
+		{
+			var observersJson = new JArray();
+			foreach (var kvp in observers)
+				observersJson.Add(new JObject
+				{
+					["Name"] = kvp.Key,
+					["SshTarget"] = kvp.Value
+				});
+			json["Observers"] = observersJson;
+		}
+
+		PersistTestConfigFile(json, loadConfig);
+	}
+
+	private void PersistTestConfigFile(JObject json, bool loadConfig)
+	{
 
 		var configFile = new RaiFile(ConfigPath);
-		RaiFile.mkdir(configFile.Path);
+		configFile.Path.mkdir();
 		var textFile = new TextFile(configFile.FullName)
 		{
 			Lines = json.ToString().Replace("\r\n", "\n").Split('\n').ToList()
 		};
 		textFile.Changed = true;
 		textFile.Save();
-		Os.LoadConfig();
+		if (loadConfig)
+			Os.LoadConfig();
 	}
 
 	internal void DeleteConfig()
@@ -128,7 +146,7 @@ internal sealed class OsTestEnvironment : IDisposable
 		osType.GetField("userHomeDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("appRootDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("type", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-		osType.GetField("dIRSEPERATOR", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+		osType.GetField("dIRSEPERATOR", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, System.IO.Path.DirectorySeparatorChar.ToString());
 		osType.GetField("tempDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("localBackupDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("config", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
@@ -154,7 +172,19 @@ internal sealed class OsTestEnvironment : IDisposable
 
 	private static string NormalizeForJson(string? value)
 	{
-		return string.IsNullOrWhiteSpace(value) ? string.Empty : new RaiPath(value).Path;
+		return string.IsNullOrWhiteSpace(value) ? string.Empty : NormalizeDirectoryValue(value);
+	}
+
+	private static string NormalizeDirectoryValue(string value)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+			return string.Empty;
+
+		var normalized = Os.NormSeperator(value);
+		if (!normalized.EndsWith(Os.DIR, StringComparison.Ordinal))
+			normalized += Os.DIR;
+
+		return new RaiPath(normalized).Path;
 	}
 
 	private static string SanitizeSegment(string? value)

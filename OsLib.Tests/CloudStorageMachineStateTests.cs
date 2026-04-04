@@ -15,14 +15,14 @@ namespace OsLib.Tests
 			using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 
 			Console.WriteLine("Cloud configuration state:");
-			Console.WriteLine($"- active config path: {Os.GetDefaultConfigPath()}");
-			Console.WriteLine($"- config file exists: {File.Exists(Os.GetDefaultConfigPath())}");
+			Console.WriteLine($"- active config path: {Os.ConfigFileFullName}");
+			Console.WriteLine($"- config file exists: {File.Exists(Os.ConfigFileFullName)}");
 
 			Console.WriteLine("Cloud discovery config candidates:");
 			foreach (var candidate in GetConfigCandidates())
 				Console.WriteLine($"- {candidate}: {(File.Exists(candidate) ? "found" : "missing")}");
 
-			var report = Os.GetCloudConfigurationDiagnosticReport(refresh: true);
+			var report = Os.GetCloudConfigurationDiagnosticReport();
 			Console.WriteLine(report);
 
 			foreach (var provider in Enum.GetValues<Cloud>())
@@ -51,7 +51,7 @@ namespace OsLib.Tests
 
 		private static IEnumerable<string> GetConfigCandidates()
 		{
-			yield return Os.GetDefaultConfigPath();
+			yield return Os.ConfigFileFullName;
 		}
 	}
 }

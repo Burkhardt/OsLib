@@ -1,0 +1,35 @@
+public static bool TryCreate(Cloud provider, string observerName, out RemoteCloudSyncProbe probe, out string reason)
+		{
+			probe = default!;
+
+			var localCloudRoot = Os.GetCloudStorageRoot(provider, refresh: true);
+			if (string.IsNullOrWhiteSpace(localCloudRoot.Path) || !localCloudRoot.Exists())
+			{
+				reason = $"{provider} is not configured or not accessible on this machine. {Os.GetCloudStorageSetupGuidance()}";
+				return false;
+			}
+
+			if (!TryVerifyLocalWriteAccess(localCloudRoot, out var localWriteAccessFailure))
+			{
+				reason = $"Local {provider} root is not writable: {localWriteAccessFailure}";
+				return false;
+			}
+
+			var sshTarget = Os.GetObserverSshTarget(observerName);
+			var observer = new SshFileProbe(sshTarget);
+			var ping = observer.ExecuteScript("printf ready");
+			if (ping.ExitCode != 0 || ping.StandardOutput.Trim() != "ready")
+			{
+				reason = $"SSH access failed. {observer.LastFailure}";
+				return false;
+			}
+
+			var cloudDir = null;
+			try {
+				
+				
+				
+			string remoteTempDir = remoteConfig.TempDir;
+			EnsureRemoteTempDirWritable(observer, remoteTempDir);
+			return true;
+		}

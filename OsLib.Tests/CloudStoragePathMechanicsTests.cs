@@ -18,7 +18,7 @@ public class CloudStoragePathMechanicsTests
 		new RaiPath(providerRoot).mkdir();
 		WriteProviderConfig(env, provider, providerRoot);
 
-		Assert.Equal(new RaiPath(providerRoot).Path, Os.GetCloudStorageRoot(provider, refresh: true).Path);
+		Assert.Equal(new RaiPath(providerRoot).Path, Os.GetCloudStorageRoot(provider).Path);
 	}
 
 	[Theory]
@@ -38,8 +38,8 @@ public class CloudStoragePathMechanicsTests
 		localDir.mkdir();
 		WriteProviderConfig(env, provider, providerRoot.Path);
 
-		Assert.Equal(provider, Os.GetCloudStorageProviderForPath(providerRoot.Path));
-		Assert.Equal(provider, Os.GetCloudStorageProviderForPath(cloudDir.Path));
+		Assert.Equal(provider, Os.GetCloudStorageProviderForPath(providerRoot));
+		Assert.Equal(provider, Os.GetCloudStorageProviderForPath(cloudDir));
 	}
 
 	[Theory]
@@ -62,7 +62,7 @@ public class CloudStoragePathMechanicsTests
 		var cloudFile = new RaiFile(cloudDir.Path + "sample.txt");
 		var localFile = new RaiFile(localDir.Path + "sample.txt");
 
-		Assert.Equal(new RaiPath(providerRoot.Path).Path, Os.GetCloudStorageRoot(provider, refresh: true).Path);
+		Assert.Equal(new RaiPath(providerRoot.Path).Path, Os.GetCloudStorageRoot(provider).Path);
 		Assert.True(cloudFile.Cloud);
 		Assert.False(localFile.Cloud);
 	}

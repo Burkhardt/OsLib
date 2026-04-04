@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Xunit;
 
 namespace OsLib.Tests;
 
@@ -8,6 +9,7 @@ internal static class CloudStorageRealTestEnvironment
 {
 	internal static IDisposable BeginConfiguredCloudResolution()
 	{
+		_ = Os.Config;
 		return new StringReader(string.Empty);
 	}
 
@@ -17,26 +19,23 @@ internal static class CloudStorageRealTestEnvironment
 		out string providerRoot,
 		[CallerMemberName] string testName = "")
 	{
-		var configPath = Os.GetDefaultConfigPath();
+		var configPath = Os.ConfigFileFullName;
 		if (!File.Exists(configPath))
-			throw new FileNotFoundException($"Required cloud config file is missing: {configPath}. {Os.GetCloudStorageSetupGuidance()}", configPath);
+			Assert.Skip($"Required cloud config file is missing: {configPath}. {Os.GetCloudStorageSetupGuidance()}");
 
-		dynamic config = Os.LoadConfig();
-		dynamic cloud = config.Cloud;
-		providerRoot = provider switch
-		{
-			Cloud.Dropbox => (string)cloud.Dropbox,
-			Cloud.OneDrive => (string)cloud.OneDrive,
-			Cloud.GoogleDrive => (string)cloud.GoogleDrive,
-			_ => string.Empty
-		};
+		dynamic config = Os.Config;
+		var configuredRoot = Os.GetCloudStorageRoot(provider);
+		providerRoot = configuredRoot?.Path ?? string.Empty;
 
 		if (string.IsNullOrWhiteSpace(providerRoot))
-			throw new InvalidOperationException($"Provider {provider} is not configured in {configPath}. {Os.GetCloudStorageSetupGuidance()}");
+			Assert.Skip($"Provider {provider} is not configured in {configPath}. {Os.GetCloudStorageSetupGuidance()}");
 
 		providerRoot = new RaiPath(providerRoot).Path;
 		if (!Directory.Exists(providerRoot))
-			throw new DirectoryNotFoundException($"Configured provider root does not exist: {providerRoot}. {Os.GetCloudStorageSetupGuidance()}");
+			Assert.Skip($"Configured provider root does not exist: {providerRoot}. {Os.GetCloudStorageSetupGuidance()}");
+
+		if (!Os.IsCloudPath(providerRoot))
+			Assert.Skip($"Configured provider root is not recognized as a cloud path: {providerRoot}. {Os.GetCloudStorageSetupGuidance()}");
 
 		return new RaiPath(providerRoot) / "RAIkeep" / SanitizeSegment(area) / SanitizeSegment(testName);
 	}

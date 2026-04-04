@@ -22,8 +22,6 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive);
 		env.WriteConfig(dropbox: dropbox, oneDrive: oneDrive, googleDrive: googleDrive);
 
-		_ = Os.LoadConfig();
-
 		try
 		{
 			Assert.Equal(new RaiPath(dropbox).Path, new RaiPath((string)Os.Config.Cloud.Dropbox).Path);
@@ -65,11 +63,11 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive);
 		env.WriteConfig(googleDrive: googleDrive);
 
-		_ = Os.LoadConfig();
+		var config = Os.LoadConfig();
 
 		try
 		{
-			Assert.Equal(new RaiPath(googleDrive).Path, new RaiPath((string)Os.Config.Cloud.GoogleDrive).Path);
+			Assert.Equal(new RaiPath(googleDrive).Path, new RaiPath((string)config.Cloud.GoogleDrive).Path);
 		}
 		catch (Exception ex)
 		{
@@ -90,11 +88,11 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive);
 		env.WriteConfig(googleDrive: googleDrive);
 
-		_ = Os.LoadConfig();
+		var config = Os.LoadConfig();
 
 		try
 		{
-			Assert.Equal(new RaiPath(googleDrive).Path, new RaiPath((string)Os.Config.Cloud.GoogleDrive).Path);
+			Assert.Equal(new RaiPath(googleDrive).Path, new RaiPath((string)config.Cloud.GoogleDrive).Path);
 		}
 		catch (Exception ex)
 		{
@@ -115,11 +113,11 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive.Path);
 		env.DeleteConfig();
 
-		_ = Os.LoadConfig();
-		var configPath = Os.GetDefaultConfigPath();
+		var config = Os.LoadConfig();
+		var configPath = Os.ConfigFileFullName;
 
 		Assert.False(File.Exists(configPath));
-		Assert.Null(Os.Config);
+		Assert.Null(config);
 	}
 
 	[Fact]
@@ -135,11 +133,9 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive.Path);
 		env.WriteConfig(googleDrive: "/manual/path/");
 
-		_ = Os.LoadConfig();
-
-		var config = JObject.Parse(File.ReadAllText(Os.GetDefaultConfigPath()));
+		var config = JObject.Parse(File.ReadAllText(Os.ConfigFileFullName));
 		Assert.Equal("/manual/path/", config["Cloud"]!["GoogleDrive"]!.ToString());
-		Assert.DoesNotContain(new RaiPath(googleDrive.Path).Path, File.ReadAllText(Os.GetDefaultConfigPath()));
+		Assert.DoesNotContain(new RaiPath(googleDrive.Path).Path, File.ReadAllText(Os.ConfigFileFullName));
 	}
 
 	[Theory]
@@ -169,7 +165,7 @@ public class CloudStorageConfigMechanicsTests
 				throw new ArgumentOutOfRangeException(nameof(provider), provider, null);
 		}
 
-		var effectiveRoot = Os.GetCloudStorageRoot(provider, refresh: true);
+		var effectiveRoot = Os.GetCloudStorageRoot(provider);
 
 		Assert.Equal(new RaiPath(configuredRoot).Path, effectiveRoot.Path);
 		Assert.NotEqual(new RaiPath(discoveredRoot).Path, effectiveRoot.Path);
@@ -178,7 +174,7 @@ public class CloudStorageConfigMechanicsTests
 	[Fact]
 	public void GetCloudDiscoveryReport_IncludesProviderLines()
 	{
-		var report = Os.GetCloudDiscoveryReport(refresh: true);
+		var report = Os.GetCloudDiscoveryReport();
 
 		Assert.Contains("Dropbox", report);
 		Assert.Contains("OneDrive", report);

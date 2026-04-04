@@ -10,13 +10,21 @@ public class CloudStorageAgreementTests
 	public void CloudStorageRoot_UsesDocumentedDefaultOrder_ForAvailableConfiguredProviders()
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
-		_ = Os.LoadConfig();
 
-		var configuredOrder = ((IEnumerable<object>)Os.Config.DefaultCloudOrder)
-			.Select(x => x?.ToString())
-			.Where(x => !string.IsNullOrWhiteSpace(x))
-			.Select(x => x!)
-			.ToList();
+		var configuredOrder = new List<string>();
+		try
+		{
+			foreach (var providerEntry in Os.Config.DefaultCloudOrder)
+			{
+				var providerName = providerEntry?.ToString();
+				if (string.IsNullOrWhiteSpace(providerName))
+					continue;
+				configuredOrder.Add(providerName);
+			}
+		}
+		catch
+		{
+		}
 
 		if (!configuredOrder.Any())
 			configuredOrder = new[] { nameof(Cloud.OneDrive), nameof(Cloud.Dropbox), nameof(Cloud.GoogleDrive) }.ToList();

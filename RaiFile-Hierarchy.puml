@@ -1,20 +1,46 @@
 @startuml OsLib-RaiFile-Hierarchy
-' Release: 3.7.0
+' Release: 3.7.3
 
-skinparam classAttributeIconSize 0
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam DiagramFontName "Casual"
+skinparam DiagramFontSize 36
+skinparam ClassFontName "Casual"
+skinparam ClassFontSize 28
+skinparam ClassAttributeIconSize 10
+skinparam ClassAttributeFontName Casual
+skinparam ClassAttributeFontColor #053583
+skinparam ClassAttributeFontWeight normal
+skinparam ClassAttributeFontSize 12
+skinparam ClassMethodFontName "Casual"
+skinparam ClassMethodFontSize 12
+skinparam ClassMethodFontWeight 500
+skinparam ClassAttributeFontStyle normal
+skinparam ClassBorderColor #0f766e
+skinparam ClassBackgroundColor #ccfbf1
+skinparam ClassFontColor #111827
+skinparam EnumBorderColor #b45309
+skinparam EnumBackgroundColor #fef3c7
+skinparam EnumFontColor #7c2d12
+skinparam NoteBackgroundColor #fff7d6
+skinparam NoteBorderColor #d4b106
+skinparam ArrowColor #9b2c2c
+skinparam ArrowFontColor #374151
+skinparam ArrowFontName "Casual"
 show fields
 show methods
 
 title OsLib RaiFile Hierarchy
 
-interface IPathConventionFile {
-  +ConventionName : PathConventionType
+interface IPathConvention {
+  +Convention : PathConventionType
   +ApplyPathConvention()
 }
 
 enum PathConventionType {
   CanonicalByName
-  ItemIdTree
+  ItemIdTree3x3
+  ItemIdTree8x2
 }
 
 class RaiPath {
@@ -33,7 +59,10 @@ class ItemTreePath {
   +ItemId : string
   +Topdir : string
   +Subdir : string
-  +Apply()
+  +TopdirRoot : RaiPath
+  +SubdirRoot : RaiPath
+  +GetSplit(convention : PathConventionType, itemId : string = null)
+  +ApplyPathConvention()
 }
 
 class RaiFile {
@@ -59,32 +88,12 @@ abstract class "ConfigFile<TData>" as ConfigFile {
   +Load() : TData
 }
 
-class CloudModel {
-  +DropboxRoot : RaiPath
-  +OneDriveRoot : RaiPath
-  +GoogleDriveRoot : RaiPath
-  +GetRoot(provider : CloudStorageType) : RaiPath
-}
-
-class OsConfigModel {
-  +HomeDir : RaiPath
-  +TempDir : RaiPath
-  +LocalBackupDir : RaiPath
-  +DefaultCloudOrder : List~CloudStorageType~
-  +Cloud : CloudModel
-  +GetCloudDirPath(provider : CloudStorageType) : RaiPath
-}
-
 class Os {
   +UserHomeDir : RaiPath
   +AppRootDir : RaiPath
   +TempDir : RaiPath
   +LocalBackupDir : RaiPath
   +CloudStorageRootDir : RaiPath
-}
-
-class OsConfigFile {
-  +Persist()
 }
 
 class TextFile {
@@ -112,7 +121,7 @@ class TmpFile {
 }
 
 class CanonicalFile {
-  +ConventionName : PathConventionType
+  +Convention : PathConventionType
   +ApplyPathConvention()
   +CanonicalFile(fullName : string, defaultExt : string = "json")
 }
@@ -131,7 +140,7 @@ class ImageFile {
 }
 
 class ImageTreeFile {
-  +ConventionName : PathConventionType
+  +Convention : PathConventionType
   +ApplyPathConvention()
   +Topdir : string
   +Subdir : string
@@ -157,23 +166,20 @@ end note
 note right of ImageTreeFile
   Tree-by-ItemId convention:
   path segments derived from ItemId prefixes
-  (Topdir: first 3, Subdir: first 6).
+  using PathConventionType.
+  3x3 => Topdir first 3, Subdir first 6 (cumulative)
+  8x2 => Topdir first 8, Subdir first 10 (cumulative)
   Convention is enforced via ItemId/Path setters.
-end note
-
-note right of OsConfigFile
-  Reusable typed JSON config file built on RaiFile.
-  OsLib uses it for Os.Config and osconfig.json.
 end note
 
 CanonicalFile ..> TmpFile : uses
 CanonicalFile ..> RaiPath : uses
 CanonicalFile ..> CanonicalPath : uses
-CanonicalFile ..|> IPathConventionFile
-ImageTreeFile ..|> IPathConventionFile
+CanonicalFile ..|> IPathConvention
+ImageTreeFile ..|> IPathConvention
+ItemTreePath ..|> IPathConvention
 ImageTreeFile ..> ItemTreePath : uses
 ConfigFile ..> RaiPath : stores paths
-OsConfigModel --> CloudModel : contains
 
 RaiPath <|-- CanonicalPath
 RaiPath <|-- ItemTreePath
@@ -183,7 +189,6 @@ TextFile <|-- CsvFile
 RaiFile <|-- TmpFile
 RaiFile <|-- CanonicalFile
 RaiFile <|-- ConfigFile
-ConfigFile <|-- OsConfigFile
 RaiFile <|-- ImageFile
 ImageFile <|-- ImageTreeFile
 

@@ -17,8 +17,8 @@ public class CloudStorageProviderPathTests
 		var cloudDir = root / "Workspace" / "Project";
 		Directory.CreateDirectory(cloudDir.Path);
 
-		Assert.Equal(provider, Os.GetCloudStorageProviderForPath(providerRoot));
-		Assert.Equal(provider, Os.GetCloudStorageProviderForPath(cloudDir.Path));
+		Assert.Equal(provider, Os.GetCloudStorageProviderForPath(new RaiPath(providerRoot)));
+		Assert.Equal(provider, Os.GetCloudStorageProviderForPath(cloudDir));
 	}
 
 	[Theory]

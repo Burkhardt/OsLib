@@ -1,11 +1,11 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
-using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace OsLib
 {
@@ -13,8 +13,32 @@ namespace OsLib
 	public static partial class Os
 	{
 		public static string[] CloudProviders => Enum.GetNames(typeof(Cloud));
+		private static readonly Cloud[] defaultCloudOrder = new[] { Cloud.OneDrive, Cloud.Dropbox, Cloud.GoogleDrive };
 
 		private static dynamic config;
+		private static ConcurrentDictionary<string, dynamic> remoteConfigs = null;
+		/// <summary>
+		/// lazy loading to please reflection based test isolation
+		/// </summary>
+		public static IReadOnlyDictionary<string, dynamic> RemoteConfigs
+		{
+			get
+			{
+				if (remoteConfigs == null)
+					remoteConfigs = new ConcurrentDictionary<string, dynamic>(StringComparer.OrdinalIgnoreCase);
+				if (remoteConfigs.Count == 0)
+				{
+					var observers = Config.Observers;
+					foreach (var observer in observers)
+					{
+						var json = SshSystem.ReadRemoteConfigJson5(observer.SshTarget.ToString());
+						dynamic rconf = JsonConvert.DeserializeObject<dynamic>(json);
+						remoteConfigs.TryAdd(observer.Name.ToString(), rconf);
+					}
+				}
+				return remoteConfigs;
+			}
+		}
 		private static int configLoadDepth;
 		private static bool IsConfigLoading => configLoadDepth > 0;
 		public static dynamic Config
@@ -29,22 +53,24 @@ namespace OsLib
 			}
 		}
 
-		public static dynamic LoadConfig()
+		public static dynamic LoadConfig(string configFullName = null)
 		{
-			List<string> defaultCloudOrder = new List<string>();
-			string oneDrive = string.Empty;
-			string dropbox = string.Empty;
-			string googleDrive = string.Empty;
 			configLoadDepth++;
 			try
 			{
+				var configPath = configFullName ?? ConfigFileFullName;
 				// read it from disk
 				try
 				{
-					var configPath = GetDefaultConfigPath();
 					if (!File.Exists(configPath))
 					{
 						config = null;
+						InvalidateConfiguredPathCaches();
+						ReportStartupCritical<OsDiagnosticsLogScope>(
+							"config:missing",
+							$"Config file missing at {configPath}. Startup continues in degraded mode.",
+							"Config file missing at {ConfigPath}. Startup continues in degraded mode.",
+							configPath);
 						return config;
 					}
 
@@ -52,51 +78,49 @@ namespace OsLib
 					if (string.IsNullOrWhiteSpace(json))
 					{
 						config = null;
+						InvalidateConfiguredPathCaches();
+						ReportStartupCritical<OsDiagnosticsLogScope>(
+							"config:empty",
+							$"Config file malformed or empty at {configPath}. Startup continues in degraded mode.",
+							"Config file malformed or empty at {ConfigPath}. Startup continues in degraded mode.",
+							configPath);
 						return config;
 					}
 
-					var parsedObject = JsonConvert.DeserializeObject<JObject>(json);
-					if (parsedObject == null)
+					config = JsonConvert.DeserializeObject<dynamic>(json);
+					if (config == null)
 					{
-						config = null;
+						InvalidateConfiguredPathCaches();
+						ReportStartupCritical<OsDiagnosticsLogScope>(
+							"config:malformed-null",
+							$"Config file malformed at {configPath}. Startup continues in degraded mode.",
+							"Config file malformed at {ConfigPath}. Startup continues in degraded mode.",
+							configPath);
 						return config;
 					}
 
-					var parsed = CanonicalizeConfig(parsedObject);
-					config = parsed;
+					InvalidateConfiguredPathCaches();
 
-					var configuredHomeDir = ReadPathValue(parsed, "HomeDir", "homeDir");
-					if (!string.IsNullOrWhiteSpace(configuredHomeDir))
-						LogWarningOnce<OsDiagnosticsLogScope>("config:deprecated-homeDir", "Ignoring deprecated homeDir/HomeDir config value for intrinsic user home resolution.");
-
-					var configuredTempDir = ReadPathValue(parsed, "TempDir", "tempDir");
-					tempDir = string.IsNullOrWhiteSpace(configuredTempDir) ? null : new RaiPath(configuredTempDir);
-
-					var configuredLocalBackupDir = ReadPathValue(parsed, "LocalBackupDir", "localBackupDir");
-					localBackupDir = string.IsNullOrWhiteSpace(configuredLocalBackupDir) ? TempDir : new RaiPath(configuredLocalBackupDir);
-
-					oneDrive = ReadCloudRootPath(parsed, Cloud.OneDrive);
-					dropbox = ReadCloudRootPath(parsed, Cloud.Dropbox);
-					googleDrive = ReadCloudRootPath(parsed, Cloud.GoogleDrive);
-					defaultCloudOrder = ReadDefaultCloudOrder(parsed);
-					var provider = defaultCloudOrder.FirstOrDefault();
-					cloudStorageRootDir = provider switch
+					try
 					{
-						nameof(Cloud.GoogleDrive) => string.IsNullOrWhiteSpace(googleDrive) ? null : new RaiPath(googleDrive),
-						nameof(Cloud.Dropbox) => string.IsNullOrWhiteSpace(dropbox) ? null : new RaiPath(dropbox),
-						nameof(Cloud.OneDrive) => string.IsNullOrWhiteSpace(oneDrive) ? null : new RaiPath(oneDrive),
-						_ => null
-					};
-				}
-				catch (RuntimeBinderException ex)
-				{
-					// Missing property or unexpected shape in dynamic object
-					Console.WriteLine("Config binding error: " + ex.Message);
+						var configuredHomeDir = (string)config.HomeDir;
+						if (!string.IsNullOrWhiteSpace(configuredHomeDir))
+							LogWarningOnce<OsDiagnosticsLogScope>("config:homeDir-ignored", "Ignoring HomeDir config value for intrinsic user home resolution.");
+					}
+					catch
+					{
+					}
 				}
 				catch (Exception ex)
 				{
-					// Parse/type conversion/etc.
-					Console.WriteLine("Config read error: " + ex.Message);
+					config = null;
+					InvalidateConfiguredPathCaches();
+					ReportStartupCritical<OsDiagnosticsLogScope>(
+						"config:malformed",
+						ex,
+						$"Config file malformed at {configPath}. Startup continues in degraded mode.",
+						"Config file malformed at {ConfigPath}. Startup continues in degraded mode.",
+						configPath);
 				}
 			}
 			finally
@@ -107,39 +131,29 @@ namespace OsLib
 		}
 
 		private const string cloudDiscoveryGuidePath = "OsLib/CLOUD_STORAGE_DISCOVERY.md";
+		public static bool IsCloudPath(RaiPath p) => IsCloudPath(p?.ToString());
 		public static bool IsCloudPath(string path)
 		{
 			if (string.IsNullOrWhiteSpace(path) || IsConfigLoading)
 				return false;
 			try
 			{
+				var normalizedPath = NormalizePathForComparison(path);
+				if (string.IsNullOrWhiteSpace(normalizedPath))
+					return false;
+
 				var activeConfig = Config;
 				if (activeConfig == null)
 					return false;
 
-				foreach (var provider in ReadDefaultCloudOrder(activeConfig))
+				foreach (var provider in GetEffectiveDefaultCloudOrder(activeConfig))
 				{
-					switch (provider)
-					{
-						case nameof(Cloud.GoogleDrive):
-							var googleRoot = ReadCloudRootPath(activeConfig, Cloud.GoogleDrive);
-							if (!string.IsNullOrWhiteSpace(googleRoot) && path.StartsWith(googleRoot, StringComparison.OrdinalIgnoreCase))
-								return true;
-							break;
-						case nameof(Cloud.Dropbox):
-							var dropboxRoot = ReadCloudRootPath(activeConfig, Cloud.Dropbox);
-							if (!string.IsNullOrWhiteSpace(dropboxRoot) && path.StartsWith(dropboxRoot, StringComparison.OrdinalIgnoreCase))
-								return true;
-							break;
-						case nameof(Cloud.OneDrive):
-							var oneDriveRoot = ReadCloudRootPath(activeConfig, Cloud.OneDrive);
-							if (!string.IsNullOrWhiteSpace(oneDriveRoot) && path.StartsWith(oneDriveRoot, StringComparison.OrdinalIgnoreCase))
-								return true;
-							break;
-					}
+					if (PathIsUnderCloudRoot(normalizedPath, GetConfiguredCloudRootOrEmpty(activeConfig, provider)))
+						return true;
 				}
 			}
-			catch (Exception ex) {
+			catch (Exception ex)
+			{
 				LogError<OsDiagnosticsLogScope>(ex, "Error checking if path is a cloud path: {Path}", path);
 			}
 			return false;
@@ -150,28 +164,16 @@ namespace OsLib
 				config = null;
 			var sb = new StringBuilder();
 			sb.AppendLine("Discovered cloud storage roots:");
-			try 
+			try
 			{
-				foreach (var provider in ReadDefaultCloudOrder(Config))
+				var activeConfig = Config;
+				if (activeConfig == null)
+					return sb.ToString().TrimEnd();
+
+				foreach (var provider in GetEffectiveDefaultCloudOrder(activeConfig))
 				{
-					var providerName = provider?.ToString() ?? string.Empty;
-					var parsed = Enum.TryParse(providerName, true, out Cloud providerEnum);
-					var root = parsed ? ReadCloudRootPath(Config, providerEnum) : string.Empty;
-					switch (provider)
-					{
-						case nameof(Cloud.GoogleDrive):
-							sb.AppendLine($"- {provider}: {(string.IsNullOrWhiteSpace(root) ? "<not configured>" : root)}");
-							break;
-						case nameof(Cloud.Dropbox):
-							sb.AppendLine($"- {provider}: {(string.IsNullOrWhiteSpace(root) ? "<not configured>" : root)}");
-							break;
-						case nameof(Cloud.OneDrive):
-							sb.AppendLine($"- {provider}: {(string.IsNullOrWhiteSpace(root) ? "<not configured>" : root)}");
-							break;
-						default:
-							sb.AppendLine($"- {provider}: <not found>");
-							break;
-					}
+					var root = GetConfiguredCloudRootOrEmpty(activeConfig, provider);
+					sb.AppendLine($"- {provider}: {(string.IsNullOrWhiteSpace(root) ? "<not configured>" : root)}");
 				}
 			}
 			catch (Exception ex)
@@ -185,47 +187,61 @@ namespace OsLib
 			if (refresh)
 				config = null;
 			var sb = new StringBuilder();
-			var order = ReadDefaultCloudOrder(Config);
+			var order = new List<string>();
 			sb.AppendLine("Cloud configuration diagnostics:");
 			sb.AppendLine($"- active config path: {defaultConfigFileLocation}");
 			sb.AppendLine($"- userHomeDir: {UserHomeDir?.Path}");
 			sb.AppendLine($"- appRootDir: {AppRootDir?.Path}");
 			sb.AppendLine($"- tempDir: {TempDir?.Path}");
 			sb.AppendLine($"- localBackupDir: {LocalBackupDir?.Path}");
+			try
+			{
+				var activeConfig = Config;
+				if (activeConfig != null)
+				{
+					foreach (var provider in GetEffectiveDefaultCloudOrder(activeConfig))
+						order.Add(provider.ToString());
+				}
+			}
+			catch (Exception ex)
+			{
+				LogError<OsDiagnosticsLogScope>(ex, "Error reading configured default cloud order");
+			}
+
 			sb.AppendLine($"- configured default cloud order: {string.Join(", ", order)}");
 			foreach (var provider in order)
 			{
 				sb.Append($"- {provider}: ");
-				var providerName = provider?.ToString() ?? string.Empty;
-				if (Enum.TryParse(providerName, true, out Cloud providerEnum))
-					sb.AppendLine($" path: {ReadCloudRootPath(Config, providerEnum)}");
-				else
+				try
+				{
+					var root = Enum.TryParse<Cloud>(provider, ignoreCase: true, out var parsedProvider)
+						? GetConfiguredCloudRootOrEmpty(Config, parsedProvider)
+						: null;
+					sb.AppendLine($" path: {root}");
+				}
+				catch
+				{
 					sb.AppendLine(" path: <invalid provider>");
+				}
 			}
 			return sb.ToString().TrimEnd() + GetCloudDiscoveryReport(refresh);
 		}
 		public static string GetCloudStorageSetupGuidance()
 		{
-			return "Configure Os.Config in " + GetDefaultConfigPath() + ". See " + cloudDiscoveryGuidePath;
+			return "Configure Os.Config in " + ConfigFileFullName + ". See " + cloudDiscoveryGuidePath;
 		}
-		public static Cloud GetCloudStorageProviderForPath(string path)
+		public static Cloud GetCloudStorageProviderForPath(RaiPath path)
 		{
-			if (string.IsNullOrWhiteSpace(path))
+			if (path == null || string.IsNullOrWhiteSpace(path.Path))
 				throw new ArgumentNullException(nameof(path));
-			var normalizedPath = NormalizePathForComparison(path);
+			var normalizedPath = NormalizePathForComparison(path.Path);
 			if (string.IsNullOrWhiteSpace(normalizedPath))
 				throw new ArgumentException("Invalid path", nameof(path));
-			foreach (var provider in ReadDefaultCloudOrder(Config))
+			foreach (var provider in GetEffectiveDefaultCloudOrder())
 			{
-				string root = provider switch
-				{
-					nameof(Cloud.GoogleDrive) => ReadCloudRootPath(Config, Cloud.GoogleDrive),
-					nameof(Cloud.Dropbox) => ReadCloudRootPath(Config, Cloud.Dropbox),
-					nameof(Cloud.OneDrive) => ReadCloudRootPath(Config, Cloud.OneDrive),
-					_ => null
-				};
+				var root = GetConfiguredCloudRootOrEmpty(Config, provider);
 				if (PathIsUnderCloudRoot(normalizedPath, root))
-					return Enum.Parse<Cloud>(provider);
+					return provider;
 			}
 			throw new InvalidOperationException($"Path '{path}' is not under any configured cloud storage root.");
 		}
@@ -234,69 +250,210 @@ namespace OsLib
 			if (refresh)
 				config = null;
 
-			var root = ReadCloudRootPath(Config, provider);
+			var root = GetConfiguredCloudRootOrEmpty(Config, provider);
 			if (string.IsNullOrWhiteSpace(root))
-				throw new InvalidOperationException($"Cloud storage provider '{provider}' is not configured.");
+				return null;
 
 			return new RaiPath(root);
 		}
-		public static string GetDefaultConfigPath()
+		public static string ConfigFileFullName
 		{
-			return NormalizeConfigPath(defaultConfigFileLocation);   // no DI here!!!!!
+			get { return new RaiFile(defaultConfigFileLocation).FullName; }
+		}
+		public static string GetObserverSshTarget(string observerName)
+		{
+			var lookupName = observerName?.Trim() ?? string.Empty;
+			var notFoundMessage = $"Observer '{observerName}' SshTarget not found in {ConfigFileFullName}.";
+
+			try
+			{
+				foreach (var observer in Config.Observers)
+				{
+					var configuredName = observer.Name?.ToString()?.Trim() ?? string.Empty;
+					if (!configuredName.Equals(lookupName, StringComparison.OrdinalIgnoreCase))
+						continue;
+
+					var sshTarget = observer.SshTarget?.ToString()?.Trim() ?? string.Empty;
+					if (!string.IsNullOrWhiteSpace(sshTarget))
+						return sshTarget;
+
+					break;
+				}
+			}
+			catch (Exception ex)
+			{
+				throw new InvalidOperationException(notFoundMessage, ex);
+			}
+
+			throw new InvalidOperationException(notFoundMessage);
+		}
+		/// <summary>
+		/// this method is just provided for the purpose of test isolation based on reflection
+		/// the natural way to access a remote config is the object-oriented way (of course)
+		/// dynamic remoteConfig = Os.RemoteConfigs["mzansi"];
+		/// </summary>
+		public static dynamic GetRemoteConfig(string observer, bool refresh = false)
+		{
+			//var key = observerName.Trim();	// redundant, Newtonsoft.json does this
+			if (refresh && remoteConfigs != null)   // resetCache, the reflection based test isolation, just sets this to null
+				remoteConfigs.TryRemove(observer, out _);
+			return RemoteConfigs[observer];
+			// return remoteConfigs.GetOrAdd(observer, k =>
+			// {
+			// 	var sshTarget = GetObserverSshTarget(k);
+			// 	var json = SshSystem.ReadRemoteConfigJson5(sshTarget);
+			// 	return JsonConvert.DeserializeObject<dynamic>(json);
+			// });
+		}
+		public static string GetRemoteCloudRootFromConfig(string observerName, Cloud? provider = null, bool refresh = false)
+		{
+			dynamic remoteConfig = GetRemoteConfig(observerName, refresh);
+			string cloudDir = string.Empty;
+			string providerName = provider?.ToString();
+
+			if (string.IsNullOrWhiteSpace(providerName))
+			{
+				var defaultOrder = remoteConfig.DefaultCloudOrder;
+				if (defaultOrder == null || defaultOrder.Count == 0)
+					throw new InvalidOperationException($"Remote config for observer '{observerName}' does not define DefaultCloudOrder.");
+				providerName = defaultOrder[0]?.ToString();
+			}
+
+			switch (providerName)
+			{
+				case nameof(Cloud.GoogleDrive):
+					cloudDir = (string)remoteConfig.Cloud.GoogleDrive;
+					break;
+				case nameof(Cloud.OneDrive):
+					cloudDir = (string)remoteConfig.Cloud.OneDrive;
+					break;
+				case nameof(Cloud.Dropbox):
+					cloudDir = (string)remoteConfig.Cloud.Dropbox;
+					break;
+				default:
+					throw new InvalidOperationException($"Unsupported cloud provider: {providerName}");
+			}
+
+			if (string.IsNullOrWhiteSpace(cloudDir))
+				throw new InvalidOperationException($"Remote config for observer '{observerName}' does not define Cloud.{providerName}.");
+
+			return new RaiPath(cloudDir).Path;
+		}
+		public static string GetRemoteTempDirFromConfig(string observerName, bool refresh = false)
+		{
+			dynamic remoteConfig = GetRemoteConfig(observerName, refresh);
+			var tempDir = (string)remoteConfig.TempDir;
+			if (string.IsNullOrWhiteSpace(tempDir))
+				throw new InvalidOperationException($"Remote config for observer '{observerName}' does not define TempDir.");
+
+			return new RaiPath(tempDir).Path;
+		}
+		public static bool TryGetRemoteConfig(string observerName, out dynamic remoteConfig)
+		{
+			return remoteConfigs.TryGetValue(observerName ?? string.Empty, out remoteConfig);
+		}
+		public static void InvalidateRemoteConfig(string observerName = null)
+		{
+			if (string.IsNullOrWhiteSpace(observerName))
+			{
+				remoteConfigs.Clear();
+				return;
+			}
+
+			remoteConfigs.TryRemove(observerName.Trim(), out _);
+		}
+		internal static string ParseCloudRootFromConfigJson(string json, Cloud provider)
+		{
+			var parsed = JsonConvert.DeserializeObject<dynamic>(json);
+			if (parsed == null)
+				throw new InvalidOperationException("Remote osconfig.json5 could not be parsed.");
+
+			var root = provider switch
+			{
+				Cloud.GoogleDrive => (string)parsed.Cloud.GoogleDrive,
+				Cloud.Dropbox => (string)parsed.Cloud.Dropbox,
+				Cloud.OneDrive => (string)parsed.Cloud.OneDrive,
+				_ => string.Empty
+			};
+
+			if (string.IsNullOrWhiteSpace(root))
+				throw new InvalidOperationException($"Remote osconfig.json5 does not define a cloud root for provider '{provider}'. Ensure ~/.config/RAIkeep/osconfig.json5 on the remote machine has a 'cloud.{provider.ToString().ToLowerInvariant()}' entry.");
+
+			return new RaiPath(root).Path;
+		}
+		internal static string ParseTempDirFromConfigJson(string json)
+		{
+			var parsed = JsonConvert.DeserializeObject<dynamic>(json);
+			if (parsed == null)
+				throw new InvalidOperationException("Remote osconfig.json5 could not be parsed.");
+
+			var tempDir = (string)parsed.TempDir;
+			if (string.IsNullOrWhiteSpace(tempDir))
+				throw new InvalidOperationException("Remote osconfig.json5 does not define TempDir. Add TempDir to ~/.config/RAIkeep/osconfig.json5 on the remote machine.");
+
+			return new RaiPath(tempDir).Path;
 		}
 		private static void InvalidateConfiguredPathCaches()
 		{
 			userHomeDir = null;
 			appRootDir = null;
+			cloudStorageRootDir = null;
 			tempDir = null;
 			localBackupDir = null;
-		}
-		private static string NormalizeConfigPath(string path)
-		{
-			if (string.IsNullOrWhiteSpace(path))
-				return string.Empty;
-
-			var expanded = ExpandUserHomePath(path);
-
-			return Path.GetFullPath(expanded);
 		}
 		private static bool TryAddRoot(Dictionary<Cloud, string> roots, Cloud provider, string candidate)
 		{
 			if (roots.ContainsKey(provider))
 				return false;
 
-			var expanded = ExpandPath(candidate);
-			if (string.IsNullOrWhiteSpace(expanded) || !Directory.Exists(expanded))
+			var candidatePath = new RaiPath(candidate);
+			if (!candidatePath.Exists())
 				return false;
 
-			roots[provider] = new RaiPath(expanded).Path;
+			roots[provider] = candidatePath.Path;
 			return true;
-		}		
-		private static string ExpandPath(string candidate)
-		{
-			if (string.IsNullOrWhiteSpace(candidate))
-				return null;
-			return ExpandUserHomePath(candidate);
-		}
-		private static string ExpandUserHomePath(string path)
-		{
-			var expanded = path.Trim();
-			if (!expanded.StartsWith("~/", StringComparison.Ordinal))
-				return expanded;
-
-			var home = ResolveSystemHomeDir();
-			if (string.IsNullOrWhiteSpace(home))
-				return expanded;
-
-			return home.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + DIRSEPERATOR + expanded.Substring(2);
 		}
 		private static string NormalizePathForComparison(string value)
 		{
-			var expanded = ExpandPath(value);
-			if (string.IsNullOrWhiteSpace(expanded))
+			if (string.IsNullOrWhiteSpace(value))
 				return null;
 
-			return NormSeperator(expanded).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+			var normalized = NormSeperator(value.Trim());
+
+			if (normalized == ".")
+				normalized = EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory());
+			else if (normalized.StartsWith("./", StringComparison.Ordinal))
+				normalized = EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory()) + normalized.Substring(2);
+			else if (normalized == "~")
+				normalized = EnsureTrailingDirectorySeparator(GetIntrinsicUserHomePath());
+			else if (normalized.StartsWith("~/", StringComparison.Ordinal))
+				normalized = EnsureTrailingDirectorySeparator(GetIntrinsicUserHomePath()) + normalized.Substring(2);
+
+			return normalized.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		}
+		private static string GetIntrinsicUserHomePath()
+		{
+			string resolved;
+			if (Type == OsType.Windows)
+			{
+				resolved = EnsureTrailingDirectorySeparator(Environment.GetEnvironmentVariable("USERPROFILE"));
+				if (string.IsNullOrWhiteSpace(resolved))
+				{
+					var homeDrive = Environment.GetEnvironmentVariable("HOMEDRIVE");
+					var homePath = EnsureTrailingDirectorySeparator(Environment.GetEnvironmentVariable("HOMEPATH"));
+					if (!string.IsNullOrEmpty(homeDrive) && !string.IsNullOrEmpty(homePath))
+						resolved = NormSeperator(homeDrive + homePath);
+				}
+			}
+			else
+			{
+				resolved = EnsureTrailingDirectorySeparator(Environment.GetEnvironmentVariable("HOME"));
+			}
+
+			if (string.IsNullOrWhiteSpace(resolved))
+				resolved = EnsureTrailingDirectorySeparator(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty);
+
+			return resolved;
 		}
 		private static bool PathIsUnderCloudRoot(string normalizedCandidate, string root)
 		{
@@ -304,13 +461,13 @@ namespace OsLib
 			if (string.IsNullOrWhiteSpace(normalizedRoot))
 				return false;
 			return normalizedCandidate.Equals(normalizedRoot, StringComparison.OrdinalIgnoreCase) ||
-				normalizedCandidate.StartsWith(normalizedRoot + DIRSEPERATOR, StringComparison.OrdinalIgnoreCase);
+				normalizedCandidate.StartsWith(normalizedRoot + DIR, StringComparison.OrdinalIgnoreCase);
 		}
 		private static bool IsDropboxMetadataPath(string normalizedPath)
 		{
-			var marker = DIRSEPERATOR + ".dropbox";
+			var marker = DIR + ".dropbox";
 			return normalizedPath.EndsWith(marker, StringComparison.OrdinalIgnoreCase) ||
-				normalizedPath.Contains(marker + DIRSEPERATOR, StringComparison.OrdinalIgnoreCase);
+				normalizedPath.Contains(marker + DIR, StringComparison.OrdinalIgnoreCase);
 		}
 		private static IEnumerable<string> SafeEnumerateDirectories(string path, string pattern)
 		{
@@ -324,6 +481,56 @@ namespace OsLib
 				LogError<OsDiagnosticsLogScope>(ex, "Failed to enumerate directories under {DirectoryPath} with pattern {DirectoryPattern}", path ?? string.Empty, pattern ?? string.Empty);
 			}
 			return Array.Empty<string>();
+		}
+		private static IReadOnlyList<Cloud> GetEffectiveDefaultCloudOrder(dynamic activeConfig = null)
+		{
+			activeConfig ??= Config;
+
+			var order = new List<Cloud>();
+			try
+			{
+				if (activeConfig?.DefaultCloudOrder != null)
+				{
+					foreach (var providerEntry in activeConfig.DefaultCloudOrder)
+					{
+						var providerName = providerEntry?.ToString() ?? string.Empty;
+						Cloud provider;
+						if (Enum.TryParse<Cloud>(providerName, true, out provider) && !order.Contains(provider))
+							order.Add(provider);
+					}
+				}
+			}
+			catch
+			{
+			}
+
+			foreach (var provider in defaultCloudOrder)
+			{
+				if (!order.Contains(provider))
+					order.Add(provider);
+			}
+
+			return order;
+		}
+		private static string GetConfiguredCloudRootOrEmpty(dynamic activeConfig, Cloud provider)
+		{
+			if (activeConfig == null)
+				return string.Empty;
+
+			try
+			{
+				return provider switch
+				{
+					Cloud.GoogleDrive => (string)activeConfig.Cloud.GoogleDrive,
+					Cloud.Dropbox => (string)activeConfig.Cloud.Dropbox,
+					Cloud.OneDrive => (string)activeConfig.Cloud.OneDrive,
+					_ => string.Empty
+				} ?? string.Empty;
+			}
+			catch
+			{
+				return string.Empty;
+			}
 		}
 		private sealed class DisposableScope : IDisposable
 		{
@@ -339,169 +546,6 @@ namespace OsLib
 					return;
 				disposed = true;
 				onDispose();
-			}
-		}
-
-		private static JObject CanonicalizeConfig(JObject source)
-		{
-			if (source == null)
-				return new JObject();
-
-			var canonical = new JObject();
-
-			var tempDir = source.GetValue("TempDir", StringComparison.OrdinalIgnoreCase)
-				?? source.GetValue("tempDir", StringComparison.OrdinalIgnoreCase);
-			if (tempDir != null)
-				canonical["TempDir"] = tempDir;
-
-			var localBackupDir = source.GetValue("LocalBackupDir", StringComparison.OrdinalIgnoreCase)
-				?? source.GetValue("localBackupDir", StringComparison.OrdinalIgnoreCase);
-			if (localBackupDir != null)
-				canonical["LocalBackupDir"] = localBackupDir;
-
-			var order = source.GetValue("DefaultCloudOrder", StringComparison.OrdinalIgnoreCase)
-				?? source.GetValue("defaultCloudOrder", StringComparison.OrdinalIgnoreCase);
-			if (order != null)
-				canonical["DefaultCloudOrder"] = order;
-
-			var cloudToken = source.GetValue("Cloud", StringComparison.OrdinalIgnoreCase)
-				?? source.GetValue("cloud", StringComparison.OrdinalIgnoreCase);
-			if (cloudToken is JObject cloud)
-			{
-				var canonicalCloud = new JObject();
-				var dropbox = cloud.GetValue("Dropbox", StringComparison.OrdinalIgnoreCase)
-					?? cloud.GetValue("dropbox", StringComparison.OrdinalIgnoreCase);
-				var oneDrive = cloud.GetValue("OneDrive", StringComparison.OrdinalIgnoreCase)
-					?? cloud.GetValue("onedrive", StringComparison.OrdinalIgnoreCase);
-				var googleDrive = cloud.GetValue("GoogleDrive", StringComparison.OrdinalIgnoreCase)
-					?? cloud.GetValue("googledrive", StringComparison.OrdinalIgnoreCase);
-
-				if (dropbox != null)
-					canonicalCloud["Dropbox"] = dropbox;
-				if (oneDrive != null)
-					canonicalCloud["OneDrive"] = oneDrive;
-				if (googleDrive != null)
-					canonicalCloud["GoogleDrive"] = googleDrive;
-
-				canonical["Cloud"] = canonicalCloud;
-			}
-
-			return canonical;
-		}
-
-		private static string ReadPathValue(dynamic source, string primary, string legacy, string fallback = "")
-		{
-			var jObject = AsJObject(source);
-			if (jObject != null)
-			{
-				var token = jObject.GetValue(primary, StringComparison.OrdinalIgnoreCase)
-					?? jObject.GetValue(legacy, StringComparison.OrdinalIgnoreCase);
-				var value = token?.ToString();
-				return string.IsNullOrWhiteSpace(value) ? fallback : value;
-			}
-
-			try
-			{
-				var value = (string)source[primary];
-				if (!string.IsNullOrWhiteSpace(value))
-					return value;
-			}
-			catch
-			{
-			}
-
-			try
-			{
-				var value = (string)source[legacy];
-				if (!string.IsNullOrWhiteSpace(value))
-					return value;
-			}
-			catch
-			{
-			}
-
-			return fallback;
-		}
-
-		private static List<string> ReadDefaultCloudOrder(dynamic source)
-		{
-			var jObject = AsJObject(source);
-			if (jObject != null)
-			{
-				var token = jObject.GetValue("DefaultCloudOrder", StringComparison.OrdinalIgnoreCase)
-					?? jObject.GetValue("defaultCloudOrder", StringComparison.OrdinalIgnoreCase);
-				if (token is JArray array)
-				{
-					var values = array
-						.Select(x => NormalizeCloudName(x?.ToString()))
-						.Where(x => !string.IsNullOrWhiteSpace(x))
-						.ToList();
-					if (values.Count > 0)
-						return values;
-				}
-			}
-
-			return new List<string>
-			{
-				nameof(Cloud.OneDrive),
-				nameof(Cloud.Dropbox),
-				nameof(Cloud.GoogleDrive)
-			};
-		}
-
-		private static string NormalizeCloudName(string name)
-		{
-			if (string.IsNullOrWhiteSpace(name))
-				return string.Empty;
-
-			if (Enum.TryParse<Cloud>(name, ignoreCase: true, out var parsed))
-				return parsed.ToString();
-
-			return string.Empty;
-		}
-
-		private static string ReadCloudRootPath(dynamic source, Cloud provider)
-		{
-			var jObject = AsJObject(source);
-			if (jObject == null)
-				return string.Empty;
-
-			var cloudToken = jObject.GetValue("Cloud", StringComparison.OrdinalIgnoreCase)
-				?? jObject.GetValue("cloud", StringComparison.OrdinalIgnoreCase);
-			if (cloudToken is not JObject cloudObject)
-				return string.Empty;
-
-			var token = provider switch
-			{
-				Cloud.GoogleDrive => cloudObject.GetValue("GoogleDrive", StringComparison.OrdinalIgnoreCase) ?? cloudObject.GetValue("googledrive", StringComparison.OrdinalIgnoreCase),
-				Cloud.Dropbox => cloudObject.GetValue("Dropbox", StringComparison.OrdinalIgnoreCase) ?? cloudObject.GetValue("dropbox", StringComparison.OrdinalIgnoreCase),
-				Cloud.OneDrive => cloudObject.GetValue("OneDrive", StringComparison.OrdinalIgnoreCase) ?? cloudObject.GetValue("onedrive", StringComparison.OrdinalIgnoreCase),
-				_ => null
-			};
-
-			var value = token?.ToString();
-			return string.IsNullOrWhiteSpace(value) ? string.Empty : value;
-		}
-
-		private static JObject AsJObject(dynamic source)
-		{
-			if (source is JObject direct)
-				return direct;
-
-			if (source is JToken token && token.Type == JTokenType.Object)
-				return (JObject)token;
-
-			try
-			{
-				if (source == null)
-					return null;
-
-				var converted = JObject.FromObject(source);
-				return converted;
-			}
-			catch
-			{
-				return null;
 			}
 		}
 	}

@@ -59,9 +59,7 @@ namespace OsLib
 			var directory = System.IO.Path.GetDirectoryName(normalized) ?? string.Empty;
 			var extension = System.IO.Path.GetExtension(normalized);
 
-			Path = string.IsNullOrWhiteSpace(directory)
-				? string.Empty
-				: Os.NormSeperator(directory) + Os.DIRSEPERATOR;
+			Path = new RaiPath(string.IsNullOrWhiteSpace(directory) ? string.Empty : Os.NormSeperator(directory) + Os.DIR);
 			Name = System.IO.Path.GetFileNameWithoutExtension(normalized);
 			Ext = string.IsNullOrWhiteSpace(extension) ? string.Empty : extension.TrimStart('.');
 			return changed;

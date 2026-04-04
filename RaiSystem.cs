@@ -169,9 +169,11 @@ namespace OsLib     // aka OsLibCore
 			// return jobId;
 			return "not implemented";
 		}
-		public static Script CreateScript(RaiPath path, string name, string content = null)
+		public static Script CreateScript(RaiPath path, string name, string ext, string content = null)
 		{
-			return new Script(path, name, content ?? string.Empty);
+			if (ext.Length > 5)
+				throw new ArgumentException($"Extension suspiciously long: {ext} - are you trying to pass-in the content in the ext parameter?", nameof(ext));
+			return new Script(path, name, ext: ext, content: content ?? string.Empty);
 		}
 		public RaiSystem(string cmdLine)
 		{
