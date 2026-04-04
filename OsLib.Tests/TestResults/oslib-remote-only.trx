@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="54960d11-fba4-4b11-8f6b-166cb2e179c4" name="@Nkosikazi 2026-04-04 14:09:38" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-04-04T14:09:38.1064780-07:00" queuing="2026-04-04T14:09:38.1064780-07:00" start="2026-04-04T14:08:18.9814200-07:00" finish="2026-04-04T14:11:58.6677570-07:00" />
+  <TestSettings name="default" id="19d55bed-1d09-4078-9486-05d3c373eca8">
+    <Deployment runDeploymentRoot="_Nkosikazi_2026-04-04_14_09_38" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="553ac69d-ec95-4cb8-b7b5-f2a168cc09d6" testId="f4c92599-ed8e-4b4b-96b6-d56db0cd941c" testName="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: GoogleDrive)" computerName="Nkosikazi" duration="00:01:18.2516526" startTime="2026-04-04T14:08:19.8127630-07:00" endTime="2026-04-04T14:09:38.0761450-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="553ac69d-ec95-4cb8-b7b5-f2a168cc09d6" />
+    <UnitTestResult executionId="f22ecbcd-1665-4762-9f68-52e7ca418554" testId="d7585d17-3860-2d94-d808-d48e55b5f8d4" testName="OsLib.Tests.RemoteSshTests.Mzansi_GoogleDrive_Root_Is_Readable_From_Remote_OsConfig" computerName="Nkosikazi" duration="00:00:03.5752902" startTime="2026-04-04T14:11:55.0556350-07:00" endTime="2026-04-04T14:11:58.6309990-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f22ecbcd-1665-4762-9f68-52e7ca418554" />
+    <UnitTestResult executionId="2eff71cc-2f13-4dc0-bd33-73e967af6e8a" testId="4d82ee65-5101-6801-2157-5ed6cc882a7e" testName="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: OneDrive)" computerName="Nkosikazi" duration="00:01:40.3832846" startTime="2026-04-04T14:09:38.0827900-07:00" endTime="2026-04-04T14:11:18.4662420-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2eff71cc-2f13-4dc0-bd33-73e967af6e8a" />
+    <UnitTestResult executionId="5ebe98a1-4331-4c35-9636-31ec3bf7e628" testId="8351d39e-1e62-b600-ba24-148df8a8e557" testName="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: Dropbox)" computerName="Nkosikazi" duration="00:00:35.6688594" startTime="2026-04-04T14:11:18.4667390-07:00" endTime="2026-04-04T14:11:54.1356730-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5ebe98a1-4331-4c35-9636-31ec3bf7e628" />
+    <UnitTestResult executionId="95635aae-d3b2-44d3-a6e5-9a668ac1f743" testId="584d6dba-5683-7644-306c-889dda640ecf" testName="OsLib.Tests.RemoteSshTests.Mzansi_Ssh_Readiness_Probe_Works" computerName="Nkosikazi" duration="00:00:00.9152213" startTime="2026-04-04T14:11:54.1399760-07:00" endTime="2026-04-04T14:11:55.0552690-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="95635aae-d3b2-44d3-a6e5-9a668ac1f743" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: OneDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="4d82ee65-5101-6801-2157-5ed6cc882a7e">
+      <Execution id="2eff71cc-2f13-4dc0-bd33-73e967af6e8a" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudRemoteSyncTests" name="TextFile_SyncsWithMzansi" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: Dropbox)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="8351d39e-1e62-b600-ba24-148df8a8e557">
+      <Execution id="5ebe98a1-4331-4c35-9636-31ec3bf7e628" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudRemoteSyncTests" name="TextFile_SyncsWithMzansi" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.RemoteSshTests.Mzansi_Ssh_Readiness_Probe_Works" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="584d6dba-5683-7644-306c-889dda640ecf">
+      <Execution id="95635aae-d3b2-44d3-a6e5-9a668ac1f743" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.RemoteSshTests" name="Mzansi_Ssh_Readiness_Probe_Works" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: GoogleDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="f4c92599-ed8e-4b4b-96b6-d56db0cd941c">
+      <Execution id="553ac69d-ec95-4cb8-b7b5-f2a168cc09d6" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudRemoteSyncTests" name="TextFile_SyncsWithMzansi" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.RemoteSshTests.Mzansi_GoogleDrive_Root_Is_Readable_From_Remote_OsConfig" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="d7585d17-3860-2d94-d808-d48e55b5f8d4">
+      <Execution id="f22ecbcd-1665-4762-9f68-52e7ca418554" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.RemoteSshTests" name="Mzansi_GoogleDrive_Root_Is_Readable_From_Remote_OsConfig" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="f4c92599-ed8e-4b4b-96b6-d56db0cd941c" executionId="553ac69d-ec95-4cb8-b7b5-f2a168cc09d6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d7585d17-3860-2d94-d808-d48e55b5f8d4" executionId="f22ecbcd-1665-4762-9f68-52e7ca418554" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4d82ee65-5101-6801-2157-5ed6cc882a7e" executionId="2eff71cc-2f13-4dc0-bd33-73e967af6e8a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8351d39e-1e62-b600-ba24-148df8a8e557" executionId="5ebe98a1-4331-4c35-9636-31ec3bf7e628" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="584d6dba-5683-7644-306c-889dda640ecf" executionId="95635aae-d3b2-44d3-a6e5-9a668ac1f743" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="5" executed="5" passed="5" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.2)
+[xUnit.net 00:00:00.14]   Discovering: OsLib.Tests
+[xUnit.net 00:00:00.33]   Discovered:  OsLib.Tests
+[xUnit.net 00:00:00.48]   Starting:    OsLib.Tests
+[xUnit.net 00:03:39.34]   Finished:    OsLib.Tests (ID = 'ad732328d936780a2442b2ffc1becaef8267e78e9e18e4270fa4c14010b28e18')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

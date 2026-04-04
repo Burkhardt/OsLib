@@ -1,12 +1,14 @@
 @startuml OsLib-RaiFile-Hierarchy
 ' Release: 3.7.3
 
+title OsLib RaiFile Hierarchy
+
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam DiagramFontName "Casual"
 skinparam DiagramFontSize 36
 skinparam ClassFontName "Casual"
-skinparam ClassFontSize 28
+skinparam ClassFontSize 36
 skinparam ClassAttributeIconSize 10
 skinparam ClassAttributeFontName Casual
 skinparam ClassAttributeFontColor #053583
@@ -27,159 +29,114 @@ skinparam NoteBorderColor #d4b106
 skinparam ArrowColor #9b2c2c
 skinparam ArrowFontColor #374151
 skinparam ArrowFontName "Casual"
+
 show fields
 show methods
 
-title OsLib RaiFile Hierarchy
+package "OsLib" {
+	interface "<size:18>IPathConvention</size>" as IPathConvention {
+		+Convention : PathConventionType
+		+ApplyPathConvention() : void
+	}
 
-interface IPathConvention {
-  +Convention : PathConventionType
-  +ApplyPathConvention()
+	enum "<size:18>PathConventionType</size>" as PathConventionType << (E,#f59e0b) >> {
+		CanonicalByName
+		ItemIdTree3x3
+		ItemIdTree8x2
+	}
+
+	class "<size:18>RaiPath</size>" as RaiPath {
+		+Path : string
+		+operator /(self : RaiPath, subDir : string) : RaiPath
+		+operator /(self : RaiPath, subDir : RaiPath) : RaiPath
+		+GetFiles(searchPattern : string, searchOption : SearchOption = TopDirectoryOnly) : List<RaiFile>
+		+EnumerateFiles(searchPattern : string, searchOption : SearchOption = TopDirectoryOnly) : IEnumerable<RaiFile>
+	}
+
+	class "<size:18>CanonicalPath</size>" as CanonicalPath {
+		+RootPath : string
+		+FileStem : string
+		+Apply() : void
+	}
+
+	class "<size:18>ItemTreePath</size>" as ItemTreePath {
+		+RootPath : string
+		+ItemId : string
+		+Topdir : string
+		+Subdir : string
+		+TopdirRoot : RaiPath
+		+SubdirRoot : RaiPath
+		+GetSplit(convention : PathConventionType, itemId : string = null) : void
+		+ApplyPathConvention() : void
+	}
+
+	class "<size:18>RaiFile</size>" as RaiFile {
+		+Cloud : bool
+		+Name : string
+		+Ext : string
+		+Path : RaiPath
+		+NameWithExtension : string
+		+FullName : string
+		+Exists() : bool
+		+rm() : int
+		+mv(from : RaiFile, replace : bool, keepBackup : bool) : int
+		+cp(from : RaiFile) : int
+		+mkdir() : RaiPath
+		+rmdir(depth : int, deleteFiles : bool) : void
+		+backup(copy : bool = false) : string
+	}
+
+	class "<size:18>TextFile</size>" as TextFile {
+		+Changed : bool
+		+Lines : List<string>
+		+Read() : List<string>
+		+ReadAllText() : string
+		+Save(backup : bool = false) : TextFile
+		+Append(line : string) : TextFile
+	}
+
+	class "<size:18>CsvFile</size>" as CsvFile {
+		+Read(externalFieldNames : string, replaceBlanks : bool) : int
+		+FieldNames() : string[]
+		+Objects() : List<JObject>
+	}
+
+	class "<size:18>TmpFile</size>" as TmpFile {
+		+create() : TmpFile
+	}
+
+	class "<size:18>CanonicalFile</size>" as CanonicalFile {
+		+Convention : PathConventionType
+		+ApplyPathConvention() : void
+	}
+
+	abstract class "<size:18>ConfigFile<TData></size>" as ConfigFile {
+		+Data : TData
+		+Load() : TData
+	}
 }
 
-enum PathConventionType {
-  CanonicalByName
-  ItemIdTree3x3
-  ItemIdTree8x2
+package "RaiImage" {
+	class "<size:18>ImageFile</size>" as ImageFile {
+		+ItemId : string
+		+ImageNumber : int
+		+TileTemplate : string
+		+TileNumber : string
+		+Color : ColorInfo
+		+ShortName : string
+	}
+
+	class "<size:18>ImageTreeFile</size>" as ImageTreeFile {
+		+Convention : PathConventionType
+		+Topdir : string
+		+Subdir : string
+		+ApplyPathConvention() : void
+	}
 }
 
-class RaiPath {
-  +Path : string
-  +operator /(self : RaiPath, subDir : string) : RaiPath
-}
-
-class "CanonicalPath\n<<deprecated>>" as CanonicalPath {
-  +RootPath : string
-  +FileStem : string
-  +Apply()
-}
-
-class ItemTreePath {
-  +RootPath : string
-  +ItemId : string
-  +Topdir : string
-  +Subdir : string
-  +TopdirRoot : RaiPath
-  +SubdirRoot : RaiPath
-  +GetSplit(convention : PathConventionType, itemId : string = null)
-  +ApplyPathConvention()
-}
-
-class RaiFile {
-  +Cloud : bool
-  +Name : string
-  +Ext : string
-  +Path : string
-  +NameWithExtension : string
-  +FullName : string
-  +DirList : string[]
-  +Exists() : bool
-  +rm() : int
-  +mv(from : RaiFile, replace : bool, keepBackup : bool) : int
-  +cp(from : RaiFile) : int
-  +mkdir()
-  +rmdir(depth : int, deleteFiles : bool)
-  +backup(copy : bool) : string
-  ~GetBackupRelativeDirectoryPath(sourceDirectoryPath : string) : RaiPath
-}
-
-abstract class "ConfigFile<TData>" as ConfigFile {
-  +Data : TData
-  +Load() : TData
-}
-
-class Os {
-  +UserHomeDir : RaiPath
-  +AppRootDir : RaiPath
-  +TempDir : RaiPath
-  +LocalBackupDir : RaiPath
-  +CloudStorageRootDir : RaiPath
-}
-
-class TextFile {
-  +Changed : bool
-  +Lines : List~string~
-  +this[i : int] : string
-  +Read() : List~string~
-  +Save(backup : bool)
-  +Append(line : string)
-  +Insert(beforeLine : int, line : string)
-  +Delete(line : int)
-  +Sort(reverse : bool)
-}
-
-class CsvFile {
-  +Read(externalFieldNames : string, replaceBlanks : bool) : int
-  +FieldNames() : string[]
-  +Objects() : List~JObject~
-  +Object(idx : int) : JObject
-  +ToJsonFile(destFileName : string)
-}
-
-class TmpFile {
-  +create()
-}
-
-class CanonicalFile {
-  +Convention : PathConventionType
-  +ApplyPathConvention()
-  +CanonicalFile(fullName : string, defaultExt : string = "json")
-}
-
-class ImageFile {
-  +NoImageNumber : int
-  +ItemId : string
-  +NameExt : string
-  +ImageNumber : int
-  +TileTemplate : string
-  +TileNumber : string
-  +Color : ColorInfo
-  +ShortName : string
-  +SetImageNumber(s : string)
-  +ExtendToFirstExistingFile(extensions : string, colorInfo : ColorInfo) : bool
-}
-
-class ImageTreeFile {
-  +Convention : PathConventionType
-  +ApplyPathConvention()
-  +Topdir : string
-  +Subdir : string
-  +TopdirRoot : string
-  +SubdirRoot : string
-  +ItemId : string
-  +Path : string
-  +CopyTo(destDirs : string[]) : bool
-}
-
-note right of CanonicalFile
-  Canonical-by-name convention:
-  file is stored in folder named like the file stem.
-  Example: /Root/AfricaStage.pit -> /Root/AfricaStage/AfricaStage.pit
-  Convention is enforced in constructor.
-end note
-
-note right of CanonicalPath
-  Deprecated legacy type.
-  Prefer direct RaiPath composition.
-end note
-
-note right of ImageTreeFile
-  Tree-by-ItemId convention:
-  path segments derived from ItemId prefixes
-  using PathConventionType.
-  3x3 => Topdir first 3, Subdir first 6 (cumulative)
-  8x2 => Topdir first 8, Subdir first 10 (cumulative)
-  Convention is enforced via ItemId/Path setters.
-end note
-
-CanonicalFile ..> TmpFile : uses
-CanonicalFile ..> RaiPath : uses
-CanonicalFile ..> CanonicalPath : uses
 CanonicalFile ..|> IPathConvention
 ImageTreeFile ..|> IPathConvention
 ItemTreePath ..|> IPathConvention
-ImageTreeFile ..> ItemTreePath : uses
-ConfigFile ..> RaiPath : stores paths
 
 RaiPath <|-- CanonicalPath
 RaiPath <|-- ItemTreePath
@@ -191,5 +148,41 @@ RaiFile <|-- CanonicalFile
 RaiFile <|-- ConfigFile
 RaiFile <|-- ImageFile
 ImageFile <|-- ImageTreeFile
+
+CanonicalFile ..> RaiPath : canonical path
+ImageTreeFile ..> ItemTreePath : tree layout
+
+class "Legend<size:10>ⓈⒶⓅ</size>" as LegendSample {
+	+{static} staticMethod() : void
+	-{static} staticProperty : string
+	==
+	~<i>Note on class markers :</i>
+	<size:10>Ⓢ</size>tatic
+	<size:10>Ⓐ</size>bstract
+	Ⓟartial
+	--
+	- privateField : string
+	+ publicField : string
+	# protectedField : string
+	~ internalField : string
+	--
+	- privateMethod() : void
+	+ publicMethod() : void
+	# protectedMethod() : void
+	~ internalMethod() : void
+}
+
+note right of CanonicalFile
+	Canonical-by-name convention:
+	the file is stored inside a folder
+	named like the file stem.
+end note
+
+note right of ImageTreeFile
+	Item-tree convention:
+	path segments are derived from
+	the ItemId using the selected
+	PathConventionType.
+end note
 
 @enduml

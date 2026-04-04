@@ -141,6 +141,8 @@ namespace OsLib
 				var normalizedPath = NormalizePathForComparison(path);
 				if (string.IsNullOrWhiteSpace(normalizedPath))
 					return false;
+				if (IsDropboxMetadataPath(normalizedPath))
+					return false;
 
 				var activeConfig = Config;
 				if (activeConfig == null)
@@ -237,6 +239,8 @@ namespace OsLib
 			var normalizedPath = NormalizePathForComparison(path.Path);
 			if (string.IsNullOrWhiteSpace(normalizedPath))
 				throw new ArgumentException("Invalid path", nameof(path));
+			if (IsDropboxMetadataPath(normalizedPath))
+				throw new InvalidOperationException($"Path '{path}' points to Dropbox metadata and is not treated as a cloud-backed content path.");
 			foreach (var provider in GetEffectiveDefaultCloudOrder())
 			{
 				var root = GetConfiguredCloudRootOrEmpty(Config, provider);

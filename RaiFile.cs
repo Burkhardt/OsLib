@@ -6,11 +6,8 @@ using System.IO.Compression;
 using System.Threading;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-
-
 /*
  *	based on RsbFile (C++ version from 1991, C# version 2005)
  */
@@ -165,22 +162,18 @@ namespace OsLib
 				}
 			}
 		}
-
 		private void UpdateCloudFlag()
 		{
 			Cloud = path != null && Os.IsCloudPath(path.ToString());
 		}
-
 		public virtual string FullName
 		{
 			get { return Path + NameWithExtension; }
 		}
-
 		public override string ToString()
 		{
 			return FullName;
 		}
-
 		/// <summary>
 		/// Check if the file currently exists in the file system
 		/// </summary>
@@ -207,7 +200,6 @@ namespace OsLib
 		}
 		public int mv(RaiFile from) => mv(from, replace: true, keepBackup: false);
 		public int mv(RaiFile from, bool replace = true) => mv(from, replace, keepBackup: false);
-
 		/// <summary>
 		/// Move a file in the file system.
 		/// </summary>
@@ -220,46 +212,35 @@ namespace OsLib
 			// Semantics: destination is this.FullName, source is from.FullName
 			var dest = FullName;        // destination (this)
 			var src = from.FullName;   // source (from)
-
 			// make sure from and this do not point to the same file
 			if (src == dest)
 				return 0;
-
 			mkdir(); // create destination dir if necessary; applies ensure
-
 			if (!File.Exists(src))
 				throw new FileNotFoundException("Source file does not exist: " + src);
-
 			var destExists = File.Exists(dest);
-
 			if (destExists && !replace)
 				throw new IOException("Destination file already exists: " + dest + " and replace is false");
-
 			// If destination exists and we are allowed to replace: try atomic-ish replace first
 			if (destExists && replace)
 			{
 				var bak = new RaiFile(dest);
 				bak.Ext = "bak";
-
 				try
 				{
 					// Remove stale backup if it exists
 					if (bak.Exists())
 						bak.rm();
-
 					// System.IO: Replace(source, destination, backup)
 					// - destination becomes the content of source
 					// - backup receives the old destination
 					// - source is removed
 					File.Replace(src, dest, bak.FullName, ignoreMetadataErrors: true);
-
 					// keepBackup controls whether the .bak survives
 					if (!keepBackup)
 						bak.rm();
-
 					if (Cloud)
 						return awaitFileVanishing(src) + awaitFileMaterializing(dest);
-
 					return 0;
 				}
 				catch (IOException)
@@ -271,31 +252,23 @@ namespace OsLib
 						// Ensure stale backup is gone
 						if (bak.Exists())
 							bak.rm();
-
 						// Copy old destination to .bak (do NOT use RaiFile.cp because it rm()s destination)
 						File.Copy(dest, bak.FullName, overwrite: true);
-
 						if (Cloud)
 							awaitFileMaterializing(bak.FullName);
 					}
-
 					// Now remove destination and move source into place
 					rm();                 // deletes dest; awaits vanishing if Cloud
 					File.Move(src, dest); // System.IO: Move(source, destination)
-
 					if (Cloud)
 						return awaitFileVanishing(src) + awaitFileMaterializing(dest);
-
 					return 0;
 				}
 			}
-
 			// Destination does not exist (or replace==true but dest doesn't exist): simple move
 			File.Move(src, dest);
-
 			if (Cloud)
 				return awaitFileVanishing(src) + awaitFileMaterializing(dest);
-
 			return 0;
 		}
 		/// <summary>
@@ -307,10 +280,8 @@ namespace OsLib
 		{
 			var src = from.FullName;
 			var dest = FullName;
-
 			if (src == dest) // make sure from and this do not point to the same file
 				return 0;
-
 			rm(); // make sure it's really gone before we go ahead; awaits Vanishing
 			File.Copy(src, dest, true);  // overwrite if exists (which should never happen since we just removed it)
 			#region double check if file has moved
@@ -477,23 +448,7 @@ namespace OsLib
 		/// <param name="deleteFiles">when true, also deletes files in the target directory tree; if false, only deletes empty directories; trying to delete non-empty directories will throw an exception</param>
 		public void rmdir(int depth = 0, bool deleteFiles = false)
 		{
-			var directoryPath = Path?.ToString();
-			if (string.IsNullOrEmpty(directoryPath))
-				return;     // no directory given => nothing to delete
-			if (Directory.EnumerateFileSystemEntries(directoryPath).Any() && depth > 0)
-			{
-				if (deleteFiles)
-				{
-					foreach (var file in Directory.EnumerateFiles(directoryPath))
-						new RaiFile(file).rm();
-				}
-				foreach (var subdir in Directory.EnumerateDirectories(directoryPath))
-					new RaiFile(new RaiPath(subdir)).rmdir(depth - 1, deleteFiles);
-			}
-			if (Directory.Exists(directoryPath))	// fallback, just in case it's still there
-				Directory.Delete(directoryPath, deleteFiles); // directory may still be not empty here (if deleteFile == false) => throws exception
-			if (Os.IsCloudPath(directoryPath))
-				awaitDirVanishing(directoryPath);
+			Path?.rmdir(depth, deleteFiles);
 		}
 		/// <summary>
 		/// assumes that Path points to a directory; check if it contains files
@@ -513,25 +468,14 @@ namespace OsLib
 		/// <returns>DirectoryInfo</returns>
 		public RaiPath mkdir()
 		{
-			return mkdir(path.ToString());
+			return Path?.mkdir() ?? RaiPath.mkdir();
 		}
 		/// <summary>Create a directory if it does not exist yet</summary>
 		/// <param name="dirname">if not given current directory is used</param>
 		/// <returns>created or existing directory as RaiPath</returns>
 		public static RaiPath mkdir(string dirname = null)
 		{
-			dirname = string.IsNullOrEmpty(dirname) ? Os.EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory()) : dirname;
-			var path = new RaiPath(dirname);
-			if (path.Exists())
-				return path;
-			var dir = new DirectoryInfo(path.Path);
-			if (!dir.Exists)  // TODO problems with network drives, i.e. IservSetting.RemoteRootDir
-			{
-				dir = Directory.CreateDirectory(path.Path);
-				if (Os.IsCloudPath(path.Path))
-					awaitDirMaterializing(path.Path);
-			}
-			return new RaiPath(Os.EnsureTrailingDirectorySeparator(dir.FullName));
+			return RaiPath.mkdir(dirname);
 		}
 		/// <summary>
 		/// zip this file into archive
@@ -587,7 +531,7 @@ namespace OsLib
 			if (!File.Exists(FullName))
 				return null;   // no file no backup
 			var backupFile = new RaiFile(FullName);
-			backupFile.Path = GetBackupDirectoryPath(backupFile.Path);
+			backupFile.Path = Os.LocalBackupDir / GetBackupRelativeDirectoryPath(backupFile.FullName);
 			backupFile.mkdir();
 			backupFile.Name = backupFile.Name + "_" + DateTimeOffset.UtcNow.ToString(Os.DATEFORMAT);
 			backupFile.Ext = Ext;
@@ -603,17 +547,43 @@ namespace OsLib
 		/// <returns></returns>
 		internal static RaiPath GetBackupDirectoryPath(RaiPath sourceDirectoryPath)
 		{
-			// Windows treatment for drive letters
-			if (Os.IsWindows && sourceDirectoryPath != null && sourceDirectoryPath.ToString().Length > 1 && sourceDirectoryPath.ToString()[1] == ':')
-				return Os.LocalBackupDir / sourceDirectoryPath.ToString().Substring(2);
-			return Os.LocalBackupDir / sourceDirectoryPath;
+			return GetBackupRelativeDirectoryPath(sourceDirectoryPath?.ToString());
 		}
-
+		internal static RaiPath GetBackupRelativeDirectoryPath(string sourcePath)
+		{
+			if (string.IsNullOrWhiteSpace(sourcePath))
+				return new RaiPath(string.Empty);
+			var normalizedSourcePath = Os.NormSeperator(Os.ExpandLeadingDirectorySymbols(sourcePath));
+			foreach (Cloud provider in Enum.GetValues(typeof(Cloud)))
+			{
+				var cloudRoot = Os.GetCloudStorageRoot(provider)?.Path;
+				if (string.IsNullOrWhiteSpace(cloudRoot))
+					continue;
+				if (!normalizedSourcePath.StartsWith(cloudRoot, StringComparison.OrdinalIgnoreCase))
+					continue;
+				var relativePath = normalizedSourcePath.Substring(cloudRoot.Length)
+					.TrimStart(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+				if (normalizedSourcePath.EndsWith(Os.DIR, StringComparison.Ordinal))
+					relativePath = relativePath.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+				return new RaiPath(relativePath);
+			}
+			if (Os.IsWindows && normalizedSourcePath.Length > 1 && normalizedSourcePath[1] == ':')
+				normalizedSourcePath = normalizedSourcePath.Substring(2);
+			return new RaiPath(normalizedSourcePath);
+		}
 		public string[] DirList
 		{
 			get => path.ToString().Split(Os.DIR, StringSplitOptions.RemoveEmptyEntries);
 		}
-
+		private static string composeFileName(string name, string ext)
+		{
+			if (string.IsNullOrEmpty(name))
+				return string.Empty;
+			var fileName = name;
+			if (!string.IsNullOrEmpty(ext) && !fileName.EndsWith("." + ext, StringComparison.OrdinalIgnoreCase))
+				fileName += "." + ext;
+			return fileName;
+		}
 		/// <summary>
 		/// Constructor: auto-ensure mode for file systems that do not synchronously wait for the end of an IO operation i.e. Dropbox
 		/// </summary>
@@ -621,24 +591,11 @@ namespace OsLib
 		/// when the method call returns; necessary e.g. for Dropbox directories since (currently) Dropbox first updates the
 		/// file in the invisible . folder and then asynchronously updates the visible file and all the remote copies of it</remarks>
 		/// <param name="filename"></param>
-		public RaiFile(string filename)
+		public RaiFile(string filename) : this(ParseFullName(filename))
 		{
-			path = new RaiPath(filename);	// does this create a recursion problem? No, because RaiPath constructor does not set Path property but directly sets the private field path, which is a RaiFile, but it does not call the RaiFile(string) constructor but the default one, which does not do anything. So no recursion.
-			name = string.Empty;
-			ext = string.Empty;
-			if (!string.IsNullOrWhiteSpace(filename))
-			{
-				filename = Os.ExpandLeadingDirectorySymbols(filename);
-				filename = Os.NormSeperator(filename);
-				var k = filename.LastIndexOf(Os.DIR);
-				if (k >= 0)
-				{
-					path = new RaiPath(filename.Substring(0, k + 1));	// does this create a recursion problem? No, because RaiPath constructor does not set Path property but directly sets the private field path, which is a RaiFile, but it does not call the RaiFile(string) constructor but the default one, which does not do anything. So no recursion.
-					Name = filename.Substring(k + 1);
-				}
-				else Name = filename;   // also takes care of ext
-			}
-			UpdateCloudFlag();
+		}
+		private RaiFile((RaiPath path, string name) parsed) : this(parsed.path, parsed.name, null)
+		{
 		}
 		/// <summary>
 		/// Constructor that takes a RaiPath and optional name and extension to build the full file path.
@@ -646,20 +603,27 @@ namespace OsLib
 		/// <param name="p"></param>
 		/// <param name="name">null or "test" or "test.txt"</param>
 		/// <param name="ext">null or "txt"</param>
-		public RaiFile(RaiPath p, string name = null, string ext = null) : this(BuildFullName(p, name, ext))
+		public RaiFile(RaiPath p, string name = null, string ext = null)
 		{
+			Path = p ?? new RaiPath(string.Empty);
+			this.name = string.Empty;
+			this.ext = string.Empty;
+			var fileName = composeFileName(name, ext);
+			if (!string.IsNullOrEmpty(fileName))
+				Name = fileName;
 		}
-
-		private static string BuildFullName(RaiPath p, string name, string ext)
+		private static (RaiPath path, string name) ParseFullName(string filename)
 		{
-			if (string.IsNullOrEmpty(name))
-				return p.Path;
-
-			var fileName = name;
-			if (!string.IsNullOrEmpty(ext) && !fileName.EndsWith("." + ext, StringComparison.OrdinalIgnoreCase))
-				fileName += "." + ext;
-
-			return p.Path + fileName;
+			if (string.IsNullOrWhiteSpace(filename))
+				return (new RaiPath(string.Empty), string.Empty);
+			filename = Os.ExpandLeadingDirectorySymbols(filename);
+			filename = Os.NormSeperator(filename);
+			var k = filename.LastIndexOf(Os.DIR, StringComparison.Ordinal);
+			if (k < 0)
+				return (new RaiPath(string.Empty), filename);
+			var parentPath = new RaiPath(filename.Substring(0, k + 1));
+			var fileName = k + 1 < filename.Length ? filename[(k + 1)..] : string.Empty;
+			return (parentPath, fileName);
 		}
 	}
 } //namespace OsLib

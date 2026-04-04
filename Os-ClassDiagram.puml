@@ -32,52 +32,41 @@ skinparam ArrowFontName "Casual"
 
 show circle
 
-together {
-	class "<size:16>Legend</size>ⓈⒶⓅ" as LegendSample {
-		+{static} staticMethod() : void
-		-{static} staticProperty : string
-		==
-		~<i>Note on class markers :</i>
-		<size:10>Ⓢ</size>tatic
-		<size:10>Ⓐ</size>bstract
-		Ⓟartial
-		--
-		- privateField : string
-		+ PublicField : string
-		# protectedField : string
-		~ internalField : string
-		--
-		- privateMethod() : void
-		+ PublicMethod() : void
-		# protectedMethod() : void
-		~ internalMethod() : void
-	}
-}
-
 package "OsLib" {
-	enum EscapeMode << (E,#f59e0b) >> {
+	enum "<size:18>EscapeMode</size>" as EscapeMode << (E,#f59e0b) >> {
 		noEsc
 		blankEsc
 		paramEsc
 		backslashed
 	}
 
-	enum OsType << (E,#f59e0b) >> {
+	enum "<size:18>OsType</size>" as OsType << (E,#f59e0b) >> {
 		Windows
 		MacOS
 		Ubuntu
 	}
 
-	enum Cloud << (E,#f59e0b) >> {
+	enum "<size:18>Cloud</size>" as Cloud << (E,#f59e0b) >> {
 		Dropbox
 		OneDrive
 		GoogleDrive
 	}
 
-	class "RaiPath" as RaiPath << (C,#14b8a6) >>
-	class "RaiFile" as RaiFile << (C,#14b8a6) >>
+	interface "<size:18>IStartupDiagnosticSink</size>" as IStartupDiagnosticSink {
+		+WriteError(message : string) : void
+	}
 
-	class "Os  <small>ⓈⓅ</small>" as Os << (C,#14b8a6) >> {
+	class "<size:18>RaiPath</size>" as RaiPath {
+		+RaiPath(s : string = ".")
+		+RaiPath(f : RaiFile)
+	}
+
+	class "<size:18>RaiFile</size>" as RaiFile {
+		+RaiFile(filename : string)
+		+RaiFile(p : RaiPath, name : string = null, ext : string = null)
+	}
+
+	class "<size:24>Os</size> ⓈⓅ" as Os {
 		+{static} DIR : string
 		+{static} DIRSEPERATOR : string
 		+{static} ESCAPECHAR : string
@@ -109,7 +98,6 @@ package "OsLib" {
 		+{static} EscapeParam(param : string) : string
 		+{static} EscapeBlank(name : string) : string
 		+{static} WinInternal(fullname : string) : string
-		== helpers for cloud storage management ==
 		+{static} GetCloudStorageRoot(provider : Cloud, refresh : bool = false) : RaiPath
 		+{static} GetCloudStorageProviderForPath(path : RaiPath) : Cloud
 		+{static} GetCloudDiscoveryReport(refresh : bool = false) : string
@@ -129,17 +117,38 @@ Os ..> EscapeMode : uses
 Os ..> Cloud : cloud provider selection
 Os ..> RaiPath : path contracts
 Os ..> RaiFile : config file resolution
+Os ..> IStartupDiagnosticSink : diagnostics sink
+
+class "Legend<size:10>ⓈⒶⓅ</size>" as LegendSample {
+	+{static} staticMethod() : void
+	-{static} staticProperty : string
+	==
+	~<i>Note on class markers :</i>
+	<size:10>Ⓢ</size>tatic
+	<size:10>Ⓐ</size>bstract
+	Ⓟartial
+	--
+	- privateField : string
+	+ publicField : string
+	# protectedField : string
+	~ internalField : string
+	--
+	- privateMethod() : void
+	+ publicMethod() : void
+	# protectedMethod() : void
+	~ internalMethod() : void
+}
 
 note bottom of Os
-	Os is a static partial 
+	Os is a static partial
 	class composed from:
-	* Os.cs
-	* Os.CloudStorage.cs
-	* Os.Diagnostics.cs
-	Current config model is 
-	dynamic (osconfig.json5),
-	not a dedicated 
-	OsConfigFile type.
+	- Os.cs
+	- Os.CloudStorage.cs
+	- Os.Diagnostics.cs
+	Current config model is
+	dynamic (`osconfig.json5`)
+	rather than a dedicated
+	config-file wrapper type.
 end note
 
 @enduml

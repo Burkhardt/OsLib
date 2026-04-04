@@ -4,12 +4,10 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using RunProcessAsTask; // https://github.com/jamesmanning/RunProcessAsTask
-
 //using Hangfire; // https://www.hangfire.io/overview.html
 /*
 *	based on RsbSystem (C++ version from 1991, C# version 2005, dotnet core 2019)
 */
-
 namespace OsLib     // aka OsLibCore
 {
 	/// <summary>
@@ -23,7 +21,6 @@ namespace OsLib     // aka OsLibCore
 		public static string Bash(this string cmd)
 		{
 			var escapedArgs = cmd.Replace("\"", "\\\"");
-
 			var process = new Process()
 			{
 				StartInfo = new ProcessStartInfo
@@ -56,7 +53,6 @@ namespace OsLib     // aka OsLibCore
 		public bool TimedOut { get; init; }
 		public int WorkerThreadId { get; init; }
 	}
-
 	public class RaiSystem
 	{
 		string command = null;
@@ -91,7 +87,6 @@ namespace OsLib     // aka OsLibCore
 			p.StartInfo = CreateStartInfo(redirectStandardOutput: true, redirectStandardError: true);
 			p.EnableRaisingEvents = true;
 			p.Start();
-
 			var standardOutput = p.StandardOutput.ReadToEnd();
 			var standardError = p.StandardError.ReadToEnd();
 			var timedOut = timeoutMilliseconds > 0 && !p.WaitForExit(timeoutMilliseconds);
@@ -109,7 +104,6 @@ namespace OsLib     // aka OsLibCore
 			{
 				p.WaitForExit();
 			}
-
 			ExitCode = timedOut ? -1 : p.ExitCode;
 			return new RaiSystemResult
 			{
@@ -171,9 +165,15 @@ namespace OsLib     // aka OsLibCore
 		}
 		public static Script CreateScript(RaiPath path, string name, string ext, string content = null)
 		{
+			if (ext == null)
+				ext = string.Empty;
 			if (ext.Length > 5)
 				throw new ArgumentException($"Extension suspiciously long: {ext} - are you trying to pass-in the content in the ext parameter?", nameof(ext));
 			return new Script(path, name, ext: ext, content: content ?? string.Empty);
+		}
+		public static Script CreateScript(RaiPath path, string name, string content)
+		{
+			return new Script(path, name, content);
 		}
 		public RaiSystem(string cmdLine)
 		{
@@ -194,7 +194,6 @@ namespace OsLib     // aka OsLibCore
 			param = string.Join(" ", argumentList);
 			commandLine = string.IsNullOrWhiteSpace(param) ? command : command + " " + param;
 		}
-
 		private ProcessStartInfo CreateStartInfo(bool redirectStandardOutput, bool redirectStandardError)
 		{
 			var startInfo = new ProcessStartInfo
@@ -205,43 +204,35 @@ namespace OsLib     // aka OsLibCore
 				RedirectStandardOutput = redirectStandardOutput,
 				RedirectStandardError = redirectStandardError
 			};
-
 			if (argumentList.Count > 0)
 			{
 				foreach (var arg in argumentList)
 					startInfo.ArgumentList.Add(arg ?? string.Empty);
 			}
 			else startInfo.Arguments = param;
-
 			return startInfo;
 		}
-
 		private static (string command, string param) SplitCommandLine(string cmdLine)
 		{
 			if (string.IsNullOrWhiteSpace(cmdLine))
 				return ("", "");
-
 			var trimmed = cmdLine.Trim();
 			if (trimmed[0] == '"')
 			{
 				var closingQuote = FindClosingQuote(trimmed);
 				if (closingQuote < 0)
 					return (trimmed.Trim('"'), "");
-
 				var parsedCommand = trimmed.Substring(1, closingQuote - 1);
 				var parsedParam = closingQuote + 1 < trimmed.Length
 					? trimmed.Substring(closingQuote + 1).TrimStart()
 					: "";
 				return (parsedCommand, parsedParam);
 			}
-
 			var splitPos = trimmed.IndexOf(' ');
 			if (splitPos < 0)
 				return (trimmed, "");
-
 			return (trimmed.Substring(0, splitPos), trimmed.Substring(splitPos + 1).TrimStart());
 		}
-
 		private static int FindClosingQuote(string value)
 		{
 			for (int i = 1; i < value.Length; i++)
@@ -252,7 +243,6 @@ namespace OsLib     // aka OsLibCore
 			return -1;
 		}
 	}
-
 	/// <summary>
 	/// Windows network drive mount helper.
 	/// </summary>

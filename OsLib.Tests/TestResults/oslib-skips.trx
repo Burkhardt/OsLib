@@ -1,0 +1,931 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="37c38aef-d795-4ccc-8aeb-b9d788adebc7" name="@Nkosikazi 2026-04-04 13:19:33" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-04-04T13:19:33.2734600-07:00" queuing="2026-04-04T13:19:33.2734600-07:00" start="2026-04-04T13:19:31.9092590-07:00" finish="2026-04-04T13:19:43.3482690-07:00" />
+  <TestSettings name="default" id="a7a20acd-db73-48f8-977f-2789dbee29af">
+    <Deployment runDeploymentRoot="_Nkosikazi_2026-04-04_13_19_33" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="523c44ef-ecc5-4f14-824d-f2af1f223db4" testId="1989cbd7-19a8-5912-4d7b-c9f4319e80ec" testName="OsLib.Tests.PathConventionsTests.CanonicalFile_ConstructedFromFlatFile_CanonicalizesPathAndCreatesDestination" computerName="Nkosikazi" duration="00:00:00.0003071" startTime="2026-04-04T13:19:43.3063010-07:00" endTime="2026-04-04T13:19:43.3066150-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="523c44ef-ecc5-4f14-824d-f2af1f223db4" />
+    <UnitTestResult executionId="1360d276-fcac-4273-ab0a-f40cd621bed5" testId="2bcc3c7e-51ef-36aa-06f6-57ea6254ba07" testName="OsLib.Tests.OsEnvironmentPathTests.LocalBackupDir_PrefersConfiguredValue_OverLocalApplicationDataCandidate" computerName="Nkosikazi" duration="00:00:00.0030462" startTime="2026-04-04T13:19:40.4952870-07:00" endTime="2026-04-04T13:19:40.4983620-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1360d276-fcac-4273-ab0a-f40cd621bed5" />
+    <UnitTestResult executionId="9d13d894-6b5c-484c-9224-1c7d5413e2b2" testId="2c1aea78-9c81-5c71-8788-85506c74c8ba" testName="OsLib.Tests.CloudStorageAgreementMechanicsTests.Backup_PreservesExistingLocalPathShaping_ForNonCloudFiles" computerName="Nkosikazi" duration="00:00:00.0061057" startTime="2026-04-04T13:19:43.2907780-07:00" endTime="2026-04-04T13:19:43.2969050-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9d13d894-6b5c-484c-9224-1c7d5413e2b2" />
+    <UnitTestResult executionId="53e1d1ec-36b5-47d7-8c0f-4acb0be5a2fa" testId="1dff361a-f3bb-4ad8-d5cc-8278aaddc4e0" testName="OsLib.Tests.CloudStorageProviderPathTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: OneDrive)" computerName="Nkosikazi" duration="00:00:00.0000491" startTime="2026-04-04T13:19:43.1355400-07:00" endTime="2026-04-04T13:19:43.1356020-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="53e1d1ec-36b5-47d7-8c0f-4acb0be5a2fa" />
+    <UnitTestResult executionId="bb2d94b6-b1a0-4f20-9de9-e2abc2d821aa" testId="840c02bf-36e1-f773-ce99-adc6bee3d171" testName="OsLib.Tests.OsEnvironmentPathTests.GetDefaultConfigPath_UsesConfiguredOverride_WhenPresent" computerName="Nkosikazi" duration="00:00:00.0021021" startTime="2026-04-04T13:19:40.4929170-07:00" endTime="2026-04-04T13:19:40.4950470-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bb2d94b6-b1a0-4f20-9de9-e2abc2d821aa" />
+    <UnitTestResult executionId="fbf3773d-176f-409f-8417-e907f09bd1ca" testId="5321433c-df8b-a603-8bc2-d2c07584f832" testName="OsLib.Tests.OsConfigurationDiagnosticsTests.TempDir_FallsBackWithLogWarning_ButNoConsole_WhenConfigIsValid" computerName="Nkosikazi" duration="00:00:00.0034375" startTime="2026-04-04T13:19:43.2565510-07:00" endTime="2026-04-04T13:19:43.2600200-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fbf3773d-176f-409f-8417-e907f09bd1ca" />
+    <UnitTestResult executionId="de4058b4-70c9-42cd-9946-6e637c9c1c6b" testId="3d1e88e0-fa88-674f-414e-0d1b7bebd3ab" testName="OsLib.Tests.PathConventionsTests.CanonicalFile_StringConstructor_WithNomsaNetDirectoryPath_PreservesDirectoryPath" computerName="Nkosikazi" duration="00:00:00.0000678" startTime="2026-04-04T13:19:43.3082800-07:00" endTime="2026-04-04T13:19:43.3083600-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="de4058b4-70c9-42cd-9946-6e637c9c1c6b" />
+    <UnitTestResult executionId="629b5bb3-4cb8-4eb0-97b0-36264a1265d3" testId="6e0c8aff-a43e-bac6-ce2d-47b8ac5a33a7" testName="OsLib.Tests.OsEnvironmentPathTests.AppRootDir_UsesCurrentWorkingDirectory" computerName="Nkosikazi" duration="00:00:00.0002341" startTime="2026-04-04T13:19:40.4892610-07:00" endTime="2026-04-04T13:19:40.4895120-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="629b5bb3-4cb8-4eb0-97b0-36264a1265d3" />
+    <UnitTestResult executionId="053f3568-9d67-411f-908e-73f554dae096" testId="32cd5503-1ab2-4391-0434-30a9f324b518" testName="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable(provider: GoogleDrive)" computerName="Nkosikazi" duration="00:00:00.0000232" startTime="2026-04-04T13:19:43.1991700-07:00" endTime="2026-04-04T13:19:43.1992020-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="053f3568-9d67-411f-908e-73f554dae096" />
+    <UnitTestResult executionId="d67a6bf0-46eb-46d3-a214-9ff203e65fb3" testId="69c0e272-6c2e-025f-3023-635640592a54" testName="OsLib.Tests.OsEnvironmentPathTests.TempDir_MatchesSystemTempPath_WhenNotConfigured" computerName="Nkosikazi" duration="00:00:00.0280395" startTime="2026-04-04T13:19:40.4486600-07:00" endTime="2026-04-04T13:19:40.4767420-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d67a6bf0-46eb-46d3-a214-9ff203e65fb3" />
+    <UnitTestResult executionId="9a51c470-d7b6-4e30-94bd-3c511d2c6d14" testId="bbe2f916-15d4-bf01-8dee-4e4f05410be5" testName="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoots_DoesNotOverwriteExistingDefaultUserConfigFile" computerName="Nkosikazi" duration="00:00:00.0038788" startTime="2026-04-04T13:19:43.2242330-07:00" endTime="2026-04-04T13:19:43.2281330-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a51c470-d7b6-4e30-94bd-3c511d2c6d14" />
+    <UnitTestResult executionId="51e27897-d5b3-4de0-9a7d-0d4f632eb582" testId="88ecb67d-ef44-f83f-7b80-a0304d7f12ce" testName="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoots_LoadsDefaultUserConfigLocation" computerName="Nkosikazi" duration="00:00:00.0044532" startTime="2026-04-04T13:19:43.2060670-07:00" endTime="2026-04-04T13:19:43.2105440-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="51e27897-d5b3-4de0-9a7d-0d4f632eb582" />
+    <UnitTestResult executionId="c66278ff-edda-4ff7-8d15-dfac748e70b0" testId="c793e030-64b7-12d3-7e59-230dcd1068d8" testName="OsLib.Tests.CloudStoragePathMechanicsTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: Dropbox, dirName: &quot;DropboxRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0035562" startTime="2026-04-04T13:19:43.1529100-07:00" endTime="2026-04-04T13:19:43.1565110-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c66278ff-edda-4ff7-8d15-dfac748e70b0" />
+    <UnitTestResult executionId="e1249a8a-6241-4ffd-ae08-833eb3bf402d" testId="4262c266-ef19-d1db-4a0d-02c03f2d7ef8" testName="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoot_ReturnsConfiguredDropboxPath" computerName="Nkosikazi" duration="00:00:00.0028728" startTime="2026-04-04T13:19:43.2208640-07:00" endTime="2026-04-04T13:19:43.2237580-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e1249a8a-6241-4ffd-ae08-833eb3bf402d" />
+    <UnitTestResult executionId="4ec53c0e-ff16-41db-8b1a-1c37dd7bd3f4" testId="f60aa75e-7e99-4ec5-5752-ef99f3565db2" testName="OsLib.Tests.CloudStorageAgreementTests.CloudStorageRoot_UsesDocumentedDefaultOrder_ForAvailableConfiguredProviders" computerName="Nkosikazi" duration="00:00:00.0024169" startTime="2026-04-04T13:19:43.2368000-07:00" endTime="2026-04-04T13:19:43.2392350-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4ec53c0e-ff16-41db-8b1a-1c37dd7bd3f4" />
+    <UnitTestResult executionId="99e636bf-145d-4f11-8e65-376d4a674aaa" testId="4c804e19-33b6-b0c6-1c95-e5da2365f499" testName="OsLib.Tests.CloudStorageProviderPathTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: Dropbox)" computerName="Nkosikazi" duration="00:00:00.0008082" startTime="2026-04-04T13:19:43.1342960-07:00" endTime="2026-04-04T13:19:43.1351300-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="99e636bf-145d-4f11-8e65-376d4a674aaa" />
+    <UnitTestResult executionId="679f96e9-f151-4cce-bf69-ec347f845367" testId="d8264ebd-09aa-b956-fee5-db2119c3dbfd" testName="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths(provider: Dropbox)" computerName="Nkosikazi" duration="00:00:00.0001874" startTime="2026-04-04T13:19:43.1981160-07:00" endTime="2026-04-04T13:19:43.1983190-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="679f96e9-f151-4cce-bf69-ec347f845367" />
+    <UnitTestResult executionId="e7201d12-abe6-414d-81c1-18921eb1b544" testId="c9cf67af-165a-0b3a-cb40-ae198c45a362" testName="OsLib.Tests.CloudStorageConfigMechanicsTests.GetPreferredCloudStorageRoot_RespectsPreferredOrder" computerName="Nkosikazi" duration="00:00:00.0026556" startTime="2026-04-04T13:19:43.2283290-07:00" endTime="2026-04-04T13:19:43.2310080-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e7201d12-abe6-414d-81c1-18921eb1b544" />
+    <UnitTestResult executionId="5f63db81-186f-419c-9791-2a09be7cde87" testId="c73feca4-60d3-3e9b-c67b-9a78a975acfe" testName="OsLib.Tests.CloudStorageAgreementTests.RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag(provider: Dropbox)" computerName="Nkosikazi" duration="00:00:00.0002421" startTime="2026-04-04T13:19:43.2394530-07:00" endTime="2026-04-04T13:19:43.2397120-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5f63db81-186f-419c-9791-2a09be7cde87" />
+    <UnitTestResult executionId="b72e3eda-636f-4f63-8641-e8a7838eda09" testId="8bc870f1-6d35-f32b-27a9-b4a36aa2ff8f" testName="OsLib.Tests.CliCommandTests.CliCommand_RunAsync_ExecutesOnWorkerThread_AndCapturesOutput" computerName="Nkosikazi" duration="00:00:00.4525935" startTime="2026-04-04T13:19:32.7363700-07:00" endTime="2026-04-04T13:19:33.1896730-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b72e3eda-636f-4f63-8641-e8a7838eda09" />
+    <UnitTestResult executionId="77a4545a-439b-4fea-b958-34f69132cc73" testId="6fcbaaad-008f-58b7-4444-f4cf7aa691ea" testName="OsLib.Tests.OsLibTests.RaiFile_Move_NoBackup_RemovesBakFile" computerName="Nkosikazi" duration="00:00:00.0013829" startTime="2026-04-04T13:19:33.2325270-07:00" endTime="2026-04-04T13:19:33.2339350-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="77a4545a-439b-4fea-b958-34f69132cc73" />
+    <UnitTestResult executionId="b3e5c862-f927-4faf-8061-4bb6e6a52d52" testId="9570fe76-4dbc-5147-5c54-3f21eb163cf4" testName="OsLib.Tests.OsConfigurationDiagnosticsTests.LocalBackupDir_FallsBackWithLogWarning_ButNoConsole_WhenConfigIsValid" computerName="Nkosikazi" duration="00:00:00.0029569" startTime="2026-04-04T13:19:43.2441180-07:00" endTime="2026-04-04T13:19:43.2470940-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b3e5c862-f927-4faf-8061-4bb6e6a52d52" />
+    <UnitTestResult executionId="26471d75-fe67-491b-adbe-0a66d770d6a8" testId="dbdce8bd-d49f-1a3b-4930-e659bc2fcefd" testName="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths(provider: OneDrive)" computerName="Nkosikazi" duration="00:00:00.0001860" startTime="2026-04-04T13:19:43.1983940-07:00" endTime="2026-04-04T13:19:43.1985920-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="26471d75-fe67-491b-adbe-0a66d770d6a8" />
+    <UnitTestResult executionId="1173f5f6-0e36-46fa-959e-29c5975ea573" testId="f3314636-ba40-ff10-66dc-4667b9a0e08f" testName="OsLib.Tests.RaiTildeResolutionTests.RaiFile_And_RaiPath_Parse_ConfigPath_From_RealHomeDirectory" computerName="Nkosikazi" duration="00:00:00.0002975" startTime="2026-04-04T13:19:35.1054000-07:00" endTime="2026-04-04T13:19:35.1057290-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1173f5f6-0e36-46fa-959e-29c5975ea573" />
+    <UnitTestResult executionId="5c696ccc-d566-4460-bf76-09eeeb052538" testId="5e4c0045-f918-fb41-3b1f-e545e76b307c" testName="OsLib.Tests.CloudStorageRealWorldIntegrationTests.RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider(provider: OneDrive)" computerName="Nkosikazi" duration="00:00:00.0059321" startTime="2026-04-04T13:19:43.1794000-07:00" endTime="2026-04-04T13:19:43.1853570-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5c696ccc-d566-4460-bf76-09eeeb052538" />
+    <UnitTestResult executionId="d8d3114c-3c7f-47c6-867e-11816d6e5aee" testId="2115f127-2a28-e814-8015-88366dc9f383" testName="OsLib.Tests.CloudStorageAgreementMechanicsTests.Backup_StripsConfiguredCloudRoot_FromBackupTargetPath(provider: Dropbox, rootName: &quot;DropboxRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0049977" startTime="2026-04-04T13:19:43.2604330-07:00" endTime="2026-04-04T13:19:43.2654530-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d8d3114c-3c7f-47c6-867e-11816d6e5aee" />
+    <UnitTestResult executionId="a2be657c-4e85-4c00-b768-0a238b23d7e1" testId="d3bc1c7e-cccf-6424-ac5f-69457357c551" testName="OsLib.Tests.OsLibTests.RaiFileExtensions_Singularize_CollapsesRepeatedChars" computerName="Nkosikazi" duration="00:00:00.0002593" startTime="2026-04-04T13:19:33.4795930-07:00" endTime="2026-04-04T13:19:33.4799160-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a2be657c-4e85-4c00-b768-0a238b23d7e1" />
+    <UnitTestResult executionId="f31461f9-78fe-4c7d-9706-48e56052af9e" testId="6a5be71c-854f-8905-e2e3-0a2056e6ef59" testName="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider(provider: Dropbox, dirName: &quot;DropboxRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0029838" startTime="2026-04-04T13:19:43.1697530-07:00" endTime="2026-04-04T13:19:43.1727640-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f31461f9-78fe-4c7d-9706-48e56052af9e" />
+    <UnitTestResult executionId="7ea72e27-4510-4234-8900-ae6a2220109d" testId="ccaeef4d-d3fd-c0d7-c533-65fcce42f954" testName="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider(provider: OneDrive, dirName: &quot;OneDriveRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0024902" startTime="2026-04-04T13:19:43.1765170-07:00" endTime="2026-04-04T13:19:43.1790370-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7ea72e27-4510-4234-8900-ae6a2220109d" />
+    <UnitTestResult executionId="b1406efd-f895-41a8-b322-dfb3c27427fe" testId="9ce59075-3644-8347-fbb6-4ddf22089f9a" testName="OsLib.Tests.PathConventionsTests.RaiPath_Rmdir_RemovesDirectoryTree" computerName="Nkosikazi" duration="00:00:00.0018031" startTime="2026-04-04T13:19:43.3005470-07:00" endTime="2026-04-04T13:19:43.3023700-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b1406efd-f895-41a8-b322-dfb3c27427fe" />
+    <UnitTestResult executionId="00226036-fa88-486a-b0f9-d9218574ba1c" testId="5716fc35-b9c5-afd9-32da-34a9d55068e0" testName="OsLib.Tests.CloudStorageConfigMechanicsTests.LoadConfig_DoesNotCreateConfigFile_WhenMissing_AndReturnsFallbackDefaults" computerName="Nkosikazi" duration="00:00:00.0031712" startTime="2026-04-04T13:19:43.1994260-07:00" endTime="2026-04-04T13:19:43.2026120-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="00226036-fa88-486a-b0f9-d9218574ba1c" />
+    <UnitTestResult executionId="0d943cef-d160-4e59-8ef2-42dfedb1bc0f" testId="d7585d17-3860-2d94-d808-d48e55b5f8d4" testName="OsLib.Tests.RemoteSshTests.Mzansi_GoogleDrive_Root_Is_Readable_From_Remote_OsConfig" computerName="Nkosikazi" duration="00:00:00.0010000" startTime="2026-04-04T13:19:41.4095670-07:00" endTime="2026-04-04T13:19:43.1337090-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0d943cef-d160-4e59-8ef2-42dfedb1bc0f">
+      <Output>
+        <ErrorInfo>
+          <Message>Remote TempDir '/Users/RSB/temp/' is not writable. executing ssh script on rsb@Mzansi; exit=0. stdout=denied</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="105bfeaf-cb34-4369-a40d-771e77e4c252" testId="c283be73-39b7-ae67-45ce-d9392a91f767" testName="OsLib.Tests.CloudStoragePathMechanicsTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: GoogleDrive, dirName: &quot;GoogleDriveRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0036996" startTime="2026-04-04T13:19:43.1490030-07:00" endTime="2026-04-04T13:19:43.1527270-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="105bfeaf-cb34-4369-a40d-771e77e4c252" />
+    <UnitTestResult executionId="4f07f3c4-7192-4eab-ba51-6bf9c82d5aea" testId="a76a427c-6bf5-3456-20b0-65fe7feb7306" testName="OsLib.Tests.OsLibTests.RaiFile_rmdir_DeletesTree_WhenDeleteFilesTrue" computerName="Nkosikazi" duration="00:00:00.0035658" startTime="2026-04-04T13:19:33.4813960-07:00" endTime="2026-04-04T13:19:33.4850120-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4f07f3c4-7192-4eab-ba51-6bf9c82d5aea" />
+    <UnitTestResult executionId="38b62898-0e53-4052-a25f-aef8955c207e" testId="b0a25160-64ff-190d-bbaa-26e5e6c2f359" testName="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider(provider: OneDrive, dirName: &quot;OneDriveRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0035690" startTime="2026-04-04T13:19:43.1620910-07:00" endTime="2026-04-04T13:19:43.1656940-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="38b62898-0e53-4052-a25f-aef8955c207e" />
+    <UnitTestResult executionId="56c2dc45-d598-4bcc-a35a-6403614ab659" testId="c7a7165a-ecdc-e7ff-3fb3-23e0ab3cb3f4" testName="OsLib.Tests.OsLibTests.RaiFileExtensions_CreateDictionariesFromCsvLines_ParsesTabSeparated" computerName="Nkosikazi" duration="00:00:00.0005058" startTime="2026-04-04T13:19:33.6468230-07:00" endTime="2026-04-04T13:19:33.6473760-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="56c2dc45-d598-4bcc-a35a-6403614ab659" />
+    <UnitTestResult executionId="393fd2c9-fbae-4119-8033-1311d1a74180" testId="cda22968-3b18-8118-0efa-40330a4b9735" testName="OsLib.Tests.CloudStorageRealWorldIntegrationTests.TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider(provider: OneDrive)" computerName="Nkosikazi" duration="00:00:00.0022672" startTime="2026-04-04T13:19:43.1907160-07:00" endTime="2026-04-04T13:19:43.1930070-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="393fd2c9-fbae-4119-8033-1311d1a74180" />
+    <UnitTestResult executionId="06e6e5c9-b1ab-4e82-807b-5fef67b05127" testId="326cb4d6-640f-765c-a06f-d5ffef363b40" testName="OsLib.Tests.PathConventionsTests.CanonicalFile_Appends_Folder" computerName="Nkosikazi" duration="00:00:00.0001923" startTime="2026-04-04T13:19:43.3100490-07:00" endTime="2026-04-04T13:19:43.3102500-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="06e6e5c9-b1ab-4e82-807b-5fef67b05127" />
+    <UnitTestResult executionId="b0501400-63e5-4f03-bf56-724164f9ed8b" testId="7e60f349-578f-21f5-e240-604be0d61927" testName="OsLib.Tests.OsLibTests.RaiSystem_CommandLineConstructor_SupportsQuotedExecutablePaths" computerName="Nkosikazi" duration="00:00:00.1558257" startTime="2026-04-04T13:19:33.4874390-07:00" endTime="2026-04-04T13:19:33.6433430-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b0501400-63e5-4f03-bf56-724164f9ed8b" />
+    <UnitTestResult executionId="e21143fb-5f26-4895-bd0c-23fd97608b50" testId="bc231df1-38da-c9a3-d1d3-128baf0b01d7" testName="OsLib.Tests.OsEnvironmentPathTests.GetObserverSshTarget_ReturnsConfiguredValue" computerName="Nkosikazi" duration="00:00:00.0230333" startTime="2026-04-04T13:19:40.4985900-07:00" endTime="2026-04-04T13:19:40.5216580-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e21143fb-5f26-4895-bd0c-23fd97608b50" />
+    <UnitTestResult executionId="1d1431f0-544b-475c-8201-c5b1fff7181f" testId="7ca4d989-7a26-8cf1-9d1c-ee41b9ca5bd9" testName="OsLib.Tests.OsLibTests.RaiSystem_Exec_CapturesOutput" computerName="Nkosikazi" duration="00:00:00.0134573" startTime="2026-04-04T13:19:33.2132000-07:00" endTime="2026-04-04T13:19:33.2267440-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1d1431f0-544b-475c-8201-c5b1fff7181f" />
+    <UnitTestResult executionId="c9caee88-61b6-40f4-b57e-65bf0512b942" testId="25c23c44-665f-84c6-2ef0-5da891c0eede" testName="OsLib.Tests.OsLibTests.RaiFile_ParsesNameAndExtension" computerName="Nkosikazi" duration="00:00:00.0004390" startTime="2026-04-04T13:19:33.4622770-07:00" endTime="2026-04-04T13:19:33.4627520-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c9caee88-61b6-40f4-b57e-65bf0512b942" />
+    <UnitTestResult executionId="89ca7130-7151-40f8-9911-4ed9aa5c6ea2" testId="7099dd52-6619-bcbb-952f-09e176ed4eb2" testName="OsLib.Tests.OsEnvironmentPathTests.LocalBackupDir_DefaultResolution_IsRooted_AndNotCloudBacked" computerName="Nkosikazi" duration="00:00:00.0030093" startTime="2026-04-04T13:19:40.4896570-07:00" endTime="2026-04-04T13:19:40.4926920-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="89ca7130-7151-40f8-9911-4ed9aa5c6ea2" />
+    <UnitTestResult executionId="fef2fa17-ce8a-4f94-8a36-697715bc09e6" testId="0960d297-0e10-f72b-c6b0-16dea5207f86" testName="OsLib.Tests.CloudStorageMachineStateTests.MachineCloudState_PrintsConfiguredProviderStatus_WithoutFailingForMissingRoots" computerName="Nkosikazi" duration="00:00:00.0007785" startTime="2026-04-04T13:19:43.2358170-07:00" endTime="2026-04-04T13:19:43.2366110-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fef2fa17-ce8a-4f94-8a36-697715bc09e6" />
+    <UnitTestResult executionId="5bdbb5ce-53dd-4bfd-87cc-ad3d6aa48f05" testId="f50aefb6-beaf-6ee8-870e-e64fd40927c8" testName="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoots_PrefersConfiguredProviderValue_WithoutProbeFallback(provider: GoogleDrive, configuredDirName: &quot;ConfiguredGoogleDrive&quot;, discoveredDirName: &quot;Google Drive&quot;)" computerName="Nkosikazi" duration="00:00:00.0025599" startTime="2026-04-04T13:19:43.2150340-07:00" endTime="2026-04-04T13:19:43.2176200-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5bdbb5ce-53dd-4bfd-87cc-ad3d6aa48f05" />
+    <UnitTestResult executionId="c02dc9a4-e8b7-4377-ab6d-7929bf19fa6d" testId="fda217fd-1a7e-fbb4-408e-bb3272d03609" testName="OsLib.Tests.CloudStorageRealWorldIntegrationTests.RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider(provider: GoogleDrive)" computerName="Nkosikazi" duration="00:00:00.0021514" startTime="2026-04-04T13:19:43.1855100-07:00" endTime="2026-04-04T13:19:43.1876830-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c02dc9a4-e8b7-4377-ab6d-7929bf19fa6d" />
+    <UnitTestResult executionId="764a66fc-4d37-4dc8-bb27-0c32a02d8e93" testId="dbe763dd-06bf-cd28-fc01-a57dcd0000d1" testName="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoot_ReturnsConfiguredGoogleDrivePath" computerName="Nkosikazi" duration="00:00:00.0030737" startTime="2026-04-04T13:19:43.2027650-07:00" endTime="2026-04-04T13:19:43.2058630-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="764a66fc-4d37-4dc8-bb27-0c32a02d8e93" />
+    <UnitTestResult executionId="e2d2b912-4890-489c-bd4f-109d1da9f6fe" testId="81bc9b3f-b684-aab2-d31c-43ae7e7af9d1" testName="OsLib.Tests.CloudStorageAgreementMechanicsTests.Backup_StripsConfiguredCloudRoot_FromBackupTargetPath(provider: GoogleDrive, rootName: &quot;GoogleDriveRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0043109" startTime="2026-04-04T13:19:43.2697760-07:00" endTime="2026-04-04T13:19:43.2741100-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e2d2b912-4890-489c-bd4f-109d1da9f6fe" />
+    <UnitTestResult executionId="2ec94141-7eca-4513-b210-bef1f502c7ec" testId="584d6dba-5683-7644-306c-889dda640ecf" testName="OsLib.Tests.RemoteSshTests.Mzansi_Ssh_Readiness_Probe_Works" computerName="Nkosikazi" duration="00:00:00.8603580" startTime="2026-04-04T13:19:40.5488200-07:00" endTime="2026-04-04T13:19:41.4092230-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2ec94141-7eca-4513-b210-bef1f502c7ec" />
+    <UnitTestResult executionId="df8f56d3-de9a-41de-b877-2ec20779c39f" testId="5b02dbc8-33f7-dd84-8ca7-8041a40b9f89" testName="OsLib.Tests.RCloneCommandTests.RCloneCommand_RunSubcommandAsync_PrefixesSubcommand_AndUsesWorkerThread" computerName="Nkosikazi" duration="00:00:00.2109762" startTime="2026-04-04T13:19:33.6505910-07:00" endTime="2026-04-04T13:19:33.8616250-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="df8f56d3-de9a-41de-b877-2ec20779c39f" />
+    <UnitTestResult executionId="edc4a31f-60f2-466c-9d86-b323e291f3bc" testId="814eec5c-85e2-bc96-ed9f-234ba6f52ed8" testName="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoots_UsesConfiguredRoots_FromConfig" computerName="Nkosikazi" duration="00:00:00.0043913" startTime="2026-04-04T13:19:43.2311880-07:00" endTime="2026-04-04T13:19:43.2355960-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="edc4a31f-60f2-466c-9d86-b323e291f3bc" />
+    <UnitTestResult executionId="92645a8e-4028-4e39-a8aa-6c02a566d2d3" testId="daa61d5a-5cc8-f4ad-7fd9-e51922cbf852" testName="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths(provider: GoogleDrive)" computerName="Nkosikazi" duration="00:00:00.0000293" startTime="2026-04-04T13:19:43.1986650-07:00" endTime="2026-04-04T13:19:43.1987010-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="92645a8e-4028-4e39-a8aa-6c02a566d2d3" />
+    <UnitTestResult executionId="e993e75e-dcae-40ea-88a5-769649208b41" testId="6e0da2f6-14fd-7552-2740-7c604b751e35" testName="OsLib.Tests.OsLibTests.Os_Type_UsesRuntimePlatformDetection" computerName="Nkosikazi" duration="00:00:00.0014742" startTime="2026-04-04T13:19:33.4857070-07:00" endTime="2026-04-04T13:19:33.4872070-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e993e75e-dcae-40ea-88a5-769649208b41" />
+    <UnitTestResult executionId="571bc6b9-b764-40d5-8452-6790d7f46301" testId="6cdf159c-709b-0253-e027-75b4eec896fc" testName="OsLib.Tests.OsLibTests.Os_UserHomeDir_UsesHomeVariable_OnUnix" computerName="Nkosikazi" duration="00:00:00.0006919" startTime="2026-04-04T13:19:33.6458990-07:00" endTime="2026-04-04T13:19:33.6466160-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="571bc6b9-b764-40d5-8452-6790d7f46301" />
+    <UnitTestResult executionId="cd48d9d3-07ab-40b0-9d41-a547e6738a8a" testId="f6b7719f-abfd-a625-063e-a85b6d50c38d" testName="OsLib.Tests.OsLibTests.RaiFileExtensions_MakePolicyCompliant_RemovesEmptyLines" computerName="Nkosikazi" duration="00:00:00.0004939" startTime="2026-04-04T13:19:33.2347040-07:00" endTime="2026-04-04T13:19:33.2352170-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cd48d9d3-07ab-40b0-9d41-a547e6738a8a" />
+    <UnitTestResult executionId="1ddc7fa2-1578-4916-bf5f-8a13dde463ac" testId="8b56287d-0737-c20a-4223-27cb273d1cc3" testName="OsLib.Tests.CliCommandTests.SevenZipCommand_ResolvesAlternateExecutableCandidates" computerName="Nkosikazi" duration="00:00:00.0021928" startTime="2026-04-04T13:19:33.1918650-07:00" endTime="2026-04-04T13:19:33.1940940-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1ddc7fa2-1578-4916-bf5f-8a13dde463ac" />
+    <UnitTestResult executionId="861b95e3-125f-43fa-a46b-0386e152608c" testId="eea6252a-0907-267a-ae3f-492f811d0a8f" testName="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider(provider: GoogleDrive, dirName: &quot;GoogleDriveRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0046629" startTime="2026-04-04T13:19:43.1571820-07:00" endTime="2026-04-04T13:19:43.1618880-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="861b95e3-125f-43fa-a46b-0386e152608c" />
+    <UnitTestResult executionId="55939b4e-e09d-4aea-b7a4-9e32ea8eed2f" testId="d6665e22-5624-6442-48d5-2894dee2c184" testName="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoots_PrefersConfiguredProviderValue_WithoutProbeFallback(provider: OneDrive, configuredDirName: &quot;ConfiguredOneDrive&quot;, discoveredDirName: &quot;OneDrive - Personal&quot;)" computerName="Nkosikazi" duration="00:00:00.0040904" startTime="2026-04-04T13:19:43.2107710-07:00" endTime="2026-04-04T13:19:43.2148860-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="55939b4e-e09d-4aea-b7a4-9e32ea8eed2f" />
+    <UnitTestResult executionId="a8becc0b-34aa-410f-8695-9136c240ae7d" testId="29853f17-a202-80bb-ba8e-bbd3b96bd9a3" testName="OsLib.Tests.CloudStorageAgreementMechanicsTests.GetCloudStorageRoots_ProbesHomeOneDriveVariants_OnUnix" computerName="Nkosikazi" duration="00:00:00.0027456" startTime="2026-04-04T13:19:43.2833990-07:00" endTime="2026-04-04T13:19:43.2861660-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a8becc0b-34aa-410f-8695-9136c240ae7d" />
+    <UnitTestResult executionId="bc74c704-eb46-4ebc-b563-c7baf79fb6c8" testId="b6c4354f-cbdc-da59-14df-f8f41993a643" testName="OsLib.Tests.OsLibTests.RaiFile_Move_ReplaceFalse_ThrowsWhenDestinationExists" computerName="Nkosikazi" duration="00:00:00.0024528" startTime="2026-04-04T13:19:33.2272490-07:00" endTime="2026-04-04T13:19:33.2297410-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bc74c704-eb46-4ebc-b563-c7baf79fb6c8" />
+    <UnitTestResult executionId="8d606b8d-14bd-4f03-8598-69d634a21947" testId="8351d39e-1e62-b600-ba24-148df8a8e557" testName="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: Dropbox)" computerName="Nkosikazi" duration="00:00:00.0010000" startTime="2026-04-04T13:19:38.6538600-07:00" endTime="2026-04-04T13:19:40.4470930-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8d606b8d-14bd-4f03-8598-69d634a21947">
+      <Output>
+        <ErrorInfo>
+          <Message>Remote TempDir '/Users/RSB/temp/' is not writable. executing ssh script on rsb@Mzansi; exit=0. stdout=denied
+Cloud configuration diagnostics:
+- active config path: ~/.config/RAIkeep/osconfig.json5
+- userHomeDir: /Users/RSB/
+- appRootDir: /Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/
+- tempDir: /Users/RSB/temp/
+- localBackupDir: /Users/RSB/backup/
+- configured default cloud order: OneDrive, Dropbox, GoogleDrive
+- OneDrive:  path: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+- Dropbox:  path: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+- GoogleDrive:  path: /Users/Shared/ServerData/GDriveData/Discovered cloud storage roots:
+- OneDrive: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+- Dropbox: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+- GoogleDrive: /Users/Shared/ServerData/GDriveData/</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="21feb0f2-766e-4309-888c-3b03239855cc" testId="7739b569-df59-2fd0-8fe6-c7600ae91ae3" testName="OsLib.Tests.PathConventionsTests.PathConventionType_Contains_ExpectedMembers" computerName="Nkosikazi" duration="00:00:00.0013678" startTime="2026-04-04T13:19:43.3045010-07:00" endTime="2026-04-04T13:19:43.3058840-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="21feb0f2-766e-4309-888c-3b03239855cc" />
+    <UnitTestResult executionId="0799b00e-a052-4b76-be25-907d962c3d1f" testId="9bcafa98-93a1-3881-e7ae-1a8e531de1d4" testName="OsLib.Tests.OsLibTests.RaiSystem_CommandAndArgsConstructor_SupportsExecutablePathsWithSpaces" computerName="Nkosikazi" duration="00:00:00.2257734" startTime="2026-04-04T13:19:33.2357910-07:00" endTime="2026-04-04T13:19:33.4616280-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0799b00e-a052-4b76-be25-907d962c3d1f" />
+    <UnitTestResult executionId="597c189b-ab9f-4aae-9359-3fda670c8d0d" testId="22397bac-8843-be8c-9b52-981841b885f1" testName="OsLib.Tests.CloudStorageProviderPathTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: GoogleDrive)" computerName="Nkosikazi" duration="00:00:00.0002001" startTime="2026-04-04T13:19:43.1352400-07:00" endTime="2026-04-04T13:19:43.1354550-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="597c189b-ab9f-4aae-9359-3fda670c8d0d" />
+    <UnitTestResult executionId="46b451ff-0dec-4273-b192-7cae3a7a2e81" testId="4565c21c-c636-6e18-ef93-b84593352eb5" testName="OsLib.Tests.OsEnvironmentPathTests.GetDefaultConfigPath_UsesFixedRAIkeepConfigLocation" computerName="Nkosikazi" duration="00:00:00.0004159" startTime="2026-04-04T13:19:40.5219330-07:00" endTime="2026-04-04T13:19:40.5223720-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="46b451ff-0dec-4273-b192-7cae3a7a2e81" />
+    <UnitTestResult executionId="5dcbe820-2865-4179-a064-73225f1a0926" testId="881fdc08-4417-e79e-a71f-dbda000cf487" testName="OsLib.Tests.PathConventionsTests.RaiPath_CreateFromFullName" computerName="Nkosikazi" duration="00:00:00.0000537" startTime="2026-04-04T13:19:43.3060040-07:00" endTime="2026-04-04T13:19:43.3060660-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5dcbe820-2865-4179-a064-73225f1a0926" />
+    <UnitTestResult executionId="d2c04029-d72f-46f6-b049-7dae288eb98f" testId="c647bdfa-1947-b199-71c6-7014aa597ada" testName="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudDiscoveryReport_IncludesProviderLines" computerName="Nkosikazi" duration="00:00:00.0001546" startTime="2026-04-04T13:19:43.2239430-07:00" endTime="2026-04-04T13:19:43.2241160-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d2c04029-d72f-46f6-b049-7dae288eb98f" />
+    <UnitTestResult executionId="cf2e48aa-4a69-4910-b3f0-d0d028dc7ace" testId="d24a5a14-f690-4244-39ed-0788265108f7" testName="OsLib.Tests.CloudStorageRealWorldIntegrationTests.RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider(provider: Dropbox)" computerName="Nkosikazi" duration="00:00:00.0025873" startTime="2026-04-04T13:19:43.1878090-07:00" endTime="2026-04-04T13:19:43.1904190-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cf2e48aa-4a69-4910-b3f0-d0d028dc7ace" />
+    <UnitTestResult executionId="25a8c0bb-c580-492e-9c83-5f68c9cb0a0b" testId="e23afbec-f41b-da6e-1c9d-ec86dfc74759" testName="OsLib.Tests.OsConfigurationDiagnosticsTests.LoadConfig_MissingConfig_LogsError_AndWritesStartupDiagnostic" computerName="Nkosikazi" duration="00:00:00.0036626" startTime="2026-04-04T13:19:43.2402700-07:00" endTime="2026-04-04T13:19:43.2439510-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="25a8c0bb-c580-492e-9c83-5f68c9cb0a0b" />
+    <UnitTestResult executionId="7dfdb855-f03f-4f9d-a49a-299faa6cc009" testId="5c3d48f3-c8b7-0f55-eb87-e650cdd893fb" testName="OsLib.Tests.CloudStorageRealWorldIntegrationTests.TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider(provider: GoogleDrive)" computerName="Nkosikazi" duration="00:00:00.0012704" startTime="2026-04-04T13:19:43.1965470-07:00" endTime="2026-04-04T13:19:43.1978340-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7dfdb855-f03f-4f9d-a49a-299faa6cc009" />
+    <UnitTestResult executionId="b82e0bae-f24c-4e79-a87e-5f301b480384" testId="fe15385a-85a9-554d-f24d-5c6377934e96" testName="OsLib.Tests.OsLibTests.RaiPath_OperatorAddsSubDirectory" computerName="Nkosikazi" duration="00:00:00.0001341" startTime="2026-04-04T13:19:33.4853490-07:00" endTime="2026-04-04T13:19:33.4855090-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b82e0bae-f24c-4e79-a87e-5f301b480384" />
+    <UnitTestResult executionId="8efac7c0-b7f3-4ec8-82b7-b030c94af73c" testId="e40b1119-dce7-1873-7a0e-5e6af30b2a49" testName="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable(provider: Dropbox)" computerName="Nkosikazi" duration="00:00:00.0001032" startTime="2026-04-04T13:19:43.1988330-07:00" endTime="2026-04-04T13:19:43.1989440-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8efac7c0-b7f3-4ec8-82b7-b030c94af73c" />
+    <UnitTestResult executionId="0260176f-56bd-4ff4-b285-95b3daee598d" testId="e96f785f-ec78-1d9d-b32a-105fe73f348f" testName="OsLib.Tests.CloudStoragePathMechanicsTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: OneDrive, dirName: &quot;OneDriveRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0104575" startTime="2026-04-04T13:19:43.1383430-07:00" endTime="2026-04-04T13:19:43.1488230-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0260176f-56bd-4ff4-b285-95b3daee598d" />
+    <UnitTestResult executionId="11d589a3-c6e9-4b5a-b9bc-3358f23fb15f" testId="1fb77e4f-b39d-ef36-bb8f-819f46da53f8" testName="OsLib.Tests.CloudStorageAgreementMechanicsTests.CloudStorageRoot_ThrowsWithSetupGuidance_WhenNothingIsDiscovered" computerName="Nkosikazi" duration="00:00:00.0028336" startTime="2026-04-04T13:19:43.2802970-07:00" endTime="2026-04-04T13:19:43.2831530-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="11d589a3-c6e9-4b5a-b9bc-3358f23fb15f" />
+    <UnitTestResult executionId="67e302e9-ea6b-441a-83c2-3a65a788490e" testId="f4c92599-ed8e-4b4b-96b6-d56db0cd941c" testName="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: GoogleDrive)" computerName="Nkosikazi" duration="00:00:00.0010000" startTime="2026-04-04T13:19:35.1088820-07:00" endTime="2026-04-04T13:19:36.8476010-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="67e302e9-ea6b-441a-83c2-3a65a788490e">
+      <Output>
+        <ErrorInfo>
+          <Message>Remote TempDir '/Users/RSB/temp/' is not writable. executing ssh script on rsb@Mzansi; exit=0. stdout=denied
+Cloud configuration diagnostics:
+- active config path: ~/.config/RAIkeep/osconfig.json5
+- userHomeDir: /Users/RSB/
+- appRootDir: /Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/
+- tempDir: /Users/RSB/temp/
+- localBackupDir: /Users/RSB/backup/
+- configured default cloud order: OneDrive, Dropbox, GoogleDrive
+- OneDrive:  path: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+- Dropbox:  path: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+- GoogleDrive:  path: /Users/Shared/ServerData/GDriveData/Discovered cloud storage roots:
+- OneDrive: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+- Dropbox: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+- GoogleDrive: /Users/Shared/ServerData/GDriveData/</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="af8d8b4b-2889-441b-9ad3-86e3e4191da5" testId="20e134b6-c398-88d3-7c1e-c088295b0c27" testName="OsLib.Tests.OsLibTests.Os_UserHomeDir_UsesWindowsVariables_OnWindows" computerName="Nkosikazi" duration="00:00:00.0001784" startTime="2026-04-04T13:19:33.4804090-07:00" endTime="2026-04-04T13:19:33.4806100-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="af8d8b4b-2889-441b-9ad3-86e3e4191da5" />
+    <UnitTestResult executionId="20f0e431-ce05-4934-a762-c4be1b551376" testId="b1761c58-7432-5fac-d5d4-bb13675f8599" testName="OsLib.Tests.CloudStorageAgreementMechanicsTests.LocalBackupDir_RejectsCloudBackedConfiguredValue" computerName="Nkosikazi" duration="00:00:00.0026960" startTime="2026-04-04T13:19:43.2743190-07:00" endTime="2026-04-04T13:19:43.2770490-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="20f0e431-ce05-4934-a762-c4be1b551376" />
+    <UnitTestResult executionId="cb9bd272-6163-4353-a054-939a090126f4" testId="c22f6523-fb91-105d-ab5f-eabe130e5d49" testName="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider(provider: GoogleDrive, dirName: &quot;GoogleDriveRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0032058" startTime="2026-04-04T13:19:43.1731190-07:00" endTime="2026-04-04T13:19:43.1763510-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cb9bd272-6163-4353-a054-939a090126f4" />
+    <UnitTestResult executionId="efa2e40f-26f8-4378-8e9c-a46961145c0e" testId="f5c8d428-6a62-0086-81ef-c0b6062c9675" testName="OsLib.Tests.OsLibTests.ShellHelper_Bash_RunsCommand_OnUnix" computerName="Nkosikazi" duration="00:00:00.0141218" startTime="2026-04-04T13:19:33.1985570-07:00" endTime="2026-04-04T13:19:33.2127430-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="efa2e40f-26f8-4378-8e9c-a46961145c0e" />
+    <UnitTestResult executionId="7aa3e551-581d-488b-9f70-4a24cb8f7c11" testId="6a51b514-4eec-1ccd-39bf-46c1e84a22e2" testName="OsLib.Tests.OsLibTests.RaiPath_AppendsDirectorySeparator" computerName="Nkosikazi" duration="00:00:00.0001481" startTime="2026-04-04T13:19:33.2354120-07:00" endTime="2026-04-04T13:19:33.2355790-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7aa3e551-581d-488b-9f70-4a24cb8f7c11" />
+    <UnitTestResult executionId="d9bf4171-47f3-40fe-8125-5105686f2c11" testId="e1d64ceb-a3e1-dce6-a023-dec83ec48ef8" testName="OsLib.Tests.TmpFileTests.TmpFile_Create_CreatesFile_WhenParentDirectoryExists" computerName="Nkosikazi" duration="00:00:00.0200553" startTime="2026-04-04T13:19:35.0806540-07:00" endTime="2026-04-04T13:19:35.1007720-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d9bf4171-47f3-40fe-8125-5105686f2c11" />
+    <UnitTestResult executionId="c0f0cc44-2f1a-4d50-9de1-556a543fbfd4" testId="0f9f918f-5459-dc60-850c-fca6f3e06065" testName="OsLib.Tests.OsEnvironmentPathTests.ConfiguredOnlyCloudResolution_DoesNotCreateMissingConfigFile" computerName="Nkosikazi" duration="00:00:00.0038755" startTime="2026-04-04T13:19:40.4770380-07:00" endTime="2026-04-04T13:19:40.4809480-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c0f0cc44-2f1a-4d50-9de1-556a543fbfd4" />
+    <UnitTestResult executionId="85dfbd27-ff35-4d4e-8996-18948aa4ac88" testId="f71e4cec-f72e-26d4-608b-843a86bd63a2" testName="OsLib.Tests.CloudStorageAgreementTests.RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag(provider: OneDrive)" computerName="Nkosikazi" duration="00:00:00.0000453" startTime="2026-04-04T13:19:43.2400020-07:00" endTime="2026-04-04T13:19:43.2400580-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="85dfbd27-ff35-4d4e-8996-18948aa4ac88" />
+    <UnitTestResult executionId="ac36f907-54bf-45ee-a5e9-d616cec848db" testId="5a3e9930-6ce4-db3e-bb05-5d4aa4442a63" testName="OsLib.Tests.OsEnvironmentPathTests.LocalBackupDir_ExpandsTildeConfigValue_ToHomeDirectory" computerName="Nkosikazi" duration="00:00:00.0074940" startTime="2026-04-04T13:19:40.4814690-07:00" endTime="2026-04-04T13:19:40.4890040-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ac36f907-54bf-45ee-a5e9-d616cec848db" />
+    <UnitTestResult executionId="c6da92b6-7e5e-441e-bc19-8972fc8772b7" testId="4598b2b8-34de-7b4f-67d2-68abd39805f9" testName="OsLib.Tests.OsLibTests.RaiFile_CopyMoveRemove_WorksOnDisk" computerName="Nkosikazi" duration="00:00:00.0033648" startTime="2026-04-04T13:19:33.4719100-07:00" endTime="2026-04-04T13:19:33.4754280-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c6da92b6-7e5e-441e-bc19-8972fc8772b7" />
+    <UnitTestResult executionId="283b8634-c753-476d-92a4-94ca499cccd9" testId="c3476069-d42c-8ce9-9175-7311c021f1a3" testName="OsLib.Tests.CloudStorageProviderPathTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot(provider: GoogleDrive)" computerName="Nkosikazi" duration="00:00:00.0019039" startTime="2026-04-04T13:19:43.1357610-07:00" endTime="2026-04-04T13:19:43.1376750-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="283b8634-c753-476d-92a4-94ca499cccd9" />
+    <UnitTestResult executionId="cae189c4-bf2b-4b5f-811b-3d141900ba0e" testId="d9e6f1e1-2dd4-9a40-4c43-c902d0c01d00" testName="OsLib.Tests.CloudStorageConfigMechanicsTests.LoadConfig_LoadsConfiguredJsonConfiguration" computerName="Nkosikazi" duration="00:00:00.0028775" startTime="2026-04-04T13:19:43.2178470-07:00" endTime="2026-04-04T13:19:43.2207440-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cae189c4-bf2b-4b5f-811b-3d141900ba0e" />
+    <UnitTestResult executionId="f6de1af8-09e8-4468-bcf8-8a1f3ba4ec76" testId="6efff8c2-1da5-9d9a-d76f-03b53e286d1a" testName="OsLib.Tests.OsLibTests.Os_IsUnixLike_IsTrueForNonWindowsPlatforms" computerName="Nkosikazi" duration="00:00:00.0025274" startTime="2026-04-04T13:19:33.4758710-07:00" endTime="2026-04-04T13:19:33.4785100-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f6de1af8-09e8-4468-bcf8-8a1f3ba4ec76" />
+    <UnitTestResult executionId="17c0123b-eb83-4770-b2c9-89bba4939376" testId="b0a1f01b-b17b-29a1-d836-893d9f0e8d2b" testName="OsLib.Tests.RCloneCommandTests.RCloneCommand_ProvidesInstallAndUpdateCommands" computerName="Nkosikazi" duration="00:00:00.0001392" startTime="2026-04-04T13:19:33.8619490-07:00" endTime="2026-04-04T13:19:33.8621180-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="17c0123b-eb83-4770-b2c9-89bba4939376" />
+    <UnitTestResult executionId="d872aa6b-2162-4572-8841-642182412f29" testId="c56f693d-3d20-a565-f899-d1930da70038" testName="OsLib.Tests.CloudStorageProviderPathTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot(provider: OneDrive)" computerName="Nkosikazi" duration="00:00:00.0001313" startTime="2026-04-04T13:19:43.1377920-07:00" endTime="2026-04-04T13:19:43.1379350-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d872aa6b-2162-4572-8841-642182412f29" />
+    <UnitTestResult executionId="97af8712-6905-4102-80d3-c899ce318973" testId="b4d08c3f-fff6-c011-5159-978e587a238e" testName="OsLib.Tests.PathConventionsTests.CanonicalFile_AlreadyCanonical_StaysCanonical" computerName="Nkosikazi" duration="00:00:00.0011427" startTime="2026-04-04T13:19:43.3070280-07:00" endTime="2026-04-04T13:19:43.3081790-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="97af8712-6905-4102-80d3-c899ce318973" />
+    <UnitTestResult executionId="eceb9834-cfe6-4383-9cd2-8de3d20855e4" testId="56edfe81-9441-d0d3-766c-5e1f8613c41b" testName="OsLib.Tests.CloudStorageRealWorldIntegrationTests.TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider(provider: Dropbox)" computerName="Nkosikazi" duration="00:00:00.0030336" startTime="2026-04-04T13:19:43.1931630-07:00" endTime="2026-04-04T13:19:43.1962170-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eceb9834-cfe6-4383-9cd2-8de3d20855e4" />
+    <UnitTestResult executionId="0237b32b-094c-4f63-9d16-dad144d64326" testId="77347764-0e92-a4dd-3307-1326f9849303" testName="OsLib.Tests.OsEnvironmentPathTests.LocalBackupDir_ReevaluatesAfterExplicitReload_WhenConfigChanges" computerName="Nkosikazi" duration="00:00:00.0041226" startTime="2026-04-04T13:19:40.5225430-07:00" endTime="2026-04-04T13:19:40.5266970-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0237b32b-094c-4f63-9d16-dad144d64326" />
+    <UnitTestResult executionId="a46ea491-27eb-496a-b542-5e2789dd5732" testId="d06fc34f-b294-554d-8e9d-0181b1b3fd83" testName="OsLib.Tests.CloudStorageAgreementMechanicsTests.Backup_StripsConfiguredCloudRoot_FromBackupTargetPath(provider: OneDrive, rootName: &quot;OneDriveRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0040406" startTime="2026-04-04T13:19:43.2656030-07:00" endTime="2026-04-04T13:19:43.2696640-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a46ea491-27eb-496a-b542-5e2789dd5732" />
+    <UnitTestResult executionId="88b2122e-88d6-4cb3-bd73-d3bf0d415f88" testId="ea1cb55b-037b-271b-ed20-761b715aa28f" testName="OsLib.Tests.OsLibTests.RaiFile_Move_KeepBackup_CreatesBakFile" computerName="Nkosikazi" duration="00:00:00.0018173" startTime="2026-04-04T13:19:33.6437540-07:00" endTime="2026-04-04T13:19:33.6456060-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="88b2122e-88d6-4cb3-bd73-d3bf0d415f88" />
+    <UnitTestResult executionId="28ff285c-52f9-432f-ace8-58b39356a521" testId="186cb143-296c-84f3-9259-a2dd2e244c99" testName="OsLib.Tests.CloudStorageAgreementMechanicsTests.GetCloudStorageRoots_UsesConfiguredDefaultUserConfig" computerName="Nkosikazi" duration="00:00:00.0029012" startTime="2026-04-04T13:19:43.2772030-07:00" endTime="2026-04-04T13:19:43.2801250-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="28ff285c-52f9-432f-ace8-58b39356a521" />
+    <UnitTestResult executionId="61cc6549-471a-49ae-8bbb-32b51d26ea53" testId="f0a90932-7633-bf74-da70-db9bc677fe2e" testName="OsLib.Tests.CloudStorageProviderPathTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot(provider: Dropbox)" computerName="Nkosikazi" duration="00:00:00.0000359" startTime="2026-04-04T13:19:43.1380130-07:00" endTime="2026-04-04T13:19:43.1380580-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="61cc6549-471a-49ae-8bbb-32b51d26ea53" />
+    <UnitTestResult executionId="32c6b723-c016-41d9-88f8-54444d33766c" testId="257c992a-a3da-45ff-b79d-e830d36a2789" testName="OsLib.Tests.CloudStorageAgreementTests.RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag(provider: GoogleDrive)" computerName="Nkosikazi" duration="00:00:00.0001276" startTime="2026-04-04T13:19:43.2397910-07:00" endTime="2026-04-04T13:19:43.2399290-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="32c6b723-c016-41d9-88f8-54444d33766c" />
+    <UnitTestResult executionId="1fcf9819-5156-450d-83ec-dc34844e7fd5" testId="d819d73e-efb8-275f-5e34-796ce0267b29" testName="OsLib.Tests.PathConventionsTests.CanonicalFile_WithoutExtension" computerName="Nkosikazi" duration="00:00:00.0002373" startTime="2026-04-04T13:19:43.3067000-07:00" endTime="2026-04-04T13:19:43.3069480-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1fcf9819-5156-450d-83ec-dc34844e7fd5" />
+    <UnitTestResult executionId="79b584be-2aae-4ac9-9587-3db0d8a0a224" testId="a731e196-973c-1b70-17ef-3105e7c017d4" testName="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider(provider: Dropbox, dirName: &quot;DropboxRoot&quot;)" computerName="Nkosikazi" duration="00:00:00.0033603" startTime="2026-04-04T13:19:43.1661030-07:00" endTime="2026-04-04T13:19:43.1694980-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="79b584be-2aae-4ac9-9587-3db0d8a0a224" />
+    <UnitTestResult executionId="8a8c4206-7794-454b-bd6e-86904e3adc38" testId="25c1b844-e2c3-c327-4015-bc6ee4202836" testName="OsLib.Tests.OsEnvironmentPathTests.GetObserverSshTarget_ReadsFromUpdatedConfig_AfterEnvironmentSwitch" computerName="Nkosikazi" duration="00:00:00.0051751" startTime="2026-04-04T13:19:40.5433330-07:00" endTime="2026-04-04T13:19:40.5485320-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8a8c4206-7794-454b-bd6e-86904e3adc38" />
+    <UnitTestResult executionId="bf957b6e-a5bc-415d-8cc1-5a36d7bb02d0" testId="f39ae618-11c1-4051-9561-0d131efd5135" testName="OsLib.Tests.CloudStorageAgreementMechanicsTests.CloudStorageRoot_UsesDocumentedDefaultOrder_ForConfiguredRoots" computerName="Nkosikazi" duration="00:00:00.0042644" startTime="2026-04-04T13:19:43.2863270-07:00" endTime="2026-04-04T13:19:43.2906150-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bf957b6e-a5bc-415d-8cc1-5a36d7bb02d0" />
+    <UnitTestResult executionId="b41d849f-5153-4a5a-a7fd-62c1878aca56" testId="a4b89e03-2f4e-bcbc-5759-c68e22e818ad" testName="OsLib.Tests.CloudStorageAgreementMechanicsTests.LocalBackupDir_UsesExplicitNonCloudConfigValue" computerName="Nkosikazi" duration="00:00:00.0030942" startTime="2026-04-04T13:19:43.2970850-07:00" endTime="2026-04-04T13:19:43.3002020-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b41d849f-5153-4a5a-a7fd-62c1878aca56" />
+    <UnitTestResult executionId="3e50651d-3844-4124-b847-0c330b72d9ef" testId="84a19043-71f3-3f33-2be0-13ef8034f4a0" testName="OsLib.Tests.TmpFileTests.TmpFile_Create_CreatesMissingParentDirectoryTree" computerName="Nkosikazi" duration="00:00:00.0033600" startTime="2026-04-04T13:19:35.1014630-07:00" endTime="2026-04-04T13:19:35.1049060-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3e50651d-3844-4124-b847-0c330b72d9ef" />
+    <UnitTestResult executionId="2ca32299-cccb-4210-a9dd-b106a1a44eab" testId="75835183-a2e1-ba13-87ee-ef007b76b7e8" testName="OsLib.Tests.OsConfigurationDiagnosticsTests.LoadConfig_MalformedConfig_LogsError_AndWritesStartupDiagnostic" computerName="Nkosikazi" duration="00:00:00.0039094" startTime="2026-04-04T13:19:43.2472450-07:00" endTime="2026-04-04T13:19:43.2511740-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2ca32299-cccb-4210-a9dd-b106a1a44eab" />
+    <UnitTestResult executionId="eeb73636-35ec-47cb-be24-0ed57d33cba2" testId="81172f04-3f00-f92b-d453-9a85dd0a347f" testName="OsLib.Tests.OsEnvironmentPathTests.LoadConfig_UsesUpdatedDefaultConfigPath_AfterEnvironmentSwitch" computerName="Nkosikazi" duration="00:00:00.0095749" startTime="2026-04-04T13:19:40.5272250-07:00" endTime="2026-04-04T13:19:40.5368300-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eeb73636-35ec-47cb-be24-0ed57d33cba2" />
+    <UnitTestResult executionId="10985a6c-ad6b-4109-8dd3-4e08bfca79db" testId="93561357-53c1-5ac1-36a3-d861d09b3533" testName="OsLib.Tests.PathConventionsTests.RaiPath_Mkdir_CreatesDirectory_ForPathCompositionStyle" computerName="Nkosikazi" duration="00:00:00.0014845" startTime="2026-04-04T13:19:43.3084380-07:00" endTime="2026-04-04T13:19:43.3099330-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="10985a6c-ad6b-4109-8dd3-4e08bfca79db" />
+    <UnitTestResult executionId="03098d10-3a01-4209-b898-ccce8d4088f9" testId="4950f4c9-6919-200c-37ab-f44413171184" testName="OsLib.Tests.PathConventionsTests.ConventionName_ReportsExpectedEnumForCanonicalFile" computerName="Nkosikazi" duration="00:00:00.0018594" startTime="2026-04-04T13:19:43.3024940-07:00" endTime="2026-04-04T13:19:43.3043730-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="03098d10-3a01-4209-b898-ccce8d4088f9" />
+    <UnitTestResult executionId="a35d2203-23b0-4a77-aada-39d41ae785bc" testId="e9397004-121c-721b-d7a1-afca06b505f1" testName="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable(provider: OneDrive)" computerName="Nkosikazi" duration="00:00:00.0000841" startTime="2026-04-04T13:19:43.1990120-07:00" endTime="2026-04-04T13:19:43.1991060-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a35d2203-23b0-4a77-aada-39d41ae785bc" />
+    <UnitTestResult executionId="89f5bea7-dbee-4580-8a31-343b1f865ed0" testId="9253bc18-c26c-ce87-e307-041a866b1d58" testName="OsLib.Tests.OsLibTests.FileInfo_AcceptsForwardSlashPath_OnWindows" computerName="Nkosikazi" duration="00:00:00.0001273" startTime="2026-04-04T13:19:33.4808390-07:00" endTime="2026-04-04T13:19:33.4809870-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="89f5bea7-dbee-4580-8a31-343b1f865ed0" />
+    <UnitTestResult executionId="94103b94-2947-4943-aeb4-5da31f2cee7f" testId="430fb91d-d874-94dd-d4c0-ddeaacaf06b6" testName="OsLib.Tests.RCloneCommandTests.RCloneCommand_UsesExecutableInsideConfiguredPath" computerName="Nkosikazi" duration="00:00:00.0023312" startTime="2026-04-04T13:19:33.6478630-07:00" endTime="2026-04-04T13:19:33.6502250-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="94103b94-2947-4943-aeb4-5da31f2cee7f" />
+    <UnitTestResult executionId="0119dfee-87a1-4b87-b51e-a2bfdbfb3f14" testId="336ae8d8-c54d-2487-b172-a179d3027614" testName="OsLib.Tests.OsLibTests.RaiFile_rmdir_ThrowsWhenDirectoryNotEmpty" computerName="Nkosikazi" duration="00:00:00.0022372" startTime="2026-04-04T13:19:33.2300230-07:00" endTime="2026-04-04T13:19:33.2322970-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0119dfee-87a1-4b87-b51e-a2bfdbfb3f14" />
+    <UnitTestResult executionId="1ef3168f-4de3-4e1f-848c-73f9360936b5" testId="859fe216-e3b9-f85b-10bd-28d66386ab26" testName="OsLib.Tests.OsEnvironmentPathTests.GetObserverSshTarget_ThrowsWhenObserverNotConfigured" computerName="Nkosikazi" duration="00:00:00.0035196" startTime="2026-04-04T13:19:40.5396530-07:00" endTime="2026-04-04T13:19:40.5431940-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1ef3168f-4de3-4e1f-848c-73f9360936b5" />
+    <UnitTestResult executionId="7315dc58-728b-4e08-a454-660746a1be53" testId="5f75290f-a800-1bd5-4414-f75eb0ceeccf" testName="OsLib.Tests.OsLibTests.Script_Save_CreatesExecutableFile" computerName="Nkosikazi" duration="00:00:00.0083362" startTime="2026-04-04T13:19:33.4630670-07:00" endTime="2026-04-04T13:19:33.4714520-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7315dc58-728b-4e08-a454-660746a1be53" />
+    <UnitTestResult executionId="195ae40e-7d8e-483b-a477-ab86e8b06a5b" testId="fb29a8c0-54e2-da28-aef6-f8554ead8c79" testName="OsLib.Tests.CliCommandTests.CommandInstallAndUpdateCommands_AreAvailable_ForKnownCommands" computerName="Nkosikazi" duration="00:00:00.0087849" startTime="2026-04-04T13:19:32.7189820-07:00" endTime="2026-04-04T13:19:32.7326910-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="195ae40e-7d8e-483b-a477-ab86e8b06a5b" />
+    <UnitTestResult executionId="e8e2fe25-24c4-4a9a-a21b-03fa3f56e271" testId="8df8b092-1492-275d-dd1a-53dcbc31d063" testName="OsLib.Tests.RaiTildeResolutionTests.RaiFile_And_RaiPath_Expand_Directory_Shorthand_Consistently" computerName="Nkosikazi" duration="00:00:00.0007391" startTime="2026-04-04T13:19:35.1059490-07:00" endTime="2026-04-04T13:19:35.1067160-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e8e2fe25-24c4-4a9a-a21b-03fa3f56e271" />
+    <UnitTestResult executionId="bab68c1b-6c38-4540-8b74-92817fdc3bd0" testId="22218a28-f810-9792-86e9-236a9e90efac" testName="OsLib.Tests.OsLibTests.Os_DirSeparator_MatchesSystemDirectorySeparatorChar" computerName="Nkosikazi" duration="00:00:00.0003553" startTime="2026-04-04T13:19:33.2341480-07:00" endTime="2026-04-04T13:19:33.2345270-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bab68c1b-6c38-4540-8b74-92817fdc3bd0" />
+    <UnitTestResult executionId="a6bb7d9d-0272-4d95-9bb1-c44a2066c636" testId="d783a897-1023-6b45-408a-1293e3e98532" testName="OsLib.Tests.PathConventionsTests.CanonicalFile_RaiPathConstructor_WithNomsaNetDirectoryPathAndName_KeepsCanonicalByStem" computerName="Nkosikazi" duration="00:00:00.0001011" startTime="2026-04-04T13:19:43.3061200-07:00" endTime="2026-04-04T13:19:43.3062280-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a6bb7d9d-0272-4d95-9bb1-c44a2066c636" />
+    <UnitTestResult executionId="963783f4-574d-4ffb-b89b-208a14618ff2" testId="179e9a82-9c37-dfee-f24f-b7b997378936" testName="OsLib.Tests.RemoteSshRealEnvironmentTests.Mzansi_RemoteConfig_Matches_Blueprint_When_Observer_Is_Configured" computerName="Nkosikazi" duration="00:00:01.2151292" startTime="2026-04-04T13:19:33.8648270-07:00" endTime="2026-04-04T13:19:35.0800290-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="963783f4-574d-4ffb-b89b-208a14618ff2" />
+    <UnitTestResult executionId="96df3bd3-347e-4661-9601-4f8985803a82" testId="a922e7be-e06b-34b9-d1ee-d9170665f860" testName="OsLib.Tests.OsConfigurationDiagnosticsTests.CloudStorageRootDir_WhenUnavailable_LogsError_AndWritesStartupDiagnostic" computerName="Nkosikazi" duration="00:00:00.0037023" startTime="2026-04-04T13:19:43.2525140-07:00" endTime="2026-04-04T13:19:43.2562400-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="96df3bd3-347e-4661-9601-4f8985803a82" />
+    <UnitTestResult executionId="71a55d63-fe4e-478c-b19b-6afac16f0c7b" testId="4d82ee65-5101-6801-2157-5ed6cc882a7e" testName="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: OneDrive)" computerName="Nkosikazi" duration="00:00:00.0010000" startTime="2026-04-04T13:19:36.8479390-07:00" endTime="2026-04-04T13:19:38.6535210-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="71a55d63-fe4e-478c-b19b-6afac16f0c7b">
+      <Output>
+        <ErrorInfo>
+          <Message>Remote TempDir '/Users/RSB/temp/' is not writable. executing ssh script on rsb@Mzansi; exit=0. stdout=denied
+Cloud configuration diagnostics:
+- active config path: ~/.config/RAIkeep/osconfig.json5
+- userHomeDir: /Users/RSB/
+- appRootDir: /Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/
+- tempDir: /Users/RSB/temp/
+- localBackupDir: /Users/RSB/backup/
+- configured default cloud order: OneDrive, Dropbox, GoogleDrive
+- OneDrive:  path: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+- Dropbox:  path: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+- GoogleDrive:  path: /Users/Shared/ServerData/GDriveData/Discovered cloud storage roots:
+- OneDrive: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+- Dropbox: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+- GoogleDrive: /Users/Shared/ServerData/GDriveData/</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="752e1bbb-3666-45c3-a7a6-82768ef309cd" testId="fb86eba0-a9e5-baa1-a541-adec59ad5bbb" testName="OsLib.Tests.OsEnvironmentPathTests.UserHomeDir_FallsBackToUserProfileSpecialFolder_WhenPrimaryVariablesMissing" computerName="Nkosikazi" duration="00:00:00.0022435" startTime="2026-04-04T13:19:40.5372260-07:00" endTime="2026-04-04T13:19:40.5394930-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="752e1bbb-3666-45c3-a7a6-82768ef309cd" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="OsLib.Tests.PathConventionsTests.RaiPath_Rmdir_RemovesDirectoryTree" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="9ce59075-3644-8347-fbb6-4ddf22089f9a">
+      <Execution id="b1406efd-f895-41a8-b322-dfb3c27427fe" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.PathConventionsTests" name="RaiPath_Rmdir_RemovesDirectoryTree" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiFileExtensions_MakePolicyCompliant_RemovesEmptyLines" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="f6b7719f-abfd-a625-063e-a85b6d50c38d">
+      <Execution id="cd48d9d3-07ab-40b0-9d41-a547e6738a8a" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiFileExtensions_MakePolicyCompliant_RemovesEmptyLines" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsConfigurationDiagnosticsTests.LoadConfig_MalformedConfig_LogsError_AndWritesStartupDiagnostic" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="75835183-a2e1-ba13-87ee-ef007b76b7e8">
+      <Execution id="2ca32299-cccb-4210-a9dd-b106a1a44eab" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsConfigurationDiagnosticsTests" name="LoadConfig_MalformedConfig_LogsError_AndWritesStartupDiagnostic" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.Os_DirSeparator_MatchesSystemDirectorySeparatorChar" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="22218a28-f810-9792-86e9-236a9e90efac">
+      <Execution id="bab68c1b-6c38-4540-8b74-92817fdc3bd0" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="Os_DirSeparator_MatchesSystemDirectorySeparatorChar" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.UserHomeDir_FallsBackToUserProfileSpecialFolder_WhenPrimaryVariablesMissing" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="fb86eba0-a9e5-baa1-a541-adec59ad5bbb">
+      <Execution id="752e1bbb-3666-45c3-a7a6-82768ef309cd" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="UserHomeDir_FallsBackToUserProfileSpecialFolder_WhenPrimaryVariablesMissing" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageRealWorldIntegrationTests.TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider(provider: OneDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="cda22968-3b18-8118-0efa-40330a4b9735">
+      <Execution id="393fd2c9-fbae-4119-8033-1311d1a74180" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageRealWorldIntegrationTests" name="TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.PathConventionsTests.CanonicalFile_RaiPathConstructor_WithNomsaNetDirectoryPathAndName_KeepsCanonicalByStem" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="d783a897-1023-6b45-408a-1293e3e98532">
+      <Execution id="a6bb7d9d-0272-4d95-9bb1-c44a2066c636" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.PathConventionsTests" name="CanonicalFile_RaiPathConstructor_WithNomsaNetDirectoryPathAndName_KeepsCanonicalByStem" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiFileExtensions_Singularize_CollapsesRepeatedChars" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="d3bc1c7e-cccf-6424-ac5f-69457357c551">
+      <Execution id="a2be657c-4e85-4c00-b768-0a238b23d7e1" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiFileExtensions_Singularize_CollapsesRepeatedChars" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementMechanicsTests.Backup_StripsConfiguredCloudRoot_FromBackupTargetPath(provider: GoogleDrive, rootName: &quot;GoogleDriveRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="81bc9b3f-b684-aab2-d31c-43ae7e7af9d1">
+      <Execution id="e2d2b912-4890-489c-bd4f-109d1da9f6fe" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementMechanicsTests" name="Backup_StripsConfiguredCloudRoot_FromBackupTargetPath" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiFile_Move_KeepBackup_CreatesBakFile" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="ea1cb55b-037b-271b-ed20-761b715aa28f">
+      <Execution id="88b2122e-88d6-4cb3-bd73-d3bf0d415f88" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiFile_Move_KeepBackup_CreatesBakFile" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: OneDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="4d82ee65-5101-6801-2157-5ed6cc882a7e">
+      <Execution id="71a55d63-fe4e-478c-b19b-6afac16f0c7b" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudRemoteSyncTests" name="TextFile_SyncsWithMzansi" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.PathConventionsTests.CanonicalFile_AlreadyCanonical_StaysCanonical" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="b4d08c3f-fff6-c011-5159-978e587a238e">
+      <Execution id="97af8712-6905-4102-80d3-c899ce318973" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.PathConventionsTests" name="CanonicalFile_AlreadyCanonical_StaysCanonical" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageProviderPathTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot(provider: GoogleDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="c3476069-d42c-8ce9-9175-7311c021f1a3">
+      <Execution id="283b8634-c753-476d-92a4-94ca499cccd9" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageProviderPathTests" name="GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.GetObserverSshTarget_ReturnsConfiguredValue" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="bc231df1-38da-c9a3-d1d3-128baf0b01d7">
+      <Execution id="e21143fb-5f26-4895-bd0c-23fd97608b50" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="GetObserverSshTarget_ReturnsConfiguredValue" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementMechanicsTests.Backup_StripsConfiguredCloudRoot_FromBackupTargetPath(provider: Dropbox, rootName: &quot;DropboxRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="2115f127-2a28-e814-8015-88366dc9f383">
+      <Execution id="d8d3114c-3c7f-47c6-867e-11816d6e5aee" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementMechanicsTests" name="Backup_StripsConfiguredCloudRoot_FromBackupTargetPath" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.RaiTildeResolutionTests.RaiFile_And_RaiPath_Parse_ConfigPath_From_RealHomeDirectory" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="f3314636-ba40-ff10-66dc-4667b9a0e08f">
+      <Execution id="1173f5f6-0e36-46fa-959e-29c5975ea573" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.RaiTildeResolutionTests" name="RaiFile_And_RaiPath_Parse_ConfigPath_From_RealHomeDirectory" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.PathConventionsTests.CanonicalFile_Appends_Folder" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="326cb4d6-640f-765c-a06f-d5ffef363b40">
+      <Execution id="06e6e5c9-b1ab-4e82-807b-5fef67b05127" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.PathConventionsTests" name="CanonicalFile_Appends_Folder" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiSystem_CommandAndArgsConstructor_SupportsExecutablePathsWithSpaces" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="9bcafa98-93a1-3881-e7ae-1a8e531de1d4">
+      <Execution id="0799b00e-a052-4b76-be25-907d962c3d1f" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiSystem_CommandAndArgsConstructor_SupportsExecutablePathsWithSpaces" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiFile_rmdir_ThrowsWhenDirectoryNotEmpty" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="336ae8d8-c54d-2487-b172-a179d3027614">
+      <Execution id="0119dfee-87a1-4b87-b51e-a2bfdbfb3f14" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiFile_rmdir_ThrowsWhenDirectoryNotEmpty" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CliCommandTests.CliCommand_RunAsync_ExecutesOnWorkerThread_AndCapturesOutput" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="8bc870f1-6d35-f32b-27a9-b4a36aa2ff8f">
+      <Execution id="b72e3eda-636f-4f63-8641-e8a7838eda09" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CliCommandTests" name="CliCommand_RunAsync_ExecutesOnWorkerThread_AndCapturesOutput" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementMechanicsTests.CloudStorageRoot_UsesDocumentedDefaultOrder_ForConfiguredRoots" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="f39ae618-11c1-4051-9561-0d131efd5135">
+      <Execution id="bf957b6e-a5bc-415d-8cc1-5a36d7bb02d0" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementMechanicsTests" name="CloudStorageRoot_UsesDocumentedDefaultOrder_ForConfiguredRoots" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.RemoteSshTests.Mzansi_GoogleDrive_Root_Is_Readable_From_Remote_OsConfig" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="d7585d17-3860-2d94-d808-d48e55b5f8d4">
+      <Execution id="0d943cef-d160-4e59-8ef2-42dfedb1bc0f" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.RemoteSshTests" name="Mzansi_GoogleDrive_Root_Is_Readable_From_Remote_OsConfig" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiPath_OperatorAddsSubDirectory" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="fe15385a-85a9-554d-f24d-5c6377934e96">
+      <Execution id="b82e0bae-f24c-4e79-a87e-5f301b480384" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiPath_OperatorAddsSubDirectory" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageProviderPathTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: GoogleDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="22397bac-8843-be8c-9b52-981841b885f1">
+      <Execution id="597c189b-ab9f-4aae-9359-3fda670c8d0d" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageProviderPathTests" name="RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.PathConventionsTests.PathConventionType_Contains_ExpectedMembers" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="7739b569-df59-2fd0-8fe6-c7600ae91ae3">
+      <Execution id="21feb0f2-766e-4309-888c-3b03239855cc" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.PathConventionsTests" name="PathConventionType_Contains_ExpectedMembers" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsConfigurationDiagnosticsTests.CloudStorageRootDir_WhenUnavailable_LogsError_AndWritesStartupDiagnostic" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="a922e7be-e06b-34b9-d1ee-d9170665f860">
+      <Execution id="96df3bd3-347e-4661-9601-4f8985803a82" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsConfigurationDiagnosticsTests" name="CloudStorageRootDir_WhenUnavailable_LogsError_AndWritesStartupDiagnostic" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.LocalBackupDir_ReevaluatesAfterExplicitReload_WhenConfigChanges" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="77347764-0e92-a4dd-3307-1326f9849303">
+      <Execution id="0237b32b-094c-4f63-9d16-dad144d64326" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="LocalBackupDir_ReevaluatesAfterExplicitReload_WhenConfigChanges" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoots_LoadsDefaultUserConfigLocation" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="88ecb67d-ef44-f83f-7b80-a0304d7f12ce">
+      <Execution id="51e27897-d5b3-4de0-9a7d-0d4f632eb582" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageConfigMechanicsTests" name="GetCloudStorageRoots_LoadsDefaultUserConfigLocation" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudDiscoveryReport_IncludesProviderLines" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="c647bdfa-1947-b199-71c6-7014aa597ada">
+      <Execution id="d2c04029-d72f-46f6-b049-7dae288eb98f" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageConfigMechanicsTests" name="GetCloudDiscoveryReport_IncludesProviderLines" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiSystem_CommandLineConstructor_SupportsQuotedExecutablePaths" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="7e60f349-578f-21f5-e240-604be0d61927">
+      <Execution id="b0501400-63e5-4f03-bf56-724164f9ed8b" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiSystem_CommandLineConstructor_SupportsQuotedExecutablePaths" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.ConfiguredOnlyCloudResolution_DoesNotCreateMissingConfigFile" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="0f9f918f-5459-dc60-850c-fca6f3e06065">
+      <Execution id="c0f0cc44-2f1a-4d50-9de1-556a543fbfd4" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="ConfiguredOnlyCloudResolution_DoesNotCreateMissingConfigFile" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementMechanicsTests.LocalBackupDir_UsesExplicitNonCloudConfigValue" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="a4b89e03-2f4e-bcbc-5759-c68e22e818ad">
+      <Execution id="b41d849f-5153-4a5a-a7fd-62c1878aca56" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementMechanicsTests" name="LocalBackupDir_UsesExplicitNonCloudConfigValue" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.TmpFileTests.TmpFile_Create_CreatesMissingParentDirectoryTree" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="84a19043-71f3-3f33-2be0-13ef8034f4a0">
+      <Execution id="3e50651d-3844-4124-b847-0c330b72d9ef" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.TmpFileTests" name="TmpFile_Create_CreatesMissingParentDirectoryTree" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.RCloneCommandTests.RCloneCommand_UsesExecutableInsideConfiguredPath" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="430fb91d-d874-94dd-d4c0-ddeaacaf06b6">
+      <Execution id="94103b94-2947-4943-aeb4-5da31f2cee7f" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.RCloneCommandTests" name="RCloneCommand_UsesExecutableInsideConfiguredPath" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.PathConventionsTests.CanonicalFile_WithoutExtension" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="d819d73e-efb8-275f-5e34-796ce0267b29">
+      <Execution id="1fcf9819-5156-450d-83ec-dc34844e7fd5" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.PathConventionsTests" name="CanonicalFile_WithoutExtension" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageConfigMechanicsTests.GetPreferredCloudStorageRoot_RespectsPreferredOrder" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="c9cf67af-165a-0b3a-cb40-ae198c45a362">
+      <Execution id="e7201d12-abe6-414d-81c1-18921eb1b544" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageConfigMechanicsTests" name="GetPreferredCloudStorageRoot_RespectsPreferredOrder" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoots_PrefersConfiguredProviderValue_WithoutProbeFallback(provider: GoogleDrive, configuredDirName: &quot;ConfiguredGoogleDrive&quot;, discoveredDirName: &quot;Google Drive&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="f50aefb6-beaf-6ee8-870e-e64fd40927c8">
+      <Execution id="5bdbb5ce-53dd-4bfd-87cc-ad3d6aa48f05" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageConfigMechanicsTests" name="GetCloudStorageRoots_PrefersConfiguredProviderValue_WithoutProbeFallback" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.Os_Type_UsesRuntimePlatformDetection" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="6e0da2f6-14fd-7552-2740-7c604b751e35">
+      <Execution id="e993e75e-dcae-40ea-88a5-769649208b41" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="Os_Type_UsesRuntimePlatformDetection" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoot_ReturnsConfiguredDropboxPath" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="4262c266-ef19-d1db-4a0d-02c03f2d7ef8">
+      <Execution id="e1249a8a-6241-4ffd-ae08-833eb3bf402d" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageConfigMechanicsTests" name="GetCloudStorageRoot_ReturnsConfiguredDropboxPath" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageConfigMechanicsTests.LoadConfig_DoesNotCreateConfigFile_WhenMissing_AndReturnsFallbackDefaults" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="5716fc35-b9c5-afd9-32da-34a9d55068e0">
+      <Execution id="00226036-fa88-486a-b0f9-d9218574ba1c" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageConfigMechanicsTests" name="LoadConfig_DoesNotCreateConfigFile_WhenMissing_AndReturnsFallbackDefaults" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider(provider: GoogleDrive, dirName: &quot;GoogleDriveRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="c22f6523-fb91-105d-ab5f-eabe130e5d49">
+      <Execution id="cb9bd272-6163-4353-a054-939a090126f4" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStoragePathMechanicsTests" name="GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.RemoteSshTests.Mzansi_Ssh_Readiness_Probe_Works" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="584d6dba-5683-7644-306c-889dda640ecf">
+      <Execution id="2ec94141-7eca-4513-b210-bef1f502c7ec" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.RemoteSshTests" name="Mzansi_Ssh_Readiness_Probe_Works" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.GetDefaultConfigPath_UsesFixedRAIkeepConfigLocation" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="4565c21c-c636-6e18-ef93-b84593352eb5">
+      <Execution id="46b451ff-0dec-4273-b192-7cae3a7a2e81" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="GetDefaultConfigPath_UsesFixedRAIkeepConfigLocation" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiFile_ParsesNameAndExtension" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="25c23c44-665f-84c6-2ef0-5da891c0eede">
+      <Execution id="c9caee88-61b6-40f4-b57e-65bf0512b942" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiFile_ParsesNameAndExtension" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.Script_Save_CreatesExecutableFile" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="5f75290f-a800-1bd5-4414-f75eb0ceeccf">
+      <Execution id="7315dc58-728b-4e08-a454-660746a1be53" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="Script_Save_CreatesExecutableFile" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementMechanicsTests.Backup_PreservesExistingLocalPathShaping_ForNonCloudFiles" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="2c1aea78-9c81-5c71-8788-85506c74c8ba">
+      <Execution id="9d13d894-6b5c-484c-9224-1c7d5413e2b2" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementMechanicsTests" name="Backup_PreservesExistingLocalPathShaping_ForNonCloudFiles" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider(provider: Dropbox, dirName: &quot;DropboxRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="6a5be71c-854f-8905-e2e3-0a2056e6ef59">
+      <Execution id="f31461f9-78fe-4c7d-9706-48e56052af9e" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStoragePathMechanicsTests" name="GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.PathConventionsTests.RaiPath_CreateFromFullName" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="881fdc08-4417-e79e-a71f-dbda000cf487">
+      <Execution id="5dcbe820-2865-4179-a064-73225f1a0926" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.PathConventionsTests" name="RaiPath_CreateFromFullName" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.LocalBackupDir_DefaultResolution_IsRooted_AndNotCloudBacked" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="7099dd52-6619-bcbb-952f-09e176ed4eb2">
+      <Execution id="89ca7130-7151-40f8-9911-4ed9aa5c6ea2" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="LocalBackupDir_DefaultResolution_IsRooted_AndNotCloudBacked" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CliCommandTests.CommandInstallAndUpdateCommands_AreAvailable_ForKnownCommands" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="fb29a8c0-54e2-da28-aef6-f8554ead8c79">
+      <Execution id="195ae40e-7d8e-483b-a477-ab86e8b06a5b" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CliCommandTests" name="CommandInstallAndUpdateCommands_AreAvailable_ForKnownCommands" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStoragePathMechanicsTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: Dropbox, dirName: &quot;DropboxRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="c793e030-64b7-12d3-7e59-230dcd1068d8">
+      <Execution id="c66278ff-edda-4ff7-8d15-dfac748e70b0" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStoragePathMechanicsTests" name="RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageProviderPathTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot(provider: OneDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="c56f693d-3d20-a565-f899-d1930da70038">
+      <Execution id="d872aa6b-2162-4572-8841-642182412f29" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageProviderPathTests" name="GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.LocalBackupDir_PrefersConfiguredValue_OverLocalApplicationDataCandidate" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="2bcc3c7e-51ef-36aa-06f6-57ea6254ba07">
+      <Execution id="1360d276-fcac-4273-ab0a-f40cd621bed5" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="LocalBackupDir_PrefersConfiguredValue_OverLocalApplicationDataCandidate" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoots_PrefersConfiguredProviderValue_WithoutProbeFallback(provider: OneDrive, configuredDirName: &quot;ConfiguredOneDrive&quot;, discoveredDirName: &quot;OneDrive - Personal&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="d6665e22-5624-6442-48d5-2894dee2c184">
+      <Execution id="55939b4e-e09d-4aea-b7a4-9e32ea8eed2f" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageConfigMechanicsTests" name="GetCloudStorageRoots_PrefersConfiguredProviderValue_WithoutProbeFallback" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CliCommandTests.SevenZipCommand_ResolvesAlternateExecutableCandidates" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="8b56287d-0737-c20a-4223-27cb273d1cc3">
+      <Execution id="1ddc7fa2-1578-4916-bf5f-8a13dde463ac" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CliCommandTests" name="SevenZipCommand_ResolvesAlternateExecutableCandidates" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementMechanicsTests.LocalBackupDir_RejectsCloudBackedConfiguredValue" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="b1761c58-7432-5fac-d5d4-bb13675f8599">
+      <Execution id="20f0e431-ce05-4934-a762-c4be1b551376" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementMechanicsTests" name="LocalBackupDir_RejectsCloudBackedConfiguredValue" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementMechanicsTests.CloudStorageRoot_ThrowsWithSetupGuidance_WhenNothingIsDiscovered" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="1fb77e4f-b39d-ef36-bb8f-819f46da53f8">
+      <Execution id="11d589a3-c6e9-4b5a-b9bc-3358f23fb15f" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementMechanicsTests" name="CloudStorageRoot_ThrowsWithSetupGuidance_WhenNothingIsDiscovered" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.PathConventionsTests.CanonicalFile_StringConstructor_WithNomsaNetDirectoryPath_PreservesDirectoryPath" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="3d1e88e0-fa88-674f-414e-0d1b7bebd3ab">
+      <Execution id="de4058b4-70c9-42cd-9946-6e637c9c1c6b" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.PathConventionsTests" name="CanonicalFile_StringConstructor_WithNomsaNetDirectoryPath_PreservesDirectoryPath" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiFile_CopyMoveRemove_WorksOnDisk" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="4598b2b8-34de-7b4f-67d2-68abd39805f9">
+      <Execution id="c6da92b6-7e5e-441e-bc19-8972fc8772b7" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiFile_CopyMoveRemove_WorksOnDisk" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths(provider: OneDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="dbdce8bd-d49f-1a3b-4930-e659bc2fcefd">
+      <Execution id="26471d75-fe67-491b-adbe-0a66d770d6a8" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.ConfiguredCloudStorageRootTests" name="GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageRealWorldIntegrationTests.TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider(provider: GoogleDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="5c3d48f3-c8b7-0f55-eb87-e650cdd893fb">
+      <Execution id="7dfdb855-f03f-4f9d-a49a-299faa6cc009" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageRealWorldIntegrationTests" name="TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.PathConventionsTests.ConventionName_ReportsExpectedEnumForCanonicalFile" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="4950f4c9-6919-200c-37ab-f44413171184">
+      <Execution id="03098d10-3a01-4209-b898-ccce8d4088f9" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.PathConventionsTests" name="ConventionName_ReportsExpectedEnumForCanonicalFile" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoots_UsesConfiguredRoots_FromConfig" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="814eec5c-85e2-bc96-ed9f-234ba6f52ed8">
+      <Execution id="edc4a31f-60f2-466c-9d86-b323e291f3bc" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageConfigMechanicsTests" name="GetCloudStorageRoots_UsesConfiguredRoots_FromConfig" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoots_DoesNotOverwriteExistingDefaultUserConfigFile" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="bbe2f916-15d4-bf01-8dee-4e4f05410be5">
+      <Execution id="9a51c470-d7b6-4e30-94bd-3c511d2c6d14" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageConfigMechanicsTests" name="GetCloudStorageRoots_DoesNotOverwriteExistingDefaultUserConfigFile" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider(provider: Dropbox, dirName: &quot;DropboxRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="a731e196-973c-1b70-17ef-3105e7c017d4">
+      <Execution id="79b584be-2aae-4ac9-9587-3db0d8a0a224" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStoragePathMechanicsTests" name="GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.GetDefaultConfigPath_UsesConfiguredOverride_WhenPresent" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="840c02bf-36e1-f773-ce99-adc6bee3d171">
+      <Execution id="bb2d94b6-b1a0-4f20-9de9-e2abc2d821aa" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="GetDefaultConfigPath_UsesConfiguredOverride_WhenPresent" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.AppRootDir_UsesCurrentWorkingDirectory" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="6e0c8aff-a43e-bac6-ce2d-47b8ac5a33a7">
+      <Execution id="629b5bb3-4cb8-4eb0-97b0-36264a1265d3" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="AppRootDir_UsesCurrentWorkingDirectory" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.RaiTildeResolutionTests.RaiFile_And_RaiPath_Expand_Directory_Shorthand_Consistently" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="8df8b092-1492-275d-dd1a-53dcbc31d063">
+      <Execution id="e8e2fe25-24c4-4a9a-a21b-03fa3f56e271" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.RaiTildeResolutionTests" name="RaiFile_And_RaiPath_Expand_Directory_Shorthand_Consistently" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths(provider: Dropbox)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="d8264ebd-09aa-b956-fee5-db2119c3dbfd">
+      <Execution id="679f96e9-f151-4cce-bf69-ec347f845367" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.ConfiguredCloudStorageRootTests" name="GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.Os_IsUnixLike_IsTrueForNonWindowsPlatforms" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="6efff8c2-1da5-9d9a-d76f-03b53e286d1a">
+      <Execution id="f6de1af8-09e8-4468-bcf8-8a1f3ba4ec76" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="Os_IsUnixLike_IsTrueForNonWindowsPlatforms" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable(provider: Dropbox)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="e40b1119-dce7-1873-7a0e-5e6af30b2a49">
+      <Execution id="8efac7c0-b7f3-4ec8-82b7-b030c94af73c" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.ConfiguredCloudStorageRootTests" name="GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageProviderPathTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: OneDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="1dff361a-f3bb-4ad8-d5cc-8278aaddc4e0">
+      <Execution id="53e1d1ec-36b5-47d7-8c0f-4acb0be5a2fa" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageProviderPathTests" name="RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsConfigurationDiagnosticsTests.LocalBackupDir_FallsBackWithLogWarning_ButNoConsole_WhenConfigIsValid" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="9570fe76-4dbc-5147-5c54-3f21eb163cf4">
+      <Execution id="b3e5c862-f927-4faf-8061-4bb6e6a52d52" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsConfigurationDiagnosticsTests" name="LocalBackupDir_FallsBackWithLogWarning_ButNoConsole_WhenConfigIsValid" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable(provider: GoogleDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="32cd5503-1ab2-4391-0434-30a9f324b518">
+      <Execution id="053f3568-9d67-411f-908e-73f554dae096" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.ConfiguredCloudStorageRootTests" name="GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageProviderPathTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: Dropbox)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="4c804e19-33b6-b0c6-1c95-e5da2365f499">
+      <Execution id="99e636bf-145d-4f11-8e65-376d4a674aaa" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageProviderPathTests" name="RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.RCloneCommandTests.RCloneCommand_ProvidesInstallAndUpdateCommands" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="b0a1f01b-b17b-29a1-d836-893d9f0e8d2b">
+      <Execution id="17c0123b-eb83-4770-b2c9-89bba4939376" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.RCloneCommandTests" name="RCloneCommand_ProvidesInstallAndUpdateCommands" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.LoadConfig_UsesUpdatedDefaultConfigPath_AfterEnvironmentSwitch" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="81172f04-3f00-f92b-d453-9a85dd0a347f">
+      <Execution id="eeb73636-35ec-47cb-be24-0ed57d33cba2" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="LoadConfig_UsesUpdatedDefaultConfigPath_AfterEnvironmentSwitch" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStoragePathMechanicsTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: GoogleDrive, dirName: &quot;GoogleDriveRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="c283be73-39b7-ae67-45ce-d9392a91f767">
+      <Execution id="105bfeaf-cb34-4369-a40d-771e77e4c252" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStoragePathMechanicsTests" name="RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider(provider: GoogleDrive, dirName: &quot;GoogleDriveRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="eea6252a-0907-267a-ae3f-492f811d0a8f">
+      <Execution id="861b95e3-125f-43fa-a46b-0386e152608c" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStoragePathMechanicsTests" name="GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementTests.RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag(provider: GoogleDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="257c992a-a3da-45ff-b79d-e830d36a2789">
+      <Execution id="32c6b723-c016-41d9-88f8-54444d33766c" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementTests" name="RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.TempDir_MatchesSystemTempPath_WhenNotConfigured" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="69c0e272-6c2e-025f-3023-635640592a54">
+      <Execution id="d67a6bf0-46eb-46d3-a214-9ff203e65fb3" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="TempDir_MatchesSystemTempPath_WhenNotConfigured" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageConfigMechanicsTests.LoadConfig_LoadsConfiguredJsonConfiguration" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="d9e6f1e1-2dd4-9a40-4c43-c902d0c01d00">
+      <Execution id="cae189c4-bf2b-4b5f-811b-3d141900ba0e" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageConfigMechanicsTests" name="LoadConfig_LoadsConfiguredJsonConfiguration" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.TmpFileTests.TmpFile_Create_CreatesFile_WhenParentDirectoryExists" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="e1d64ceb-a3e1-dce6-a023-dec83ec48ef8">
+      <Execution id="d9bf4171-47f3-40fe-8125-5105686f2c11" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.TmpFileTests" name="TmpFile_Create_CreatesFile_WhenParentDirectoryExists" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsConfigurationDiagnosticsTests.LoadConfig_MissingConfig_LogsError_AndWritesStartupDiagnostic" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="e23afbec-f41b-da6e-1c9d-ec86dfc74759">
+      <Execution id="25a8c0bb-c580-492e-9c83-5f68c9cb0a0b" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsConfigurationDiagnosticsTests" name="LoadConfig_MissingConfig_LogsError_AndWritesStartupDiagnostic" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementMechanicsTests.Backup_StripsConfiguredCloudRoot_FromBackupTargetPath(provider: OneDrive, rootName: &quot;OneDriveRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="d06fc34f-b294-554d-8e9d-0181b1b3fd83">
+      <Execution id="a46ea491-27eb-496a-b542-5e2789dd5732" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementMechanicsTests" name="Backup_StripsConfiguredCloudRoot_FromBackupTargetPath" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider(provider: OneDrive, dirName: &quot;OneDriveRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="ccaeef4d-d3fd-c0d7-c533-65fcce42f954">
+      <Execution id="7ea72e27-4510-4234-8900-ae6a2220109d" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStoragePathMechanicsTests" name="GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementMechanicsTests.GetCloudStorageRoots_UsesConfiguredDefaultUserConfig" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="186cb143-296c-84f3-9259-a2dd2e244c99">
+      <Execution id="28ff285c-52f9-432f-ace8-58b39356a521" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementMechanicsTests" name="GetCloudStorageRoots_UsesConfiguredDefaultUserConfig" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths(provider: GoogleDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="daa61d5a-5cc8-f4ad-7fd9-e51922cbf852">
+      <Execution id="92645a8e-4028-4e39-a8aa-6c02a566d2d3" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.ConfiguredCloudStorageRootTests" name="GetCloudStorageRoots_ReturnsConfiguredProviderRoots_AsCloudPaths" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.RemoteSshRealEnvironmentTests.Mzansi_RemoteConfig_Matches_Blueprint_When_Observer_Is_Configured" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="179e9a82-9c37-dfee-f24f-b7b997378936">
+      <Execution id="963783f4-574d-4ffb-b89b-208a14618ff2" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.RemoteSshRealEnvironmentTests" name="Mzansi_RemoteConfig_Matches_Blueprint_When_Observer_Is_Configured" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.FileInfo_AcceptsForwardSlashPath_OnWindows" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="9253bc18-c26c-ce87-e307-041a866b1d58">
+      <Execution id="89f5bea7-dbee-4580-8a31-343b1f865ed0" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="FileInfo_AcceptsForwardSlashPath_OnWindows" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementTests.RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag(provider: Dropbox)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="c73feca4-60d3-3e9b-c67b-9a78a975acfe">
+      <Execution id="5f63db81-186f-419c-9791-2a09be7cde87" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementTests" name="RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiFile_Move_NoBackup_RemovesBakFile" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="6fcbaaad-008f-58b7-4444-f4cf7aa691ea">
+      <Execution id="77a4545a-439b-4fea-b958-34f69132cc73" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiFile_Move_NoBackup_RemovesBakFile" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.PathConventionsTests.CanonicalFile_ConstructedFromFlatFile_CanonicalizesPathAndCreatesDestination" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="1989cbd7-19a8-5912-4d7b-c9f4319e80ec">
+      <Execution id="523c44ef-ecc5-4f14-824d-f2af1f223db4" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.PathConventionsTests" name="CanonicalFile_ConstructedFromFlatFile_CanonicalizesPathAndCreatesDestination" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementMechanicsTests.GetCloudStorageRoots_ProbesHomeOneDriveVariants_OnUnix" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="29853f17-a202-80bb-ba8e-bbd3b96bd9a3">
+      <Execution id="a8becc0b-34aa-410f-8695-9136c240ae7d" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementMechanicsTests" name="GetCloudStorageRoots_ProbesHomeOneDriveVariants_OnUnix" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiSystem_Exec_CapturesOutput" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="7ca4d989-7a26-8cf1-9d1c-ee41b9ca5bd9">
+      <Execution id="1d1431f0-544b-475c-8201-c5b1fff7181f" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiSystem_Exec_CapturesOutput" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.ShellHelper_Bash_RunsCommand_OnUnix" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="f5c8d428-6a62-0086-81ef-c0b6062c9675">
+      <Execution id="efa2e40f-26f8-4378-8e9c-a46961145c0e" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="ShellHelper_Bash_RunsCommand_OnUnix" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStoragePathMechanicsTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider(provider: OneDrive, dirName: &quot;OneDriveRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="b0a25160-64ff-190d-bbaa-26e5e6c2f359">
+      <Execution id="38b62898-0e53-4052-a25f-aef8955c207e" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStoragePathMechanicsTests" name="GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiFile_Move_ReplaceFalse_ThrowsWhenDestinationExists" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="b6c4354f-cbdc-da59-14df-f8f41993a643">
+      <Execution id="bc74c704-eb46-4ebc-b563-c7baf79fb6c8" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiFile_Move_ReplaceFalse_ThrowsWhenDestinationExists" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.GetObserverSshTarget_ReadsFromUpdatedConfig_AfterEnvironmentSwitch" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="25c1b844-e2c3-c327-4015-bc6ee4202836">
+      <Execution id="8a8c4206-7794-454b-bd6e-86904e3adc38" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="GetObserverSshTarget_ReadsFromUpdatedConfig_AfterEnvironmentSwitch" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiFile_rmdir_DeletesTree_WhenDeleteFilesTrue" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="a76a427c-6bf5-3456-20b0-65fe7feb7306">
+      <Execution id="4f07f3c4-7192-4eab-ba51-6bf9c82d5aea" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiFile_rmdir_DeletesTree_WhenDeleteFilesTrue" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: GoogleDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="f4c92599-ed8e-4b4b-96b6-d56db0cd941c">
+      <Execution id="67e302e9-ea6b-441a-83c2-3a65a788490e" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudRemoteSyncTests" name="TextFile_SyncsWithMzansi" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.Os_UserHomeDir_UsesHomeVariable_OnUnix" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="6cdf159c-709b-0253-e027-75b4eec896fc">
+      <Execution id="571bc6b9-b764-40d5-8452-6790d7f46301" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="Os_UserHomeDir_UsesHomeVariable_OnUnix" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.RCloneCommandTests.RCloneCommand_RunSubcommandAsync_PrefixesSubcommand_AndUsesWorkerThread" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="5b02dbc8-33f7-dd84-8ca7-8041a40b9f89">
+      <Execution id="df8f56d3-de9a-41de-b877-2ec20779c39f" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.RCloneCommandTests" name="RCloneCommand_RunSubcommandAsync_PrefixesSubcommand_AndUsesWorkerThread" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsConfigurationDiagnosticsTests.TempDir_FallsBackWithLogWarning_ButNoConsole_WhenConfigIsValid" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="5321433c-df8b-a603-8bc2-d2c07584f832">
+      <Execution id="fbf3773d-176f-409f-8417-e907f09bd1ca" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsConfigurationDiagnosticsTests" name="TempDir_FallsBackWithLogWarning_ButNoConsole_WhenConfigIsValid" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.PathConventionsTests.RaiPath_Mkdir_CreatesDirectory_ForPathCompositionStyle" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="93561357-53c1-5ac1-36a3-d861d09b3533">
+      <Execution id="10985a6c-ad6b-4109-8dd3-4e08bfca79db" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.PathConventionsTests" name="RaiPath_Mkdir_CreatesDirectory_ForPathCompositionStyle" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.LocalBackupDir_ExpandsTildeConfigValue_ToHomeDirectory" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="5a3e9930-6ce4-db3e-bb05-5d4aa4442a63">
+      <Execution id="ac36f907-54bf-45ee-a5e9-d616cec848db" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="LocalBackupDir_ExpandsTildeConfigValue_ToHomeDirectory" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageRealWorldIntegrationTests.RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider(provider: OneDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="5e4c0045-f918-fb41-3b1f-e545e76b307c">
+      <Execution id="5c696ccc-d566-4460-bf76-09eeeb052538" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageRealWorldIntegrationTests" name="RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageRealWorldIntegrationTests.TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider(provider: Dropbox)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="56edfe81-9441-d0d3-766c-5e1f8613c41b">
+      <Execution id="eceb9834-cfe6-4383-9cd2-8de3d20855e4" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageRealWorldIntegrationTests" name="TextFile_SaveAndRead_WorksAgainstRealWritableCloudProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsEnvironmentPathTests.GetObserverSshTarget_ThrowsWhenObserverNotConfigured" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="859fe216-e3b9-f85b-10bd-28d66386ab26">
+      <Execution id="1ef3168f-4de3-4e1f-848c-73f9360936b5" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsEnvironmentPathTests" name="GetObserverSshTarget_ThrowsWhenObserverNotConfigured" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageRealWorldIntegrationTests.RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider(provider: GoogleDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="fda217fd-1a7e-fbb4-408e-bb3272d03609">
+      <Execution id="c02dc9a4-e8b7-4377-ab6d-7929bf19fa6d" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageRealWorldIntegrationTests" name="RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiPath_AppendsDirectorySeparator" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="6a51b514-4eec-1ccd-39bf-46c1e84a22e2">
+      <Execution id="7aa3e551-581d-488b-9f70-4a24cb8f7c11" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiPath_AppendsDirectorySeparator" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageRealWorldIntegrationTests.RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider(provider: Dropbox)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="d24a5a14-f690-4244-39ed-0788265108f7">
+      <Execution id="cf2e48aa-4a69-4910-b3f0-d0d028dc7ace" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageRealWorldIntegrationTests" name="RaiFile_RoundTrip_WorksAgainstRealWritableCloudProvider" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageMachineStateTests.MachineCloudState_PrintsConfiguredProviderStatus_WithoutFailingForMissingRoots" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="0960d297-0e10-f72b-c6b0-16dea5207f86">
+      <Execution id="fef2fa17-ce8a-4f94-8a36-697715bc09e6" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageMachineStateTests" name="MachineCloudState_PrintsConfiguredProviderStatus_WithoutFailingForMissingRoots" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.Os_UserHomeDir_UsesWindowsVariables_OnWindows" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="20e134b6-c398-88d3-7c1e-c088295b0c27">
+      <Execution id="af8d8b4b-2889-441b-9ad3-86e3e4191da5" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="Os_UserHomeDir_UsesWindowsVariables_OnWindows" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.OsLibTests.RaiFileExtensions_CreateDictionariesFromCsvLines_ParsesTabSeparated" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="c7a7165a-ecdc-e7ff-3fb3-23e0ab3cb3f4">
+      <Execution id="56c2dc45-d598-4bcc-a35a-6403614ab659" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.OsLibTests" name="RaiFileExtensions_CreateDictionariesFromCsvLines_ParsesTabSeparated" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: Dropbox)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="8351d39e-1e62-b600-ba24-148df8a8e557">
+      <Execution id="8d606b8d-14bd-4f03-8598-69d634a21947" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudRemoteSyncTests" name="TextFile_SyncsWithMzansi" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageProviderPathTests.GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot(provider: Dropbox)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="f0a90932-7633-bf74-da70-db9bc677fe2e">
+      <Execution id="61cc6549-471a-49ae-8bbb-32b51d26ea53" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageProviderPathTests" name="GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForConfiguredRoot" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageConfigMechanicsTests.GetCloudStorageRoot_ReturnsConfiguredGoogleDrivePath" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="dbe763dd-06bf-cd28-fc01-a57dcd0000d1">
+      <Execution id="764a66fc-4d37-4dc8-bb27-0c32a02d8e93" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageConfigMechanicsTests" name="GetCloudStorageRoot_ReturnsConfiguredGoogleDrivePath" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.ConfiguredCloudStorageRootTests.GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable(provider: OneDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="e9397004-121c-721b-d7a1-afca06b505f1">
+      <Execution id="a35d2203-23b0-4a77-aada-39d41ae785bc" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.ConfiguredCloudStorageRootTests" name="GetCloudStorageRoot_ReturnsConfiguredProviderRoot_WhenAvailable" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementTests.RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag(provider: OneDrive)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="f71e4cec-f72e-26d4-608b-843a86bd63a2">
+      <Execution id="85dfbd27-ff35-4d4e-8996-18948aa4ac88" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementTests" name="RaiFile_UsesConfiguredProviderRoot_ForCloudAwareFlag" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStorageAgreementTests.CloudStorageRoot_UsesDocumentedDefaultOrder_ForAvailableConfiguredProviders" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="f60aa75e-7e99-4ec5-5752-ef99f3565db2">
+      <Execution id="4ec53c0e-ff16-41db-8b1a-1c37dd7bd3f4" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStorageAgreementTests" name="CloudStorageRoot_UsesDocumentedDefaultOrder_ForAvailableConfiguredProviders" />
+    </UnitTest>
+    <UnitTest name="OsLib.Tests.CloudStoragePathMechanicsTests.RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider(provider: OneDrive, dirName: &quot;OneDriveRoot&quot;)" storage="/users/rsb/projects/github/raikeep/oslib/oslib.tests/bin/debug/net10.0/oslib.tests.dll" id="e96f785f-ec78-1d9d-b32a-105fe73f348f">
+      <Execution id="0260176f-56bd-4ff4-b285-95b3daee598d" />
+      <TestMethod codeBase="/Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/OsLib.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OsLib.Tests.CloudStoragePathMechanicsTests" name="RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="1989cbd7-19a8-5912-4d7b-c9f4319e80ec" executionId="523c44ef-ecc5-4f14-824d-f2af1f223db4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2bcc3c7e-51ef-36aa-06f6-57ea6254ba07" executionId="1360d276-fcac-4273-ab0a-f40cd621bed5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2c1aea78-9c81-5c71-8788-85506c74c8ba" executionId="9d13d894-6b5c-484c-9224-1c7d5413e2b2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1dff361a-f3bb-4ad8-d5cc-8278aaddc4e0" executionId="53e1d1ec-36b5-47d7-8c0f-4acb0be5a2fa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="840c02bf-36e1-f773-ce99-adc6bee3d171" executionId="bb2d94b6-b1a0-4f20-9de9-e2abc2d821aa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5321433c-df8b-a603-8bc2-d2c07584f832" executionId="fbf3773d-176f-409f-8417-e907f09bd1ca" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3d1e88e0-fa88-674f-414e-0d1b7bebd3ab" executionId="de4058b4-70c9-42cd-9946-6e637c9c1c6b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6e0c8aff-a43e-bac6-ce2d-47b8ac5a33a7" executionId="629b5bb3-4cb8-4eb0-97b0-36264a1265d3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="32cd5503-1ab2-4391-0434-30a9f324b518" executionId="053f3568-9d67-411f-908e-73f554dae096" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="69c0e272-6c2e-025f-3023-635640592a54" executionId="d67a6bf0-46eb-46d3-a214-9ff203e65fb3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bbe2f916-15d4-bf01-8dee-4e4f05410be5" executionId="9a51c470-d7b6-4e30-94bd-3c511d2c6d14" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="88ecb67d-ef44-f83f-7b80-a0304d7f12ce" executionId="51e27897-d5b3-4de0-9a7d-0d4f632eb582" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c793e030-64b7-12d3-7e59-230dcd1068d8" executionId="c66278ff-edda-4ff7-8d15-dfac748e70b0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4262c266-ef19-d1db-4a0d-02c03f2d7ef8" executionId="e1249a8a-6241-4ffd-ae08-833eb3bf402d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f60aa75e-7e99-4ec5-5752-ef99f3565db2" executionId="4ec53c0e-ff16-41db-8b1a-1c37dd7bd3f4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4c804e19-33b6-b0c6-1c95-e5da2365f499" executionId="99e636bf-145d-4f11-8e65-376d4a674aaa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d8264ebd-09aa-b956-fee5-db2119c3dbfd" executionId="679f96e9-f151-4cce-bf69-ec347f845367" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c9cf67af-165a-0b3a-cb40-ae198c45a362" executionId="e7201d12-abe6-414d-81c1-18921eb1b544" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c73feca4-60d3-3e9b-c67b-9a78a975acfe" executionId="5f63db81-186f-419c-9791-2a09be7cde87" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8bc870f1-6d35-f32b-27a9-b4a36aa2ff8f" executionId="b72e3eda-636f-4f63-8641-e8a7838eda09" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6fcbaaad-008f-58b7-4444-f4cf7aa691ea" executionId="77a4545a-439b-4fea-b958-34f69132cc73" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9570fe76-4dbc-5147-5c54-3f21eb163cf4" executionId="b3e5c862-f927-4faf-8061-4bb6e6a52d52" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dbdce8bd-d49f-1a3b-4930-e659bc2fcefd" executionId="26471d75-fe67-491b-adbe-0a66d770d6a8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f3314636-ba40-ff10-66dc-4667b9a0e08f" executionId="1173f5f6-0e36-46fa-959e-29c5975ea573" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5e4c0045-f918-fb41-3b1f-e545e76b307c" executionId="5c696ccc-d566-4460-bf76-09eeeb052538" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2115f127-2a28-e814-8015-88366dc9f383" executionId="d8d3114c-3c7f-47c6-867e-11816d6e5aee" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d3bc1c7e-cccf-6424-ac5f-69457357c551" executionId="a2be657c-4e85-4c00-b768-0a238b23d7e1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6a5be71c-854f-8905-e2e3-0a2056e6ef59" executionId="f31461f9-78fe-4c7d-9706-48e56052af9e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ccaeef4d-d3fd-c0d7-c533-65fcce42f954" executionId="7ea72e27-4510-4234-8900-ae6a2220109d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9ce59075-3644-8347-fbb6-4ddf22089f9a" executionId="b1406efd-f895-41a8-b322-dfb3c27427fe" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5716fc35-b9c5-afd9-32da-34a9d55068e0" executionId="00226036-fa88-486a-b0f9-d9218574ba1c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d7585d17-3860-2d94-d808-d48e55b5f8d4" executionId="0d943cef-d160-4e59-8ef2-42dfedb1bc0f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c283be73-39b7-ae67-45ce-d9392a91f767" executionId="105bfeaf-cb34-4369-a40d-771e77e4c252" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a76a427c-6bf5-3456-20b0-65fe7feb7306" executionId="4f07f3c4-7192-4eab-ba51-6bf9c82d5aea" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b0a25160-64ff-190d-bbaa-26e5e6c2f359" executionId="38b62898-0e53-4052-a25f-aef8955c207e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c7a7165a-ecdc-e7ff-3fb3-23e0ab3cb3f4" executionId="56c2dc45-d598-4bcc-a35a-6403614ab659" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cda22968-3b18-8118-0efa-40330a4b9735" executionId="393fd2c9-fbae-4119-8033-1311d1a74180" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="326cb4d6-640f-765c-a06f-d5ffef363b40" executionId="06e6e5c9-b1ab-4e82-807b-5fef67b05127" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7e60f349-578f-21f5-e240-604be0d61927" executionId="b0501400-63e5-4f03-bf56-724164f9ed8b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bc231df1-38da-c9a3-d1d3-128baf0b01d7" executionId="e21143fb-5f26-4895-bd0c-23fd97608b50" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7ca4d989-7a26-8cf1-9d1c-ee41b9ca5bd9" executionId="1d1431f0-544b-475c-8201-c5b1fff7181f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="25c23c44-665f-84c6-2ef0-5da891c0eede" executionId="c9caee88-61b6-40f4-b57e-65bf0512b942" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7099dd52-6619-bcbb-952f-09e176ed4eb2" executionId="89ca7130-7151-40f8-9911-4ed9aa5c6ea2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0960d297-0e10-f72b-c6b0-16dea5207f86" executionId="fef2fa17-ce8a-4f94-8a36-697715bc09e6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f50aefb6-beaf-6ee8-870e-e64fd40927c8" executionId="5bdbb5ce-53dd-4bfd-87cc-ad3d6aa48f05" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fda217fd-1a7e-fbb4-408e-bb3272d03609" executionId="c02dc9a4-e8b7-4377-ab6d-7929bf19fa6d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dbe763dd-06bf-cd28-fc01-a57dcd0000d1" executionId="764a66fc-4d37-4dc8-bb27-0c32a02d8e93" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="81bc9b3f-b684-aab2-d31c-43ae7e7af9d1" executionId="e2d2b912-4890-489c-bd4f-109d1da9f6fe" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="584d6dba-5683-7644-306c-889dda640ecf" executionId="2ec94141-7eca-4513-b210-bef1f502c7ec" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5b02dbc8-33f7-dd84-8ca7-8041a40b9f89" executionId="df8f56d3-de9a-41de-b877-2ec20779c39f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="814eec5c-85e2-bc96-ed9f-234ba6f52ed8" executionId="edc4a31f-60f2-466c-9d86-b323e291f3bc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="daa61d5a-5cc8-f4ad-7fd9-e51922cbf852" executionId="92645a8e-4028-4e39-a8aa-6c02a566d2d3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6e0da2f6-14fd-7552-2740-7c604b751e35" executionId="e993e75e-dcae-40ea-88a5-769649208b41" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6cdf159c-709b-0253-e027-75b4eec896fc" executionId="571bc6b9-b764-40d5-8452-6790d7f46301" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f6b7719f-abfd-a625-063e-a85b6d50c38d" executionId="cd48d9d3-07ab-40b0-9d41-a547e6738a8a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8b56287d-0737-c20a-4223-27cb273d1cc3" executionId="1ddc7fa2-1578-4916-bf5f-8a13dde463ac" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="eea6252a-0907-267a-ae3f-492f811d0a8f" executionId="861b95e3-125f-43fa-a46b-0386e152608c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d6665e22-5624-6442-48d5-2894dee2c184" executionId="55939b4e-e09d-4aea-b7a4-9e32ea8eed2f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="29853f17-a202-80bb-ba8e-bbd3b96bd9a3" executionId="a8becc0b-34aa-410f-8695-9136c240ae7d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b6c4354f-cbdc-da59-14df-f8f41993a643" executionId="bc74c704-eb46-4ebc-b563-c7baf79fb6c8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8351d39e-1e62-b600-ba24-148df8a8e557" executionId="8d606b8d-14bd-4f03-8598-69d634a21947" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7739b569-df59-2fd0-8fe6-c7600ae91ae3" executionId="21feb0f2-766e-4309-888c-3b03239855cc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9bcafa98-93a1-3881-e7ae-1a8e531de1d4" executionId="0799b00e-a052-4b76-be25-907d962c3d1f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="22397bac-8843-be8c-9b52-981841b885f1" executionId="597c189b-ab9f-4aae-9359-3fda670c8d0d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4565c21c-c636-6e18-ef93-b84593352eb5" executionId="46b451ff-0dec-4273-b192-7cae3a7a2e81" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="881fdc08-4417-e79e-a71f-dbda000cf487" executionId="5dcbe820-2865-4179-a064-73225f1a0926" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c647bdfa-1947-b199-71c6-7014aa597ada" executionId="d2c04029-d72f-46f6-b049-7dae288eb98f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d24a5a14-f690-4244-39ed-0788265108f7" executionId="cf2e48aa-4a69-4910-b3f0-d0d028dc7ace" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e23afbec-f41b-da6e-1c9d-ec86dfc74759" executionId="25a8c0bb-c580-492e-9c83-5f68c9cb0a0b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5c3d48f3-c8b7-0f55-eb87-e650cdd893fb" executionId="7dfdb855-f03f-4f9d-a49a-299faa6cc009" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fe15385a-85a9-554d-f24d-5c6377934e96" executionId="b82e0bae-f24c-4e79-a87e-5f301b480384" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e40b1119-dce7-1873-7a0e-5e6af30b2a49" executionId="8efac7c0-b7f3-4ec8-82b7-b030c94af73c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e96f785f-ec78-1d9d-b32a-105fe73f348f" executionId="0260176f-56bd-4ff4-b285-95b3daee598d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1fb77e4f-b39d-ef36-bb8f-819f46da53f8" executionId="11d589a3-c6e9-4b5a-b9bc-3358f23fb15f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f4c92599-ed8e-4b4b-96b6-d56db0cd941c" executionId="67e302e9-ea6b-441a-83c2-3a65a788490e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="20e134b6-c398-88d3-7c1e-c088295b0c27" executionId="af8d8b4b-2889-441b-9ad3-86e3e4191da5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b1761c58-7432-5fac-d5d4-bb13675f8599" executionId="20f0e431-ce05-4934-a762-c4be1b551376" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c22f6523-fb91-105d-ab5f-eabe130e5d49" executionId="cb9bd272-6163-4353-a054-939a090126f4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f5c8d428-6a62-0086-81ef-c0b6062c9675" executionId="efa2e40f-26f8-4378-8e9c-a46961145c0e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6a51b514-4eec-1ccd-39bf-46c1e84a22e2" executionId="7aa3e551-581d-488b-9f70-4a24cb8f7c11" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e1d64ceb-a3e1-dce6-a023-dec83ec48ef8" executionId="d9bf4171-47f3-40fe-8125-5105686f2c11" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0f9f918f-5459-dc60-850c-fca6f3e06065" executionId="c0f0cc44-2f1a-4d50-9de1-556a543fbfd4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f71e4cec-f72e-26d4-608b-843a86bd63a2" executionId="85dfbd27-ff35-4d4e-8996-18948aa4ac88" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5a3e9930-6ce4-db3e-bb05-5d4aa4442a63" executionId="ac36f907-54bf-45ee-a5e9-d616cec848db" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4598b2b8-34de-7b4f-67d2-68abd39805f9" executionId="c6da92b6-7e5e-441e-bc19-8972fc8772b7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c3476069-d42c-8ce9-9175-7311c021f1a3" executionId="283b8634-c753-476d-92a4-94ca499cccd9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d9e6f1e1-2dd4-9a40-4c43-c902d0c01d00" executionId="cae189c4-bf2b-4b5f-811b-3d141900ba0e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6efff8c2-1da5-9d9a-d76f-03b53e286d1a" executionId="f6de1af8-09e8-4468-bcf8-8a1f3ba4ec76" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b0a1f01b-b17b-29a1-d836-893d9f0e8d2b" executionId="17c0123b-eb83-4770-b2c9-89bba4939376" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c56f693d-3d20-a565-f899-d1930da70038" executionId="d872aa6b-2162-4572-8841-642182412f29" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b4d08c3f-fff6-c011-5159-978e587a238e" executionId="97af8712-6905-4102-80d3-c899ce318973" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="56edfe81-9441-d0d3-766c-5e1f8613c41b" executionId="eceb9834-cfe6-4383-9cd2-8de3d20855e4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="77347764-0e92-a4dd-3307-1326f9849303" executionId="0237b32b-094c-4f63-9d16-dad144d64326" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d06fc34f-b294-554d-8e9d-0181b1b3fd83" executionId="a46ea491-27eb-496a-b542-5e2789dd5732" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ea1cb55b-037b-271b-ed20-761b715aa28f" executionId="88b2122e-88d6-4cb3-bd73-d3bf0d415f88" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="186cb143-296c-84f3-9259-a2dd2e244c99" executionId="28ff285c-52f9-432f-ace8-58b39356a521" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f0a90932-7633-bf74-da70-db9bc677fe2e" executionId="61cc6549-471a-49ae-8bbb-32b51d26ea53" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="257c992a-a3da-45ff-b79d-e830d36a2789" executionId="32c6b723-c016-41d9-88f8-54444d33766c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d819d73e-efb8-275f-5e34-796ce0267b29" executionId="1fcf9819-5156-450d-83ec-dc34844e7fd5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a731e196-973c-1b70-17ef-3105e7c017d4" executionId="79b584be-2aae-4ac9-9587-3db0d8a0a224" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="25c1b844-e2c3-c327-4015-bc6ee4202836" executionId="8a8c4206-7794-454b-bd6e-86904e3adc38" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f39ae618-11c1-4051-9561-0d131efd5135" executionId="bf957b6e-a5bc-415d-8cc1-5a36d7bb02d0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a4b89e03-2f4e-bcbc-5759-c68e22e818ad" executionId="b41d849f-5153-4a5a-a7fd-62c1878aca56" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="84a19043-71f3-3f33-2be0-13ef8034f4a0" executionId="3e50651d-3844-4124-b847-0c330b72d9ef" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="75835183-a2e1-ba13-87ee-ef007b76b7e8" executionId="2ca32299-cccb-4210-a9dd-b106a1a44eab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="81172f04-3f00-f92b-d453-9a85dd0a347f" executionId="eeb73636-35ec-47cb-be24-0ed57d33cba2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="93561357-53c1-5ac1-36a3-d861d09b3533" executionId="10985a6c-ad6b-4109-8dd3-4e08bfca79db" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4950f4c9-6919-200c-37ab-f44413171184" executionId="03098d10-3a01-4209-b898-ccce8d4088f9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e9397004-121c-721b-d7a1-afca06b505f1" executionId="a35d2203-23b0-4a77-aada-39d41ae785bc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9253bc18-c26c-ce87-e307-041a866b1d58" executionId="89f5bea7-dbee-4580-8a31-343b1f865ed0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="430fb91d-d874-94dd-d4c0-ddeaacaf06b6" executionId="94103b94-2947-4943-aeb4-5da31f2cee7f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="336ae8d8-c54d-2487-b172-a179d3027614" executionId="0119dfee-87a1-4b87-b51e-a2bfdbfb3f14" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="859fe216-e3b9-f85b-10bd-28d66386ab26" executionId="1ef3168f-4de3-4e1f-848c-73f9360936b5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5f75290f-a800-1bd5-4414-f75eb0ceeccf" executionId="7315dc58-728b-4e08-a454-660746a1be53" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fb29a8c0-54e2-da28-aef6-f8554ead8c79" executionId="195ae40e-7d8e-483b-a477-ab86e8b06a5b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8df8b092-1492-275d-dd1a-53dcbc31d063" executionId="e8e2fe25-24c4-4a9a-a21b-03fa3f56e271" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="22218a28-f810-9792-86e9-236a9e90efac" executionId="bab68c1b-6c38-4540-8b74-92817fdc3bd0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d783a897-1023-6b45-408a-1293e3e98532" executionId="a6bb7d9d-0272-4d95-9bb1-c44a2066c636" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="179e9a82-9c37-dfee-f24f-b7b997378936" executionId="963783f4-574d-4ffb-b89b-208a14618ff2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a922e7be-e06b-34b9-d1ee-d9170665f860" executionId="96df3bd3-347e-4661-9601-4f8985803a82" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4d82ee65-5101-6801-2157-5ed6cc882a7e" executionId="71a55d63-fe4e-478c-b19b-6afac16f0c7b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fb86eba0-a9e5-baa1-a541-adec59ad5bbb" executionId="752e1bbb-3666-45c3-a7a6-82768ef309cd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="122" executed="118" passed="118" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.2)
+[xUnit.net 00:00:00.14]   Discovering: OsLib.Tests
+[xUnit.net 00:00:00.33]   Discovered:  OsLib.Tests
+[xUnit.net 00:00:00.50]   Starting:    OsLib.Tests
+[xUnit.net 00:00:04.67]       Remote TempDir '/Users/RSB/temp/' is not writable. executing ssh script on rsb@Mzansi; exit=0. stdout=denied
+      Cloud configuration diagnostics:
+      - active config path: ~/.config/RAIkeep/osconfig.json5
+      - userHomeDir: /Users/RSB/
+      - appRootDir: /Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/
+      - tempDir: /Users/RSB/temp/
+      - localBackupDir: /Users/RSB/backup/
+      - configured default cloud order: OneDrive, Dropbox, GoogleDrive
+      - OneDrive:  path: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+      - Dropbox:  path: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+      - GoogleDrive:  path: /Users/Shared/ServerData/GDriveData/Discovered cloud storage roots:
+      - OneDrive: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+      - Dropbox: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+      - GoogleDrive: /Users/Shared/ServerData/GDriveData/
+Test 'OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: GoogleDrive)' was skipped in the test run.
+[xUnit.net 00:00:06.47]       Remote TempDir '/Users/RSB/temp/' is not writable. executing ssh script on rsb@Mzansi; exit=0. stdout=denied
+      Cloud configuration diagnostics:
+      - active config path: ~/.config/RAIkeep/osconfig.json5
+      - userHomeDir: /Users/RSB/
+      - appRootDir: /Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/
+      - tempDir: /Users/RSB/temp/
+      - localBackupDir: /Users/RSB/backup/
+      - configured default cloud order: OneDrive, Dropbox, GoogleDrive
+      - OneDrive:  path: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+      - Dropbox:  path: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+      - GoogleDrive:  path: /Users/Shared/ServerData/GDriveData/Discovered cloud storage roots:
+      - OneDrive: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+      - Dropbox: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+      - GoogleDrive: /Users/Shared/ServerData/GDriveData/
+Test 'OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: OneDrive)' was skipped in the test run.
+[xUnit.net 00:00:08.27]       Remote TempDir '/Users/RSB/temp/' is not writable. executing ssh script on rsb@Mzansi; exit=0. stdout=denied
+      Cloud configuration diagnostics:
+      - active config path: ~/.config/RAIkeep/osconfig.json5
+      - userHomeDir: /Users/RSB/
+      - appRootDir: /Users/RSB/Projects/GitHub/RAIkeep/OsLib/OsLib.Tests/bin/Debug/net10.0/
+      - tempDir: /Users/RSB/temp/
+      - localBackupDir: /Users/RSB/backup/
+      - configured default cloud order: OneDrive, Dropbox, GoogleDrive
+      - OneDrive:  path: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+      - Dropbox:  path: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+      - GoogleDrive:  path: /Users/Shared/ServerData/GDriveData/Discovered cloud storage roots:
+      - OneDrive: /Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/
+      - Dropbox: /Users/RSB/Library/CloudStorage/Dropbox/DropboxData/
+      - GoogleDrive: /Users/Shared/ServerData/GDriveData/
+Test 'OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: Dropbox)' was skipped in the test run.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/TempDir_MatchesSystemTempPath_WhenNotConfigured/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/ConfiguredOnlyCloudResolution_DoesNotCreateMissingConfigFile/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/LocalBackupDir_ExpandsTildeConfigValue_ToHomeDirectory/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/LocalBackupDir_DefaultResolution_IsRooted_AndNotCloudBacked/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/GetDefaultConfigPath_UsesConfiguredOverride_WhenPresent/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/LocalBackupDir_PrefersConfiguredValue_OverLocalApplicationDataCandidate/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/GetObserverSshTarget_ReturnsConfiguredValue/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/LocalBackupDir_ReevaluatesAfterExplicitReload_WhenConfigChanges/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/LoadConfig_UsesUpdatedDefaultConfigPath_AfterEnvironmentSwitch/first/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/LoadConfig_UsesUpdatedDefaultConfigPath_AfterEnvironmentSwitch/second/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/GetObserverSshTarget_ThrowsWhenObserverNotConfigured/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/GetObserverSshTarget_ReadsFromUpdatedConfig_AfterEnvironmentSwitch/first/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/env-paths/GetObserverSshTarget_ReadsFromUpdatedConfig_AfterEnvironmentSwitch/second/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+[xUnit.net 00:00:10.95]       Remote TempDir '/Users/RSB/temp/' is not writable. executing ssh script on rsb@Mzansi; exit=0. stdout=denied
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-providers/RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-providers/RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-providers/RaiFile_CloudFlag_DetectsFilesUnderConfiguredProvider/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Test 'OsLib.Tests.RemoteSshTests.Mzansi_GoogleDrive_Root_Is_Readable_From_Remote_OsConfig' was skipped in the test run.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-providers/GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-providers/GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-providers/GetCloudStorageProviderForPath_ReturnsConfiguredProvider_ForEachProvider/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-providers/GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-providers/GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-providers/GetCloudStorageRoot_UsesConfiguredRoot_ForEachProvider/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-config/LoadConfig_DoesNotCreateConfigFile_WhenMissing_AndReturnsFallbackDefaults/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-config/GetCloudStorageRoot_ReturnsConfiguredGoogleDrivePath/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-config/GetCloudStorageRoots_LoadsDefaultUserConfigLocation/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-config/GetCloudStorageRoots_PrefersConfiguredProviderValue_WithoutProbeFallback/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-config/GetCloudStorageRoots_PrefersConfiguredProviderValue_WithoutProbeFallback/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-config/LoadConfig_LoadsConfiguredJsonConfiguration/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-config/GetCloudStorageRoot_ReturnsConfiguredDropboxPath/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-config/GetCloudStorageRoots_DoesNotOverwriteExistingDefaultUserConfigFile/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-config/GetPreferredCloudStorageRoot_RespectsPreferredOrder/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-config/GetCloudStorageRoots_UsesConfiguredRoots_FromConfig/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/os-diagnostics/LocalBackupDir_FallsBackWithLogWarning_ButNoConsole_WhenConfigIsValid/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/os-diagnostics/LoadConfig_MalformedConfig_LogsError_AndWritesStartupDiagnostic/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/os-diagnostics/CloudStorageRootDir_WhenUnavailable_LogsError_AndWritesStartupDiagnostic/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/os-diagnostics/TempDir_FallsBackWithLogWarning_ButNoConsole_WhenConfigIsValid/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-agreement/Backup_StripsConfiguredCloudRoot_FromBackupTargetPath/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-agreement/Backup_StripsConfiguredCloudRoot_FromBackupTargetPath/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-agreement/Backup_StripsConfiguredCloudRoot_FromBackupTargetPath/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-agreement/LocalBackupDir_RejectsCloudBackedConfiguredValue/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-agreement/GetCloudStorageRoots_UsesConfiguredDefaultUserConfig/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-agreement/CloudStorageRoot_ThrowsWithSetupGuidance_WhenNothingIsDiscovered/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+No cloud storage root could be discovered. Configure Os.Config in /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-agreement/CloudStorageRoot_ThrowsWithSetupGuidance_WhenNothingIsDiscovered/home/.config/RAIkeep/osconfig.json5. See OsLib/CLOUD_STORAGE_DISCOVERY.md Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-agreement/GetCloudStorageRoots_ProbesHomeOneDriveVariants_OnUnix/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-agreement/CloudStorageRoot_UsesDocumentedDefaultOrder_ForConfiguredRoots/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-agreement/Backup_PreservesExistingLocalPathShaping_ForNonCloudFiles/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+Config file missing at /var/folders/x7/nlvcj1dj0h74d95yfj3hw3w80000gp/T/RAIkeep/oslib-tests/cloud-agreement/LocalBackupDir_UsesExplicitNonCloudConfigValue/home/.config/RAIkeep/osconfig.json5. Startup continues in degraded mode.
+[xUnit.net 00:00:11.13]   Finished:    OsLib.Tests (ID = 'ad732328d936780a2442b2ffc1becaef8267e78e9e18e4270fa4c14010b28e18')
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Nkosikazi" outcome="Warning" timestamp="2026-04-04T13:19:36.8489560-07:00">
+        <Text>[xUnit.net 00:00:04.67]     OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: GoogleDrive) [SKIP]</Text>
+      </RunInfo>
+      <RunInfo computerName="Nkosikazi" outcome="Warning" timestamp="2026-04-04T13:19:38.6541810-07:00">
+        <Text>[xUnit.net 00:00:06.47]     OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: OneDrive) [SKIP]</Text>
+      </RunInfo>
+      <RunInfo computerName="Nkosikazi" outcome="Warning" timestamp="2026-04-04T13:19:40.4478860-07:00">
+        <Text>[xUnit.net 00:00:08.27]     OsLib.Tests.CloudRemoteSyncTests.TextFile_SyncsWithMzansi(provider: Dropbox) [SKIP]</Text>
+      </RunInfo>
+      <RunInfo computerName="Nkosikazi" outcome="Warning" timestamp="2026-04-04T13:19:43.1341420-07:00">
+        <Text>[xUnit.net 00:00:10.95]     OsLib.Tests.RemoteSshTests.Mzansi_GoogleDrive_Root_Is_Readable_From_Remote_OsConfig [SKIP]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

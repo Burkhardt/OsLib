@@ -11,12 +11,12 @@ public class CloudRemoteSyncTests
 	[InlineData(Cloud.GoogleDrive)]
 	[InlineData(Cloud.Dropbox)]
 	[InlineData(Cloud.OneDrive)]
-	public void TextFile_SyncsWithMzansi(Cloud provider)
+	public void TextFile_SyncsWithConfiguredRemoteObserver(Cloud provider)
 	{
 		using var configuredCloud = CloudStorageRealTestEnvironment.BeginConfiguredCloudResolution();
 		Console.WriteLine(Os.GetCloudConfigurationDiagnosticReport(refresh: false));	// really??? this is too much => setting refresh to false 
 
-		if (!RemoteCloudSyncProbe.TryCreate(provider, "mzansi", out var probe, out var reason))
+		if (!CloudStorageRealTestEnvironment.TryCreateRemoteCloudSyncProbe(provider, out var observer, out var probe, out var reason))
 			Assert.Skip(reason + Environment.NewLine + Os.GetCloudConfigurationDiagnosticReport());
 
 		var providerKey = provider.ToString().ToLowerInvariant();
@@ -70,11 +70,11 @@ public class CloudRemoteSyncTests
 				var remoteFileState = probe.Observer.DescribePathState(remoteFile.FullName);
 				var remoteDirListing = probe.Observer.ListDirectory(remoteDir.Path);
 				throw new Xunit.Sdk.XunitException(
-					$"Delete did not propagate to Mzansi within timeout {deletePropagationTimeout}. localExistsAfterDelete={localExistsAfterDelete}; remoteFileExists={remoteFileExists}; remoteFile='{remoteFile.FullName}'; remoteDir='{remoteDir.Path}'.\n" +
+					$"Delete did not propagate to remote observer '{observer.Name}' within timeout {deletePropagationTimeout}. localExistsAfterDelete={localExistsAfterDelete}; remoteFileExists={remoteFileExists}; remoteFile='{remoteFile.FullName}'; remoteDir='{remoteDir.Path}'.\n" +
 					$"Remote file state:\n{remoteFileState}\n\nRemote directory listing:\n{remoteDirListing}\n\nLast failure: {probe.LastFailure}");
 			}
 
-			Console.WriteLine($"{provider} remote sync via Mzansi: create-local={createTimer.ElapsedMilliseconds}ms create-remote={createSeen.TotalMilliseconds:F0}ms update-local={updateTimer.ElapsedMilliseconds}ms update-remote={updateSeen.TotalMilliseconds:F0}ms delete-local={deleteTimer.ElapsedMilliseconds}ms delete-remote={deleteSeen.TotalMilliseconds:F0}ms remote={probe.SshTarget}");
+			Console.WriteLine($"{provider} remote sync via observer '{observer.Name}': create-local={createTimer.ElapsedMilliseconds}ms create-remote={createSeen.TotalMilliseconds:F0}ms update-local={updateTimer.ElapsedMilliseconds}ms update-remote={updateSeen.TotalMilliseconds:F0}ms delete-local={deleteTimer.ElapsedMilliseconds}ms delete-remote={deleteSeen.TotalMilliseconds:F0}ms remote={probe.SshTarget}");
 		}
 		finally
 		{

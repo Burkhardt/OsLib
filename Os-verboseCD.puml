@@ -32,26 +32,6 @@ skinparam ArrowFontName "Casual"
 
 show circle
 
-class "Legend<size:10>ⓈⒶⓅ</size>" as LegendSample {
-	+{static} staticMethod() : void
-	-{static} staticProperty : string
-	==
-	~<i>Note on class markers :</i>
-	<size:10>Ⓢ</size>tatic
-	<size:10>Ⓐ</size>bstract
-	Ⓟartial
-	--
-	- privateField : string
-	+ publicField : string
-	# protectedField : string
-	~ internalField : string
-	--
-	- privateMethod() : void
-	+ publicMethod() : void
-	# protectedMethod() : void
-	~ internalMethod() : void
-}
-
 package "OsLib" {
 	enum "<size:18>EscapeMode</size>" as EscapeMode << (E,#f59e0b) >> {
 		noEsc
@@ -86,10 +66,8 @@ package "OsLib" {
 		--
 		-category : string
 	}
-	class "<size:18>RaiPath</size>" as RaiPath
-	class "<size:18>RaiFile</size>" as RaiFile
 
-	class "<size:18>DisposableScope</size>" as Os_DisposableScope {
+	class "<size:18>DisposableScope</size>" as DisposableScope {
 		-internal DisposableScope(onDispose : Action)
 		+Dispose() : void
 		--
@@ -97,7 +75,25 @@ package "OsLib" {
 		-disposed : bool
 	}
 
-	class "<size: 24>Os</size> ⓈⓅ" as Os {
+	class "<size:18>RaiPath</size>" as RaiPath {
+		+Path : string
+		+RaiPath(s : string = ".")
+		+RaiPath(f : RaiFile)
+		+operator /(self : RaiPath, subDir : string) : RaiPath
+		+operator /(self : RaiPath, subDir : RaiPath) : RaiPath
+		+GetFiles(searchPattern : string, searchOption : SearchOption = TopDirectoryOnly) : List<RaiFile>
+		+EnumerateFiles(searchPattern : string, searchOption : SearchOption = TopDirectoryOnly) : IEnumerable<RaiFile>
+		+Exists() : bool
+		+mkdir() : RaiPath
+		+rmdir(depth : int = 0, deleteFiles : bool = false) : void
+	}
+
+	class "<size:18>RaiFile</size>" as RaiFile {
+		+RaiFile(filename : string)
+		+RaiFile(p : RaiPath, name : string = null, ext : string = null)
+	}
+
+	class "<size:24>Os</size> ⓈⓅ" as Os {
 		+{static} DIR : string
 		+{static} DIRSEPERATOR : string
 		+{static} ESCAPECHAR : string
@@ -196,21 +192,39 @@ Os ..> RaiPath : path contracts
 Os ..> RaiFile : config file resolution
 Os ..> IStartupDiagnosticSink : diagnostics sink
 Os ..> OsDiagnosticsLogScope : log category
-Os ..> Os_DisposableScope : scoped overrides
+Os ..> DisposableScope : scoped overrides
+
+class "Legend<size:10>ⓈⒶⓅ</size>" as LegendSample {
+	+{static} staticMethod() : void
+	-{static} staticProperty : string
+	==
+	~<i>Note on class markers :</i>
+	<size:10>Ⓢ</size>tatic
+	<size:10>Ⓐ</size>bstract
+	Ⓟartial
+	--
+	- privateField : string
+	+ publicField : string
+	# protectedField : string
+	~ internalField : string
+	--
+	- privateMethod() : void
+	+ publicMethod() : void
+	# protectedMethod() : void
+	~ internalMethod() : void
+}
 
 note bottom of Os
-
-	This is the verbose 
-	view and intentionally 
+	This is the verbose
+	view and intentionally
 	includes
 	- public
 	- internal
-	- private 
+	- private
 	members aggregated
 	from Os.cs
 	Os.CloudStorage.cs
 	Os.Diagnostics.cs
-
 end note
 
 @enduml

@@ -185,7 +185,15 @@ namespace OsLib
 
 			var normalizedRemoteCloudRoot = Os.GetRemoteCloudRootFromConfig(observerName, provider, refresh: false); // false is ok ... too much isolation ;-)
 			var remoteTempDir = Os.GetRemoteTempDirFromConfig(observerName, refresh: false);
-			EnsureRemoteTempDirWritable(observer, remoteTempDir);
+			try
+			{
+				EnsureRemoteTempDirWritable(observer, remoteTempDir);
+			}
+			catch (Exception ex)
+			{
+				reason = ex.Message;
+				return false;
+			}
 
 			if (!observer.DirectoryExists(normalizedRemoteCloudRoot))
 			{

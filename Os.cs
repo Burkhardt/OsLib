@@ -185,12 +185,21 @@ namespace OsLib     // aka OsLibCore
 						configuredLocalBackupDir = null;
 					}
 
-					localBackupDir = string.IsNullOrWhiteSpace(configuredLocalBackupDir)
-						? TempDir
-						: new RaiPath(configuredLocalBackupDir);
-
 					if (string.IsNullOrWhiteSpace(configuredLocalBackupDir))
+					{
+						localBackupDir = TempDir;
 						LogWarningOnce<OsDiagnosticsLogScope>("config:localbackup-fallback", "LocalBackupDir missing or invalid in config. Falling back to operating system temp directory {LocalBackupDir}", localBackupDir.Path);
+					}
+					else
+					{
+						var configuredPath = new RaiPath(configuredLocalBackupDir);
+						if (IsCloudPath(configuredPath.Path))
+						{
+							localBackupDir = TempDir;
+							LogWarningOnce<OsDiagnosticsLogScope>("config:localbackup-cloud-fallback", "Configured LocalBackupDir {ConfiguredLocalBackupDir} is cloud-backed. Falling back to operating system temp directory {LocalBackupDir}", configuredPath.Path, localBackupDir.Path);
+						}
+						else localBackupDir = configuredPath;
+					}
 				}
 				return localBackupDir;
 			}

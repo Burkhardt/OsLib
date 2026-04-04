@@ -1,12 +1,14 @@
 @startuml RaiFile-Descendants-With-Namespaces
-' Generated: 2026-04-03
+' Generated: 2026-04-04
+
+title RaiFile and RaiPath Descendants With Namespaces
 
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam DiagramFontName "Casual"
 skinparam DiagramFontSize 36
 skinparam ClassFontName "Casual"
-skinparam ClassFontSize 28
+skinparam ClassFontSize 36
 skinparam ClassAttributeIconSize 10
 skinparam ClassAttributeFontName Casual
 skinparam ClassAttributeFontColor #053583
@@ -27,26 +29,22 @@ skinparam NoteBorderColor #d4b106
 skinparam ArrowColor #9b2c2c
 skinparam ArrowFontColor #374151
 skinparam ArrowFontName "Casual"
+
 hide empty members
 
-title RaiFile/RaiPath Descendants with Namespaces
-
 package "OsLib" {
-	class RaiFile
-	class RaiPath
-
-	class TextFile
-	class CsvFile
-	class TmpFile
-	class CanonicalFile
-	abstract class "ConfigFile<TData>" as ConfigFileT
-
-	interface IPathConvention {
+	class "<size:18>RaiFile</size>" as RaiFile
+	class "<size:18>RaiPath</size>" as RaiPath
+	class "<size:18>TextFile</size>" as TextFile
+	class "<size:18>CsvFile</size>" as CsvFile
+	class "<size:18>TmpFile</size>" as TmpFile
+	class "<size:18>CanonicalFile</size>" as CanonicalFile
+	abstract class "<size:18>ConfigFile<TData></size>" as ConfigFileT
+	interface "<size:18>IPathConvention</size>" as IPathConvention {
 		+Convention : PathConventionType
-		+ApplyPathConvention()
+		+ApplyPathConvention() : void
 	}
-
-	enum PathConventionType {
+	enum "<size:18>PathConventionType</size>" as PathConventionType << (E,#f59e0b) >> {
 		CanonicalByName
 		ItemIdTree3x3
 		ItemIdTree8x2
@@ -54,15 +52,15 @@ package "OsLib" {
 }
 
 package "RaiImage" {
-	class ImageFile
-	class ImageTreeFile
-	class ItemTreePath
+	class "<size:18>ImageFile</size>" as ImageFile
+	class "<size:18>ImageTreeFile</size>" as ImageTreeFile
+	class "<size:18>ItemTreePath</size>" as ItemTreePath
 }
 
 package "JsonPit" {
-	class PitFile
-	class MasterFlagFile
-	class ProcessFlagFile
+	class "<size:18>PitFile</size>" as PitFile
+	class "<size:18>MasterFlagFile</size>" as MasterFlagFile
+	class "<size:18>ProcessFlagFile</size>" as ProcessFlagFile
 }
 
 TextFile --|> RaiFile
@@ -81,7 +79,6 @@ ItemTreePath --|> RaiPath
 CanonicalFile ..|> IPathConvention
 ImageTreeFile ..|> IPathConvention
 ItemTreePath ..|> IPathConvention
-
 IPathConvention ..> PathConventionType : uses
 
 @enduml

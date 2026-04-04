@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Channels;
-
+using System.Linq;
+using System.Threading;
 namespace OsLib
 {
 	/// <summary>
@@ -14,22 +14,25 @@ namespace OsLib
 	/// </summary>
 	public class RaiPath
 	{
+		private const int maxWaitCount = 60;
 		public override string ToString() => Path;
 		public string Path
 		{
-			get
-			{
-				return path.ToString();
-			}
-			set
-			{
-				// make sure the last character of the passed path is a directory separator
-				path = new RaiFile(value);
-				path.Name = string.Empty;
-				path.Ext = string.Empty;
-			}
+			get => path;
+			set => path = NormalizeDirectoryPath(value);
 		}
-		private RaiFile path;
+		private string path = string.Empty;
+		private static string NormalizeDirectoryPath(string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				return string.Empty;
+			var normalized = Os.ExpandLeadingDirectorySymbols(value);
+			normalized = Os.NormSeperator(normalized);
+			if (normalized.EndsWith(Os.DIR, StringComparison.Ordinal))
+				return normalized;
+			var lastSeparator = normalized.LastIndexOf(Os.DIR, StringComparison.Ordinal);
+			return lastSeparator < 0 ? string.Empty : normalized[..(lastSeparator + 1)];
+		}
 		/// <summary>
 		/// Using the / operator to add a subdirectory to a path
 		/// </summary>
@@ -38,7 +41,7 @@ namespace OsLib
 		/// <returns>RaiPath object for daisy chaining reasons</returns>
 		public static RaiPath operator /(RaiPath self, string subDir)
 		{
-			return new RaiPath(self.path.Path + subDir + Os.DIR);
+			return new RaiPath(self.Path + subDir + Os.DIR);
 		}
 		/// <summary>
 		/// Using the / operator to add a subdirectory to a path
@@ -48,20 +51,11 @@ namespace OsLib
 		/// <returns>RaiPath object for daisy chaining reasons</returns>
 		public static RaiPath operator /(RaiPath self, RaiPath subDir)
 		{
-			return new RaiPath(self.path.Path + subDir.Path);
+			return new RaiPath(self.Path + subDir.Path);
 		}
-		public List<RaiFile> GetFiles(string searchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly)
+		public IEnumerable<RaiFile> EnumerateFiles(string searchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly)
 		{
-			List<RaiFile> files = new List<RaiFile>();
-			foreach (var file in Directory.GetFiles(Path, searchPattern, searchOption))
-			{
-				files.Add(new RaiFile(file));
-			}
-			return files;
-		}
-		public IEnumerable<RaiFile> EnumerateFiles(string searchPattern, bool recursive = false)
-		{
-			foreach (var file in Directory.EnumerateFiles(Path, searchPattern, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
+			foreach (var file in Directory.EnumerateFiles(Path, searchPattern, searchOption))
 			{
 				yield return new RaiFile(file);
 			}
@@ -69,32 +63,111 @@ namespace OsLib
 		/// <summary>
 		/// Constructor that takes a string path; the caller knows that this is a directory path; it does not have to exist yet in the file system.
 		/// </summary>
-		/// <param name="s">if value of s does not end with a directory separator, one will be added; "." gets current directory, "~" gets user home directory</param>
+		/// <param name="s">Directory path or full file name. If s ends with a directory separator it is treated as a directory path; otherwise the last segment is stripped. "." and "~" are expanded.</param>
 		public RaiPath(string s = ".")
 		{
-			if (string.IsNullOrWhiteSpace(s))
-			{
-				Path = string.Empty;
-				return;
-			}
-			s = Os.ExpandLeadingDirectorySymbols(s);
-			var p = new RaiFile(s);
-			p.Name = string.Empty;
-			p.Ext = string.Empty;
-			Path = p.ToString();
+			Path = s;
 		}
 		/// <summary>
 		/// Constructor that takes a RaiFile object; uses its Path and ignores Name and Ext.
 		/// </summary>
 		public RaiPath(RaiFile f)
 		{
-			path = f;
-			path.Name = string.Empty;
-			path.Ext = string.Empty;
+			Path = f?.Path?.ToString() ?? string.Empty;
 		}
-		public bool Exists() => Directory.Exists(path.ToString());
-		public RaiPath mkdir() => path.mkdir();
-		public void rmdir(int depth = 0, bool deleteFiles = false) => path.rmdir(depth, deleteFiles);
+		public bool Exists() => Directory.Exists(Path);
+		private static int awaitDirMaterializing(string dirName)
+		{
+			var count = 0;
+			var exists = false;
+			while (count < maxWaitCount)
+			{
+				try
+				{
+					exists = Directory.Exists(dirName);
+				}
+				catch (Exception)
+				{
+				}
+				if (exists)
+					break;
+				Thread.Sleep(5);
+				count++;
+			}
+			if (count >= maxWaitCount)
+				throw new DirectoryNotFoundException("ensure failed - timeout in awaitDirMaterializing of dir " + dirName + ".");
+			return -count;
+		}
+		private static int awaitDirVanishing(string dirName)
+		{
+			var count = 0;
+			var exists = true;
+			while (count < maxWaitCount)
+			{
+				try
+				{
+					exists = Directory.Exists(dirName);
+				}
+				catch (Exception)
+				{
+				}
+				if (!exists)
+					break;
+				Thread.Sleep(5);
+				count++;
+			}
+			if (count >= maxWaitCount)
+				throw new DirectoryNotFoundException("ensure failed - timeout in awaitDirVanishing of dir " + dirName + ".");
+			return -count;
+		}
+		public RaiPath mkdir() => mkdir(Path);
+		public static RaiPath mkdir(string dirname = null)
+		{
+			dirname = string.IsNullOrEmpty(dirname)
+				? Os.EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory())
+				: dirname;
+			var path = new RaiPath(dirname);
+			if (path.Exists())
+				return path;
+			var dir = new DirectoryInfo(path.Path);
+			if (!dir.Exists)
+			{
+				dir = Directory.CreateDirectory(path.Path);
+				if (Os.IsCloudPath(path.Path))
+					awaitDirMaterializing(path.Path);
+			}
+			return new RaiPath(Os.EnsureTrailingDirectorySeparator(dir.FullName));
+		}
+		public void rmdir(int depth = 0, bool deleteFiles = false)
+		{
+			var directoryPath = Path;
+			if (string.IsNullOrEmpty(directoryPath))
+				return;
+			if (!Directory.Exists(directoryPath))
+				return;
+			var cloudPath = Os.IsCloudPath(directoryPath);
+			try
+			{
+				if (Directory.EnumerateFileSystemEntries(directoryPath).Any() && depth > 0)
+				{
+					if (deleteFiles)
+					{
+						foreach (var file in Directory.EnumerateFiles(directoryPath).ToList())
+							new RaiFile(file).rm();
+					}
+					foreach (var subdir in Directory.EnumerateDirectories(directoryPath).ToList())
+						new RaiPath(subdir).rmdir(depth - 1, deleteFiles);
+				}
+				if (Directory.Exists(directoryPath))
+					Directory.Delete(directoryPath, deleteFiles);
+			}
+			catch (DirectoryNotFoundException)
+			{
+				return;
+			}
+			if (cloudPath)
+				awaitDirVanishing(directoryPath);
+		}
 		public static char[] InvalidFileNameChars => System.IO.Path.GetInvalidFileNameChars();
 	}
 }

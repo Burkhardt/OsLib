@@ -14,11 +14,23 @@ namespace OsLib
 
 		public string FullName => ScriptFile.FullName;
 
+		public Script(RaiPath path, string name, string content)
+			: this(path, name, ResolveScriptExtension(name), content)
+		{
+		}
+
 		public Script(RaiPath path, string name, string ext ="sh", string content = null)
 			: base(new RaiFile(path, name, ext).FullName)
 		{
 			ScriptFile = new TextFile(path: path, name: name, ext: ext, content: content);
 			EnsureExecutable();
+		}
+
+		private static string ResolveScriptExtension(string name)
+		{
+			return string.IsNullOrWhiteSpace(Path.GetExtension(name))
+				? OperatingSystem.IsWindows() ? "cmd" : "sh"
+				: string.Empty;
 		}
 
 		public Script Append(string line)
