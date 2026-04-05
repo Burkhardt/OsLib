@@ -9,7 +9,7 @@ public class TmpFileTests
 {
 	private static RaiPath NewTestRoot([CallerMemberName] string testName = "")
 	{
-		var root = Os.TempDir / "RAIkeep" / "oslib-tests" / "tmpfile" / SanitizeSegment(testName);
+		var root = new RaiPath(Path.GetTempPath()) / "RAIkeep" / "oslib-tests" / "tmpfile" / SanitizeSegment(testName);
 		CleanupDir(root);
 		return root;
 	}
@@ -76,6 +76,43 @@ public class TmpFileTests
 			Assert.True(sut.Exists());
 			Assert.Equal(deep.Path, sut.Path.ToString());
 			Assert.False(new RaiFile(deep.Path).dirEmpty);
+		}
+		finally
+		{
+			CleanupDir(root);
+		}
+	}
+
+	[Fact]
+	public void TmpFile_PathConstructor_PreservesExplicitFileNameExtension()
+	{
+		var root = NewTestRoot();
+		var dir = root / "path-constructor";
+
+		try
+		{
+			var sut = new TmpFile(dir, "persistence_audit_test.tmp");
+
+			Assert.Equal(dir.Path, sut.Path.ToString());
+			Assert.Equal("persistence_audit_test.tmp", sut.NameWithExtension);
+		}
+		finally
+		{
+			CleanupDir(root);
+		}
+	}
+
+	[Fact]
+	public void TmpFile_PathConstructor_DefaultsExtensionToTmp_WhenMissing()
+	{
+		var root = NewTestRoot();
+		var dir = root / "path-constructor-default-ext";
+
+		try
+		{
+			var sut = new TmpFile(dir, "probe");
+
+			Assert.Equal("probe.tmp", sut.NameWithExtension);
 		}
 		finally
 		{
