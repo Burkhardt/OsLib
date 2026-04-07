@@ -284,7 +284,7 @@ namespace OsLib     // aka OsLibCore
 			if (string.IsNullOrWhiteSpace(s))
 				return string.Empty;
 
-			s = NormSeperator(s);
+			//s = NormSeperator(s);
 			return s.EndsWith(DIR, StringComparison.Ordinal) ? s : s + DIR;
 		}
 		internal static string ParentDirectory(string s)
@@ -302,33 +302,18 @@ namespace OsLib     // aka OsLibCore
 
 			return EnsureTrailingDirectorySeparator(parent);
 		}
-		internal static string ExpandLeadingDirectorySymbols(string s)
+		internal static string ExpandLeadingDirectorySymbols(string dirString)
 		{
-			if (string.IsNullOrWhiteSpace(s))
-				return s;
-
-			s = NormSeperator(s);
-			if (s == ".")
-				return EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory());
-			if (s == "~")
+			if (string.IsNullOrWhiteSpace(dirString))
+				return dirString;
+			//dirString = NormSeperator(dirString);
+			if (dirString == "~")
 				return EnsureTrailingDirectorySeparator(UserHomeDir.Path);
-			if (s.StartsWith("./", StringComparison.Ordinal))
-				return EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory()) + s.Substring(2);
-			if (s.StartsWith("~/", StringComparison.Ordinal))
-				return EnsureTrailingDirectorySeparator(UserHomeDir.Path) + s.Substring(2);
-			if (s.StartsWith("../", StringComparison.Ordinal))
-			{
-				var expanded = EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory());
-				while (s.StartsWith("../", StringComparison.Ordinal))
-				{
-					expanded = ParentDirectory(expanded);
-					s = s.Substring(3);
-				}
-				return expanded + s;
-			}
-
-			return s;
+			if (dirString.StartsWith("~/", StringComparison.Ordinal))
+				return EnsureTrailingDirectorySeparator(UserHomeDir.Path) + dirString.Substring(2);
+			return EnsureTrailingDirectorySeparator(Path.GetFullPath(dirString));
 		}
+
 		private static RaiPath localBackupDir = null;
 		private static OsType DetectOsType()
 		{

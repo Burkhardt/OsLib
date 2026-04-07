@@ -105,25 +105,24 @@ namespace OsLib
 		public virtual string Name
 		{
 			get { return string.IsNullOrEmpty(name) ? string.Empty : name; }
-			set
-			{   // sets name and ext; override to set more name components
-				name = Os.NormSeperator(value);
-				var pos = name.LastIndexOf(Os.DIR);
-				if (pos >= 0 && name.Length > pos)
-					name = name.Remove(0, pos + 1);
-				pos = name.LastIndexOf(".");
-				if (pos >= 0)
-				{
-					if (name.Length > pos + 1)
-					{
-						ext = name.Substring(pos + 1);
-						name = name.Remove(pos);
-					}
-					else ext = string.Empty;
-				}
-				else if (ext == null)
-					ext = string.Empty;
+			set // sets name and ext; override to set more name components
+			{	
+				(_, string n) = RaiPath.splitPathAndName(value);
+				(name, ext) = splitNameAndExt(n, ext);
 			}
+		}
+		private (string n, string e) splitNameAndExt(string nameWithExt, string ext)
+		{
+			if (!string.IsNullOrEmpty(ext))
+				return (nameWithExt, ext);  // e.g. ("otw.software", "txt")
+			var pos = nameWithExt.LastIndexOf(".");
+			if (pos >= 0)
+			{
+				var n = nameWithExt.Substring(0, pos);
+				var e = nameWithExt.Substring(pos + 1);
+				return (n, e);
+			}
+			return (nameWithExt, string.Empty);
 		}
 		/// <summary>
 		/// without dir structure but with "." and with extension, ie 123456.png
@@ -157,7 +156,7 @@ namespace OsLib
 				}
 				else
 				{
-					path = new RaiPath(value.ToString());
+					path = value;
 					UpdateCloudFlag();
 				}
 			}
@@ -575,15 +574,6 @@ namespace OsLib
 		{
 			get => path.ToString().Split(Os.DIR, StringSplitOptions.RemoveEmptyEntries);
 		}
-		private static string composeFileName(string name, string ext)
-		{
-			if (string.IsNullOrEmpty(name))
-				return string.Empty;
-			var fileName = name;
-			if (!string.IsNullOrEmpty(ext) && !fileName.EndsWith("." + ext, StringComparison.OrdinalIgnoreCase))
-				fileName += "." + ext;
-			return fileName;
-		}
 		/// <summary>
 		/// Constructor: auto-ensure mode for file systems that do not synchronously wait for the end of an IO operation i.e. Dropbox
 		/// </summary>
@@ -591,7 +581,7 @@ namespace OsLib
 		/// when the method call returns; necessary e.g. for Dropbox directories since (currently) Dropbox first updates the
 		/// file in the invisible . folder and then asynchronously updates the visible file and all the remote copies of it</remarks>
 		/// <param name="filename"></param>
-		public RaiFile(string filename) : this(ParseFullName(filename))
+		public RaiFile(string filename) : this(RaiPath.SplitRaiPathAndName(filename))
 		{
 		}
 		private RaiFile((RaiPath path, string name) parsed) : this(parsed.path, parsed.name, null)
@@ -601,29 +591,12 @@ namespace OsLib
 		/// Constructor that takes a RaiPath and optional name and extension to build the full file path.
 		/// </summary>
 		/// <param name="p"></param>
-		/// <param name="name">null or "test" or "test.txt"</param>
+		/// <param name="name">null or "test" or "test.txt" or "otw.software.txt</param>
 		/// <param name="ext">null or "txt"</param>
 		public RaiFile(RaiPath p, string name = null, string ext = null)
 		{
 			Path = p ?? new RaiPath(string.Empty);
-			this.name = string.Empty;
-			this.ext = string.Empty;
-			var fileName = composeFileName(name, ext);
-			if (!string.IsNullOrEmpty(fileName))
-				Name = fileName;
-		}
-		private static (RaiPath path, string name) ParseFullName(string filename)
-		{
-			if (string.IsNullOrWhiteSpace(filename))
-				return (new RaiPath(string.Empty), string.Empty);
-			filename = Os.ExpandLeadingDirectorySymbols(filename);
-			filename = Os.NormSeperator(filename);
-			var k = filename.LastIndexOf(Os.DIR, StringComparison.Ordinal);
-			if (k < 0)
-				return (new RaiPath(string.Empty), filename);
-			var parentPath = new RaiPath(filename.Substring(0, k + 1));
-			var fileName = k + 1 < filename.Length ? filename[(k + 1)..] : string.Empty;
-			return (parentPath, fileName);
+			(this.name, this.ext) = splitNameAndExt(name, ext);
 		}
 	}
 } //namespace OsLib

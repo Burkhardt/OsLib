@@ -58,32 +58,32 @@ namespace OsLib
 			configLoadDepth++;
 			try
 			{
-				var configPath = configFullName ?? ConfigFileFullName;
+				var cf = configFullName ?? ConfigFileFullName;
 				// read it from disk
 				try
 				{
-					if (!File.Exists(configPath))
+					if (!File.Exists(cf))
 					{
 						config = null;
 						InvalidateConfiguredPathCaches();
 						ReportStartupCritical<OsDiagnosticsLogScope>(
 							"config:missing",
-							$"Config file missing at {configPath}. Startup continues in degraded mode.",
+							$"Config file missing at {cf}. Startup continues in degraded mode.",
 							"Config file missing at {ConfigPath}. Startup continues in degraded mode.",
-							configPath);
+							cf);
 						return config;
 					}
 
-					var json = File.ReadAllText(configPath);
+					var json = File.ReadAllText(cf);
 					if (string.IsNullOrWhiteSpace(json))
 					{
 						config = null;
 						InvalidateConfiguredPathCaches();
 						ReportStartupCritical<OsDiagnosticsLogScope>(
 							"config:empty",
-							$"Config file malformed or empty at {configPath}. Startup continues in degraded mode.",
+							$"Config file malformed or empty at {cf}. Startup continues in degraded mode.",
 							"Config file malformed or empty at {ConfigPath}. Startup continues in degraded mode.",
-							configPath);
+							cf);
 						return config;
 					}
 
@@ -93,9 +93,9 @@ namespace OsLib
 						InvalidateConfiguredPathCaches();
 						ReportStartupCritical<OsDiagnosticsLogScope>(
 							"config:malformed-null",
-							$"Config file malformed at {configPath}. Startup continues in degraded mode.",
+							$"Config file malformed at {cf}. Startup continues in degraded mode.",
 							"Config file malformed at {ConfigPath}. Startup continues in degraded mode.",
-							configPath);
+							cf);
 						return config;
 					}
 
@@ -118,9 +118,9 @@ namespace OsLib
 					ReportStartupCritical<OsDiagnosticsLogScope>(
 						"config:malformed",
 						ex,
-						$"Config file malformed at {configPath}. Startup continues in degraded mode.",
+						$"Config file malformed at {cf}. Startup continues in degraded mode.",
 						"Config file malformed at {ConfigPath}. Startup continues in degraded mode.",
-						configPath);
+						cf);
 				}
 			}
 			finally

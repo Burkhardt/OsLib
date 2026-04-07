@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 namespace OsLib
 {
@@ -19,19 +20,61 @@ namespace OsLib
 		public string Path
 		{
 			get => path;
-			set => path = NormalizeDirectoryPath(value);
+			set
+			{
+				(path, _) = splitPathAndName(value);
+			}
 		}
 		private string path = string.Empty;
-		private static string NormalizeDirectoryPath(string value)
+		internal static (string path, string name) splitPathAndName(string pathAndName)
 		{
-			if (string.IsNullOrWhiteSpace(value))
-				return string.Empty;
-			var normalized = Os.ExpandLeadingDirectorySymbols(value);
-			normalized = Os.NormSeperator(normalized);
-			if (normalized.EndsWith(Os.DIR, StringComparison.Ordinal))
-				return normalized;
-			var lastSeparator = normalized.LastIndexOf(Os.DIR, StringComparison.Ordinal);
-			return lastSeparator < 0 ? string.Empty : normalized[..(lastSeparator + 1)];
+			if (string.IsNullOrWhiteSpace(pathAndName))
+				return (string.Empty, string.Empty);
+			//pathAndName = NormSeperator(pathAndName);
+			if (pathAndName == "~")
+				return (Os.EnsureTrailingDirectorySeparator(Os.UserHomeDir.Path), string.Empty);
+			string n, p;
+			int pos;
+			if (pathAndName.StartsWith("~/", StringComparison.Ordinal))
+			{
+				p = Os.UserHomeDir.Path + pathAndName.Substring(2);
+				pos = p.LastIndexOf(Os.DIR);
+				if (pos < 0)
+				{
+					n = p;
+					p = string.Empty;
+				}
+				else
+				{
+					n = p.Substring(pos + 1);
+					p = p.Remove(pos + 1);
+					p = Os.EnsureTrailingDirectorySeparator(p);
+				}
+				//p = Os.EnsureTrailingDirectorySeparator(p.Substring(0, p.LastIndexOf(Os.DIR) + 1));
+			}
+			else
+			{
+				p = System.IO.Path.GetFullPath(pathAndName);
+				if (pathAndName == ".")
+					return (Os.EnsureTrailingDirectorySeparator(p), string.Empty);
+				pos = p.LastIndexOf(Os.DIR);
+				if (pos < 0)
+				{
+					n = p;
+					p = string.Empty;
+				}
+				else {
+					n = p.Substring(pos + 1);
+					p = p.Remove(pos + 1);
+					p = Os.EnsureTrailingDirectorySeparator(p);
+				}
+			}
+			return (p, n);
+		}
+		public static (RaiPath path, string name) SplitRaiPathAndName(string filename)
+		{
+			(string p, string n) = RaiPath.splitPathAndName(filename);
+			return (new RaiPath(p), n);
 		}
 		/// <summary>
 		/// Using the / operator to add a subdirectory to a path
