@@ -21,7 +21,7 @@ internal sealed class OsTestEnvironment : IDisposable
 		Home = (root / "home").Path;
 		AppData = (root / "app-data").Path;
 		LocalAppData = (root / "local-app-data").Path;
-		ConfigPath = new RaiFile(new RaiPath(Home) / ".config" / "RAIkeep", "osconfig", "json5").FullName;
+		ConfigPath = (new RaiPath(Home) / ".config" / "RAIkeep").Path + "osconfig.json5";
 
 		Directory.CreateDirectory(Home);
 		Directory.CreateDirectory(AppData);
@@ -59,8 +59,15 @@ internal sealed class OsTestEnvironment : IDisposable
 		string? localBackupDir = null,
 		IEnumerable<Cloud>? defaultCloudOrder = null,
 		Dictionary<string, string>? observers = null,
+		bool includeTempDir = true,
 		bool loadConfig = false)
 	{
+		var effectiveTempDir = includeTempDir
+			? NormalizeDirectoryValue(string.IsNullOrWhiteSpace(tempDir) ? (Root / "temp").Path : tempDir)
+			: null;
+		if (!string.IsNullOrWhiteSpace(effectiveTempDir))
+			Directory.CreateDirectory(effectiveTempDir);
+
 		var cloud = new JObject
 		{
 			["Dropbox"] = NormalizeForJson(dropbox),
@@ -73,8 +80,8 @@ internal sealed class OsTestEnvironment : IDisposable
 			["Cloud"] = cloud
 		};
 
-		if (!string.IsNullOrWhiteSpace(tempDir))
-			json["TempDir"] = NormalizeDirectoryValue(tempDir);
+		if (!string.IsNullOrWhiteSpace(effectiveTempDir))
+			json["TempDir"] = effectiveTempDir;
 		if (!string.IsNullOrWhiteSpace(localBackupDir))
 			json["LocalBackupDir"] = NormalizeDirectoryValue(localBackupDir);
 		if (defaultCloudOrder != null)
@@ -97,15 +104,10 @@ internal sealed class OsTestEnvironment : IDisposable
 
 	private void PersistTestConfigFile(JObject json, bool loadConfig)
 	{
-
-		var configFile = new RaiFile(ConfigPath);
-		Directory.CreateDirectory(configFile.Path.Path);
-		var textFile = new TextFile(configFile.FullName)
-		{
-			Lines = json.ToString().Replace("\r\n", "\n").Split('\n').ToList()
-		};
-		textFile.Changed = true;
-		textFile.Save();
+		var configDirectory = Path.GetDirectoryName(ConfigPath);
+		if (!string.IsNullOrWhiteSpace(configDirectory))
+			Directory.CreateDirectory(configDirectory);
+		File.WriteAllText(ConfigPath, json.ToString().Replace("\r\n", "\n"));
 		if (loadConfig)
 			Os.LoadConfig();
 	}
@@ -145,11 +147,14 @@ internal sealed class OsTestEnvironment : IDisposable
 		var osType = typeof(Os);
 		osType.GetField("userHomeDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("appRootDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+		osType.GetField("cloudStorageRootDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("type", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("dIRSEPERATOR", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, System.IO.Path.DirectorySeparatorChar.ToString());
 		osType.GetField("tempDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("localBackupDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+		osType.GetField("localBackupDirDisabled", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, false);
 		osType.GetField("config", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
+		osType.GetField("remoteConfigs", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("remoteTestConfig", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		//Os.ResetCloudStorageCache();
 		Os.ResetDiagnosticsForTesting();

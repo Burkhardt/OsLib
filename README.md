@@ -14,9 +14,9 @@ _formerly_ __OsLibCore__
 - Patch: corrects NuGet publish order so OsLibCore lands on NuGet before downstream packages (RaiUtils, RaiImage, JsonPit).
 - Documents the supported cloud-backed provider claim as `OneDrive`, `GoogleDrive`, and `Dropbox`.
 - Keeps `osconfig.json` and `defaultCloudOrder` as the shared machine-local contract used across the `RAIkeep` package stack.
-- Separates intrinsic OS/runtime directories from config-driven directories: `UserHomeDir` and `AppRootDir` are intrinsic, while `TempDir`, `LocalBackupDir`, and `CloudStorageRootDir` are resolved through config plus safe fallbacks.
+- Separates intrinsic OS/runtime directories from config-driven directories: `UserHomeDir` and `AppRootDir` are intrinsic, while `TempDir`, `LocalBackupDir`, and `CloudStorageRootDir` are resolved through explicit config validation.
 - Moves `*Dir` properties to `RaiPath` return values to encourage `RaiPath` and `RaiFile` composition instead of `Path.Combine` call-site sprawl.
-- Treats missing or invalid `osconfig.json` as a startup-critical degraded-mode condition with structured logging plus explicit console startup diagnostics.
+- Treats missing or invalid `osconfig.json5` as a startup-fatal condition with structured logging plus explicit console startup diagnostics.
 - Aligns OsLib documentation with JsonPit's `Id`-based identifier contract and legacy `Name` normalization policy.
 - Refreshes the packaged NuGet icon asset to a square `128x128` PNG.
 - Documents `CanonicalPath` as deprecated legacy API surface; prefer direct `RaiPath` composition.
@@ -149,8 +149,8 @@ https://www.nuget.org/packages/OsLibCore/
 - Cloud root discovery setup, provider precedence, and cloud-aware IO behavior: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
 - Path/config/logging design note for the 2026 housekeeping pass: [PATH_CONFIG_LOGGING_REFACTOR.md](PATH_CONFIG_LOGGING_REFACTOR.md)
 - CLI command hierarchy and external tool wrappers: [../CliCommand-Hierarchy.puml](../CliCommand-Hierarchy.puml)
-- Local backup placement: `Os.LocalBackupDir` resolves an OS-local, non-cloud directory as `RaiPath` and can be configured in `osconfig.json`.
-- Structured logging: OsLib diagnostics use `ILogger<T>` templates; only startup-critical configuration failures emit console diagnostics.
+- Local backup placement: `Os.LocalBackupDir` is optional; when absent or unusable, backup features are disabled instead of falling back.
+- Structured logging: OsLib diagnostics use `ILogger<T>` templates; startup-fatal configuration failures emit console diagnostics.
 - Ubuntu/Mzansi guidance: prefer explicit `cloud.*` entries in `osconfig.json` over probe-only discovery for stable Google Drive roots across machines.
 - Script helper: use `RaiSystem.CreateScript(path, name, content)` or `new Script(path, name, content)` when tests or tools need an executable script file.
 

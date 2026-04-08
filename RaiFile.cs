@@ -8,6 +8,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Reflection.PortableExecutable;
 /*
  *	based on RsbFile (C++ version from 1991, C# version 2005)
  */
@@ -529,8 +530,11 @@ namespace OsLib
 		{
 			if (!File.Exists(FullName))
 				return null;   // no file no backup
+			var backupRoot = Os.LocalBackupDir;
+			if (backupRoot == null)
+				throw new InvalidOperationException($"Local backup is disabled because LocalBackupDir is not configured or is not usable. {Os.GetCloudStorageSetupGuidance()}");
 			var backupFile = new RaiFile(FullName);
-			backupFile.Path = Os.LocalBackupDir / BackupRelativePath(backupFile.Path);
+			backupFile.Path = backupRoot / BackupRelativePath(backupFile.Path);
 			backupFile.mkdir();
 			backupFile.Name = backupFile.Name + "_" + DateTimeOffset.UtcNow.ToString(Os.DATEFORMAT);
 			backupFile.Ext = Ext;

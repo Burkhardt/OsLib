@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.AccessControl;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OsLib
 {
@@ -99,6 +100,10 @@ namespace OsLib
 					}
 
 					InvalidateConfiguredPathCaches();
+					localBackupDirDisabled = false;
+					if (config is not JObject configObject)
+						throw new InvalidDataException($"Config file malformed at {cf}. Startup cannot continue.");
+					ValidateConfiguredEnvironment(configObject, cf);
 
 					try
 					{
@@ -110,7 +115,7 @@ namespace OsLib
 					{
 					}
 				}
-				catch (Exception ex) when (ex is not InvalidDataException)
+				catch (Exception ex) when (ex is not InvalidDataException && ex is not OsConfigValidationException)
 				{
 					config = null;
 					InvalidateConfiguredPathCaches();
@@ -133,7 +138,7 @@ namespace OsLib
 		private const string cloudDiscoveryGuidePath = "OsLib/CLOUD_STORAGE_DISCOVERY.md";
 		private static bool IsFatalConfigLoadException(Exception ex)
 		{
-			return ex is FileNotFoundException || ex is InvalidDataException;
+			return ex is FileNotFoundException || ex is InvalidDataException || ex is OsConfigValidationException;
 		}
 		public static bool IsCloudPath(RaiPath p) => IsCloudPath(p?.ToString());
 		public static bool IsCloudPath(string path)
@@ -266,7 +271,13 @@ namespace OsLib
 		}
 		public static string ConfigFileFullName
 		{
-			get { return new RaiFile(defaultConfigFileLocation).FullName; }
+			get
+			{  // TODO Rainer: we created a special SplitRaiPath for this reason; exchange it!
+				// var (configPath, configName) = RaiPath.SplitRaiPathAndName(defaultConfigFileLocation); --- IGNORE ---
+				// return configPath / configName; --- IGNORE ---
+				var (configDir, configName) = RaiPath.SplitPathAndName(defaultConfigFileLocation);
+				return ExpandLeadingDirectorySymbols(configDir) + configName;
+			}
 		}
 		public static string GetObserverSshTarget(string observerName)
 		{

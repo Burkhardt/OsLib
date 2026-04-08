@@ -2,9 +2,14 @@
 
 Current contract note: the active OsLib config contract is `osconfig.json5` with PascalCase property names and direct dynamic access. See [OSCONFIG-BREAKING-CHANGE.md](OSCONFIG-BREAKING-CHANGE.md) for the current authoritative behavior. Historical references below to `osconfig.json`, camelCase keys, or typed config wrappers describe older behavior.
 
-OsLib resolves cloud roots through `Os.Config`, backed by `osconfig.json5` and refreshed into an in-memory cache.
+OsLib resolves config-driven paths through `Os.Config`, backed by `osconfig.json5` and refreshed into an in-memory cache.
 
-Cloud support is optional. OsLib can be used for purely local file and path operations without any configured cloud provider. When cloud-specific configuration is missing or malformed, non-cloud behavior should still continue through intrinsic and fallback paths, while cloud-specific APIs degrade gracefully.
+Current startup contract:
+- `osconfig.json5` is mandatory
+- `TempDir` is mandatory and must already exist and allow read/write probes
+- cloud support is optional, but every configured cloud root must already exist and allow read/write probes
+- `LocalBackupDir` is optional; when it is absent or unusable, backup features are disabled instead of silently falling back
+- configured observers are optional; when present, SSH access plus remote config and remote path probes must succeed
 
 Supported-and-documented providers in the `3.5.0` package line:
 - `Dropbox`
@@ -28,13 +33,19 @@ The config is broader than cloud-only state. It can hold:
 - `Cloud.Dropbox`
 - `Cloud.OneDrive`
 - `Cloud.GoogleDrive`
+- `Observers[].Name`
+- `Observers[].SshTarget`
 
 Notes:
 
 - `UserHomeDir` is intrinsic and no longer config-driven.
 - `AppRootDir` is intrinsic and resolves the runtime meaning of `.`.
-- `DefaultCloudOrder` is optional. If it is missing, OsLib falls back to `OneDrive`, `Dropbox`, `GoogleDrive`.
+- `DefaultCloudOrder` is optional. If it is missing, OsLib still prefers `OneDrive`, `Dropbox`, `GoogleDrive` when choosing among already validated configured roots.
 - If `DefaultCloudOrder` contains unsupported provider names, OsLib ignores them.
+- `TempDir` is mandatory. Missing or unusable `TempDir` aborts startup.
+- `LocalBackupDir` is optional. Missing or unusable `LocalBackupDir` disables backup features.
+- `Cloud.*` entries are optional as a group. If no cloud root is configured, OsLib stays local-only.
+- Any configured observer must be reachable via SSH, provide a readable remote `osconfig.json5`, and pass remote `TempDir` plus configured-cloud-root probes.
 
 ## Public API
 
@@ -67,6 +78,7 @@ Provider selection order is determined like this:
 Unsupported provider names in `DefaultCloudOrder` are ignored.
 
 If no provider root is configured for a given provider, `GetCloudStorageRoot(...)` returns `null` for that provider.
+If a provider is explicitly listed in `DefaultCloudOrder`, its `Cloud.*` entry must be present and usable or startup aborts.
 
 ## JSON Format
 
@@ -93,15 +105,20 @@ If no cloud provider is configured:
 - `IsCloudPath(...)` returns `false`
 - `RaiFile.Cloud` stays `false`
 - `GetCloudStorageRoot(provider)` returns `null`
-- cloud-specific tests should skip rather than fail when they require an actual configured cloud root
+- OsLib logs a reduced-features warning with guidance to this document
 
-If a cloud provider is configured but its path is empty, invalid, or not recognized as a cloud-backed path, cloud-aware behavior should stay inactive for that path.
+If any cloud provider is configured, each configured root must exist and support read/write probes. A configured-but-unusable cloud root is a startup failure.
 
 ## Local Backup Behavior
 
-`Os.LocalBackupDir` now comes from config first, then falls back to OS-local defaults. If the configured backup directory is itself inside a configured cloud root, OsLib rejects it and falls back to a non-cloud local path.
+`Os.LocalBackupDir` is optional.
 
-Fallback selection is logged through `ILogger<T>` as a serious configuration warning, but it does not print to the console during normal operation.
+When it is configured:
+- it must exist
+- it must allow read/write probes
+- it must not be inside a configured cloud root
+
+When it is absent or unusable, OsLib disables backup features and logs a reduced-features warning with guidance to this document. It does not silently fall back to `TempDir` or any other path.
 
 ## Logging And Startup Diagnostics
 
@@ -113,13 +130,15 @@ Normal behavior:
 - fallback path usage is log-only
 - path resolution details are debug/info/warning logs depending on severity
 
-Config-read failures such as missing or malformed `osconfig.json5` are logged as degraded-mode startup diagnostics.
+Config-read failures such as missing or malformed `osconfig.json5` are startup-fatal and write both structured logs and a console startup diagnostic.
 
-Cloud-specific failure semantics are narrower:
-- if no cloud root is configured, generic non-cloud APIs should keep working
-- `IsCloudPath(...)` should simply return `false`
-- `GetCloudStorageRoot(...)` should return `null`
-- `CloudStorageRootDir` is the stricter API and may throw when code explicitly requires a preferred cloud root and none can be resolved
+Validation semantics are:
+- missing or unusable `TempDir`: startup-fatal
+- no cloud configured at all: reduced-features warning only
+- configured cloud root missing or unusable: startup-fatal
+- missing or unusable `LocalBackupDir`: backup feature disabled, reduced-features warning only
+- configured observer unreachable or remote config invalid/unusable: startup-fatal
+- `CloudStorageRootDir` remains the stricter API and throws when code explicitly requires a preferred cloud root and none is configured
 
 ## Cloud-Aware File IO
 
@@ -130,8 +149,9 @@ If no configured provider root matches, the path is treated as local.
 ## Recommended Setup
 
 For stable machine behavior:
-1. Create and maintain `osconfig.json5` explicitly when you want cloud-aware behavior.
-2. Edit `Cloud.*` entries for any provider you want OsLib to treat as cloud-backed.
-3. Set `localBackupDir` if you need backups in a specific non-cloud location.
-4. Keep `DefaultCloudOrder` if you care about preferred-provider selection, but do not depend on it being exhaustive.
-5. Use `GetCloudDiscoveryReport()` in diagnostics when onboarding a new machine.
+1. Create and maintain `osconfig.json5` before starting any app that uses OsLib.
+2. Set `TempDir` to an existing writable directory.
+3. Edit `Cloud.*` entries only for providers you actually want to use, and make sure each configured root already exists and is writable.
+4. Set `LocalBackupDir` only when you want local backups and the directory is truly local and writable.
+5. Configure `Observers` only when SSH access and remote `osconfig.json5` are already working. See `OsLib/SSH_SETUP.md`.
+6. Use `GetCloudDiscoveryReport()` in diagnostics when onboarding a new machine.

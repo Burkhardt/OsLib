@@ -86,22 +86,9 @@ namespace OsLib     // aka OsLibCore
 					}
 				}
 
-				var message = $"No cloud storage root could be discovered. {GetCloudStorageSetupGuidance()}";
+				var message = $"No cloud storage root is configured or accessible. {GetCloudStorageSetupGuidance()}";
 				if (lastException != null)
-				{
-					ReportStartupCritical<OsDiagnosticsLogScope>(
-						"cloud:root-unavailable",
-						lastException,
-						$"{message} Startup continues in degraded mode.",
-						"No cloud storage root could be discovered. Startup continues in degraded mode.");
-				}
-				else
-				{
-					ReportStartupCritical<OsDiagnosticsLogScope>(
-						"cloud:root-unavailable",
-						$"{message} Startup continues in degraded mode.",
-						"No cloud storage root could be discovered. Startup continues in degraded mode.");
-				}
+					LogError<OsDiagnosticsLogScope>(lastException, "{Message}", message);
 
 				throw new DirectoryNotFoundException(message);
 			}
@@ -129,29 +116,11 @@ namespace OsLib     // aka OsLibCore
 			{
 				if (tempDir == null)
 				{
-					var activeConfig = Config;
-					string configuredTempDir = null;
-					try
-					{
-						configuredTempDir = (string)activeConfig.TempDir;
-					}
-					catch
-					{
-						configuredTempDir = null;
-					}
-
+					var activeConfig = Config as JObject;
+					var configuredTempDir = GetConfigString(activeConfig, "TempDir");
 					if (string.IsNullOrWhiteSpace(configuredTempDir))
-					{
-						var fallbackTempDir = EnsureTrailingDirectorySeparator(Path.GetTempPath());
-						if (string.IsNullOrWhiteSpace(fallbackTempDir))
-							fallbackTempDir = EnsureTrailingDirectorySeparator(Directory.GetCurrentDirectory());
-						tempDir = new RaiPath(fallbackTempDir);
-						LogWarningOnce<OsDiagnosticsLogScope>("config:tempdir-fallback", "TempDir missing or invalid in config. Falling back to operating system temp directory {TempDir}", tempDir.Path);
-					}
-					else
-					{
-						tempDir = new RaiPath(configuredTempDir);
-					}
+						throw new OsConfigValidationException($"TempDir is missing. {GetCloudStorageSetupGuidance()}");
+					tempDir = ResolveConfiguredDirectory(configuredTempDir);
 				}
 				return tempDir;
 			}
@@ -170,35 +139,18 @@ namespace OsLib     // aka OsLibCore
 		{
 			get
 			{
-				if (localBackupDir == null)
-				{
-					var activeConfig = Config;
-					string configuredLocalBackupDir = null;
-					try
-					{
-						configuredLocalBackupDir = (string)activeConfig.LocalBackupDir;
-					}
-					catch
-					{
-						configuredLocalBackupDir = null;
-					}
+				if (localBackupDir != null || localBackupDirDisabled)
+					return localBackupDir;
 
-					if (string.IsNullOrWhiteSpace(configuredLocalBackupDir))
-					{
-						localBackupDir = TempDir;
-						LogWarningOnce<OsDiagnosticsLogScope>("config:localbackup-fallback", "LocalBackupDir missing or invalid in config. Falling back to operating system temp directory {LocalBackupDir}", localBackupDir.Path);
-					}
-					else
-					{
-						var configuredPath = new RaiPath(configuredLocalBackupDir);
-						if (IsCloudPath(configuredPath.Path))
-						{
-							localBackupDir = TempDir;
-							LogWarningOnce<OsDiagnosticsLogScope>("config:localbackup-cloud-fallback", "Configured LocalBackupDir {ConfiguredLocalBackupDir} is cloud-backed. Falling back to operating system temp directory {LocalBackupDir}", configuredPath.Path, localBackupDir.Path);
-						}
-						else localBackupDir = configuredPath;
-					}
+				var activeConfig = Config as JObject;
+				var configuredLocalBackupDir = GetConfigString(activeConfig, "LocalBackupDir");
+				if (string.IsNullOrWhiteSpace(configuredLocalBackupDir))
+				{
+					localBackupDirDisabled = true;
+					return null;
 				}
+
+				localBackupDir = ResolveConfiguredDirectory(configuredLocalBackupDir);
 				return localBackupDir;
 			}
 		}
@@ -313,6 +265,7 @@ namespace OsLib     // aka OsLibCore
 		}
 
 		private static RaiPath localBackupDir = null;
+		private static bool localBackupDirDisabled;
 		private static OsType DetectOsType()
 		{
 			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))

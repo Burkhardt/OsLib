@@ -16,8 +16,7 @@ Remote machine requirements:
 - an SSH server that accepts the configured account
 - a readable `~/.config/RAIkeep/osconfig.json5`
 - a usable `TempDir`
-- a usable `LocalBackupDir`
-- cloud root directories that exist if remote cloud-sync tests are enabled
+- any configured remote cloud root directories must exist and be writable
 
 ## Current Local Config Shape
 
@@ -199,10 +198,9 @@ Example remote file:
 ```
 
 The tests assume:
-- `TempDir` resolves to an existing directory
-- `TempDir` is writable
-- `LocalBackupDir` exists and is writable when tested
-- remote cloud root directories exist when remote cloud-sync tests run
+- `TempDir` resolves to an existing writable directory
+- any configured remote cloud root directory exists and is writable
+- the remote `osconfig.json5` can be read without interactive prompts or manual repair during the test run
 
 ## Manual Verification
 
