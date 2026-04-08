@@ -11,9 +11,9 @@ public class CloudStorageAgreementMechanicsTests
 		using var env = new OsTestEnvironment(root);
 		var dropbox = (root / "DropboxRoot").Path;
 		var googleDrive = (root / "GoogleDriveRoot").Path;
+		env.WriteConfig(dropbox: dropbox, googleDrive: googleDrive);
 		Directory.CreateDirectory(dropbox);
 		Directory.CreateDirectory(googleDrive);
-		env.WriteConfig(dropbox: dropbox, googleDrive: googleDrive);
 		var expectedRoot = string.Empty;
 		var providerNames = new List<string>();
 		try
@@ -60,8 +60,8 @@ public class CloudStorageAgreementMechanicsTests
 		var root = OsTestEnvironment.NewTestRoot("cloud-agreement");
 		using var env = new OsTestEnvironment(root);
 		var configuredGoogle = (root / "ConfiguredGoogleDrive").Path;
-		Directory.CreateDirectory(configuredGoogle);
 		env.WriteConfig(googleDrive: configuredGoogle);
+		Directory.CreateDirectory(configuredGoogle);
 		var googleRoot = Os.GetCloudStorageRoot(Cloud.GoogleDrive).Path;
 		Assert.Equal(new RaiPath(configuredGoogle).Path, googleRoot);
 		var dropboxConfigured = true;
@@ -85,8 +85,8 @@ public class CloudStorageAgreementMechanicsTests
 		using var env = new OsTestEnvironment(root);
 
 		var oneDriveVariant = new RaiPath(env.Home) / "OneDrive - Mzansi";
-		Directory.CreateDirectory(oneDriveVariant.Path);
 		env.WriteConfig(oneDrive: oneDriveVariant.Path);
+		Directory.CreateDirectory(oneDriveVariant.Path);
 		Assert.Equal(oneDriveVariant.Path, Os.GetCloudStorageRoot(Cloud.OneDrive).Path);
 	}
 	[Fact]
@@ -95,8 +95,8 @@ public class CloudStorageAgreementMechanicsTests
 		var root = OsTestEnvironment.NewTestRoot("cloud-agreement");
 		using var env = new OsTestEnvironment(root);
 		var localBackup = (root / "local-backup").Path;
-		Directory.CreateDirectory(localBackup);
 		env.WriteConfig(localBackupDir: localBackup);
+		Directory.CreateDirectory(localBackup);
 		Assert.Equal(new RaiPath(localBackup).Path, Os.LocalBackupDir.Path);
 		Assert.False(new RaiFile(Os.LocalBackupDir.Path).Cloud);
 	}
@@ -107,9 +107,9 @@ public class CloudStorageAgreementMechanicsTests
 		using var env = new OsTestEnvironment(root);
 		var googleDrive = (root / "GoogleDriveRoot").Path;
 		var cloudBackedBackup = (new RaiPath(googleDrive) / "Backups").Path;
+		env.WriteConfig(localBackupDir: cloudBackedBackup, googleDrive: googleDrive);
 		Directory.CreateDirectory(googleDrive);
 		Directory.CreateDirectory(cloudBackedBackup);
-		env.WriteConfig(localBackupDir: cloudBackedBackup, googleDrive: googleDrive);
 		Assert.NotEqual(new RaiPath(cloudBackedBackup).Path, Os.LocalBackupDir.Path);
 		Assert.False(new RaiFile(Os.LocalBackupDir.Path).Cloud);
 	}
@@ -124,8 +124,6 @@ public class CloudStorageAgreementMechanicsTests
 		var localBackup = root / "local-backup";
 		var cloudRoot = root / rootName;
 		var projectDir = cloudRoot / "Work" / "Reports";
-		localBackup.mkdir();
-		projectDir.mkdir();
 		switch (provider)
 		{
 			case Cloud.Dropbox:
@@ -138,32 +136,52 @@ public class CloudStorageAgreementMechanicsTests
 				env.WriteConfig(localBackupDir: localBackup.ToString(), googleDrive: cloudRoot.ToString());
 				break;
 		}
+		Directory.CreateDirectory(localBackup.Path);
+		Directory.CreateDirectory(projectDir.Path);
 		var source = new TextFile(projectDir, "report.txt", content: "provider backup").Save();
-		Assert.Equal(new RaiPath("Work/Reports").Path, RaiFile.GetBackupDirectoryPath(source.Path).Path);
-		var backup = new RaiFile(source.backup(copy: true));
+		Assert.Equal($"Work{Os.DIR}Reports{Os.DIR}", RaiFile.BackupRelativePath(source.Path).Path);
+		var backup = source.backup(copy: true);
 		Assert.Equal((localBackup / "Work" / "Reports").ToString(), backup.Path.ToString());
 		Assert.True(File.Exists(backup.FullName));
 		Assert.True(File.Exists(source.FullName));
 	}
 	[Fact]
-	public void Backup_PreservesExistingLocalPathShaping_ForNonCloudFiles()
+	public void Backup_MirrorsLocalDirectoryShape_ForNonCloudFiles()
 	{
-		var root = OsTestEnvironment.NewTestRoot("cloud-agreement");
+		var root = OsTestEnvironment.NewTestRoot("backup", testName: "local-shape");
 		using var env = new OsTestEnvironment(root);
-		var localBackup = (root / "local-backup").Path;
-		var sourceDir = root / "project" / "logs";
-		Directory.CreateDirectory(localBackup);
+		var localBackup = root / "bak";
+		var sourceDir = root / "src" / "logs";
+		env.WriteConfig(localBackupDir: localBackup.Path);
+		Directory.CreateDirectory(localBackup.Path);
 		Directory.CreateDirectory(sourceDir.Path);
-		env.WriteConfig(localBackupDir: localBackup);
 		var source = new TextFile(sourceDir, "app.log", content: "local backup").Save();
-		var expectedRelativeDirectory = source.Path;
-		Assert.Equal(expectedRelativeDirectory.ToString(), RaiFile.GetBackupDirectoryPath(source.Path).ToString());
-		var backup = new RaiFile(source.backup(copy: true));
-		var expectedBackupPath = Os.LocalBackupDir / expectedRelativeDirectory;
-		var expectedBackupPathStr = expectedBackupPath.ToString();
-		var expectedBackupFullName = new RaiPath(Os.LocalBackupDir.Path + expectedRelativeDirectory).Path.ToString();
-		// Assert.Equal(new RaiPath(Os.LocalBackupDir.Path + expectedRelativeDirectory).Path.ToString(), backup.Path.ToString());
+
+		Assert.Equal(sourceDir.Path, new RaiPath(source.FullName).Path);
+		Assert.Equal(GetMirroredAbsoluteDirectoryTail(sourceDir), RaiFile.BackupRelativePath(source.Path).Path);
+
+		var backup = source.backup(copy: true);
+		Assert.Equal(MirrorAbsoluteDirectoryUnder(Os.LocalBackupDir, sourceDir), backup.Path.ToString());
 		Assert.True(File.Exists(backup.FullName));
 		Assert.True(File.Exists(source.FullName));
+	}
+	[Fact]
+	public void RaiPath_SlashString_AppendsRelativeDirectorySegments()
+	{
+		var root = OsTestEnvironment.NewTestRoot("backup", testName: "slash-string");
+		var appended = root / "src" / "logs";
+
+		Assert.StartsWith(root.Path, appended.Path);
+		Assert.EndsWith($"src{Os.DIR}logs{Os.DIR}", appended.Path);
+	}
+
+	private static string MirrorAbsoluteDirectoryUnder(RaiPath root, RaiPath absoluteDirectory)
+	{
+		return new RaiPath(root.Path + GetMirroredAbsoluteDirectoryTail(absoluteDirectory)).Path;
+	}
+
+	private static string GetMirroredAbsoluteDirectoryTail(RaiPath absoluteDirectory)
+	{
+		return absoluteDirectory.Path.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 	}
 }

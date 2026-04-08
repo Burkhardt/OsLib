@@ -129,12 +129,11 @@ namespace OsLib     // aka OsLibCore
 			{
 				if (tempDir == null)
 				{
+					var activeConfig = Config;
 					string configuredTempDir = null;
 					try
 					{
-						var activeConfig = Config;
-						if (activeConfig != null)
-							configuredTempDir = (string)activeConfig.TempDir;
+						configuredTempDir = (string)activeConfig.TempDir;
 					}
 					catch
 					{
@@ -173,12 +172,11 @@ namespace OsLib     // aka OsLibCore
 			{
 				if (localBackupDir == null)
 				{
+					var activeConfig = Config;
 					string configuredLocalBackupDir = null;
 					try
 					{
-						var activeConfig = Config;
-						if (activeConfig != null)
-							configuredLocalBackupDir = (string)activeConfig.LocalBackupDir;
+						configuredLocalBackupDir = (string)activeConfig.LocalBackupDir;
 					}
 					catch
 					{

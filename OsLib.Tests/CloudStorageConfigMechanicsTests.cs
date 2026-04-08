@@ -101,7 +101,7 @@ public class CloudStorageConfigMechanicsTests
 	}
 
 	[Fact]
-	public void LoadConfig_DoesNotCreateConfigFile_WhenMissing_AndReturnsFallbackDefaults()
+	public void LoadConfig_ThrowsWhenConfigFileMissing_AndDoesNotCreateConfigFile()
 	{
 		if (!Os.IsUnixLike)
 			return;
@@ -113,11 +113,11 @@ public class CloudStorageConfigMechanicsTests
 		Directory.CreateDirectory(googleDrive.Path);
 		env.DeleteConfig();
 
-		var config = Os.LoadConfig();
 		var configPath = Os.ConfigFileFullName;
+		var ex = Assert.Throws<FileNotFoundException>(() => Os.LoadConfig());
 
+		Assert.Contains(configPath, ex.Message);
 		Assert.False(File.Exists(configPath));
-		Assert.Null(config);
 	}
 
 	[Fact]

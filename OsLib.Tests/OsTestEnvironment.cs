@@ -23,9 +23,9 @@ internal sealed class OsTestEnvironment : IDisposable
 		LocalAppData = (root / "local-app-data").Path;
 		ConfigPath = new RaiFile(new RaiPath(Home) / ".config" / "RAIkeep", "osconfig", "json5").FullName;
 
-		new RaiPath(Home).mkdir();
-		new RaiPath(AppData).mkdir();
-		new RaiPath(LocalAppData).mkdir();
+		Directory.CreateDirectory(Home);
+		Directory.CreateDirectory(AppData);
+		Directory.CreateDirectory(LocalAppData);
 
 		SetEnvironmentVariable("HOME", Home);
 		SetEnvironmentVariable("USERPROFILE", Home);
@@ -99,7 +99,7 @@ internal sealed class OsTestEnvironment : IDisposable
 	{
 
 		var configFile = new RaiFile(ConfigPath);
-		configFile.Path.mkdir();
+		Directory.CreateDirectory(configFile.Path.Path);
 		var textFile = new TextFile(configFile.FullName)
 		{
 			Lines = json.ToString().Replace("\r\n", "\n").Split('\n').ToList()

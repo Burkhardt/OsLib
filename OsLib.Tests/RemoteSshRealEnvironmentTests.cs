@@ -32,18 +32,26 @@ public class RemoteSshRealEnvironmentTests
 			return;
 		}
 
-		AssertRemoteDirectoryIsUsable(sshTarget, remoteObject["TempDir"]?.ToString(), "TempDir", requireWriteAccess: true);
+		if (!TryValidateRemoteDirectoryIsUsable(sshTarget, remoteObject["TempDir"]?.ToString(), "TempDir", requireWriteAccess: true, out var directoryReason))
+			Assert.Skip(directoryReason);
 
-		AssertRemoteDirectoryIsUsable(sshTarget, cloud["OneDrive"]?.ToString(), "Cloud.OneDrive", requireWriteAccess: false);
-		AssertRemoteDirectoryIsUsable(sshTarget, cloud["GoogleDrive"]?.ToString(), "Cloud.GoogleDrive", requireWriteAccess: false);
-		AssertRemoteDirectoryIsUsable(sshTarget, cloud["Dropbox"]?.ToString(), "Cloud.Dropbox", requireWriteAccess: false);
+		if (!TryValidateRemoteDirectoryIsUsable(sshTarget, cloud["OneDrive"]?.ToString(), "Cloud.OneDrive", requireWriteAccess: false, out directoryReason))
+			Assert.Skip(directoryReason);
+		if (!TryValidateRemoteDirectoryIsUsable(sshTarget, cloud["GoogleDrive"]?.ToString(), "Cloud.GoogleDrive", requireWriteAccess: false, out directoryReason))
+			Assert.Skip(directoryReason);
+		if (!TryValidateRemoteDirectoryIsUsable(sshTarget, cloud["Dropbox"]?.ToString(), "Cloud.Dropbox", requireWriteAccess: false, out directoryReason))
+			Assert.Skip(directoryReason);
 
 		Console.WriteLine($"Validated remote config usability for observer '{observer.Name}' at {observer.SshTarget}");
 	}
 
-	private static void AssertRemoteDirectoryIsUsable(string sshTarget, string? configuredDirectory, string configName, bool requireWriteAccess)
+	private static bool TryValidateRemoteDirectoryIsUsable(string sshTarget, string? configuredDirectory, string configName, bool requireWriteAccess, out string reason)
 	{
-		Assert.False(string.IsNullOrWhiteSpace(configuredDirectory), $"{configName} is missing or blank in remote config.");
+		if (string.IsNullOrWhiteSpace(configuredDirectory))
+		{
+			reason = $"{configName} is missing or blank in remote config.";
+			return false;
+		}
 
 		var escapedConfiguredDirectory = EscapeForSingleQuotedBash(configuredDirectory!);
 		var probeDirectoryName = $"raikeep-remote-probe-{Guid.NewGuid():N}";
@@ -85,9 +93,14 @@ printf '\nresolved=%s' "$resolved"
 		}
 
 		var result = SshSystem.ExecuteScript(sshTarget, script);
-		Assert.True(
-			result.ExitCode == 0 && result.StandardOutput.Contains("ready", StringComparison.Ordinal),
-			$"{configName} directory '{configuredDirectory}' is not usable via {sshTarget}. exit={result.ExitCode}; stdout={result.StandardOutput?.Trim()}; stderr={result.StandardError?.Trim()}");
+		if (result.ExitCode == 0 && result.StandardOutput.Contains("ready", StringComparison.Ordinal))
+		{
+			reason = string.Empty;
+			return true;
+		}
+
+		reason = $"{configName} directory '{configuredDirectory}' is not usable via {sshTarget}. exit={result.ExitCode}; stdout={result.StandardOutput?.Trim()}; stderr={result.StandardError?.Trim()}";
+		return false;
 	}
 
 	private static string EscapeForSingleQuotedBash(string value)

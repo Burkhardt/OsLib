@@ -7,7 +7,7 @@ namespace OsLib.Tests;
 public class OsConfigurationDiagnosticsTests
 {
 	[Fact]
-	public void LoadConfig_MissingConfig_LogsError_AndWritesStartupDiagnostic()
+	public void LoadConfig_MissingConfig_Throws_AndWritesStartupDiagnostic()
 	{
 		var root = OsTestEnvironment.NewTestRoot("os-diagnostics");
 		using var env = new OsTestEnvironment(root);
@@ -17,15 +17,16 @@ public class OsConfigurationDiagnosticsTests
 		var startupSink = new TestStartupDiagnosticSink();
 		Os.ConfigureDiagnostics(loggerFactory, startupSink);
 
-		_ = Os.LoadConfig();
+		var ex = Assert.Throws<FileNotFoundException>(() => Os.LoadConfig());
 
+		Assert.Contains(env.ConfigPath, ex.Message);
 		Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("missing", StringComparison.OrdinalIgnoreCase));
-		Assert.Contains(startupSink.Messages, message => message.Contains("degraded mode", StringComparison.OrdinalIgnoreCase));
+		Assert.Contains(startupSink.Messages, message => message.Contains("cannot continue", StringComparison.OrdinalIgnoreCase));
 		Assert.False(File.Exists(env.ConfigPath));
 	}
 
 	[Fact]
-	public void LoadConfig_MalformedConfig_LogsError_AndWritesStartupDiagnostic()
+	public void LoadConfig_MalformedConfig_Throws_AndWritesStartupDiagnostic()
 	{
 		var root = OsTestEnvironment.NewTestRoot("os-diagnostics");
 		using var env = new OsTestEnvironment(root);
@@ -39,8 +40,9 @@ public class OsConfigurationDiagnosticsTests
 		var startupSink = new TestStartupDiagnosticSink();
 		Os.ConfigureDiagnostics(loggerFactory, startupSink);
 
-		_ = Os.LoadConfig();
+		var ex = Assert.Throws<InvalidDataException>(() => Os.LoadConfig());
 
+		Assert.Contains(env.ConfigPath, ex.Message);
 		Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Error && entry.Message.Contains("malformed", StringComparison.OrdinalIgnoreCase));
 		Assert.Contains(startupSink.Messages, message => message.Contains("malformed", StringComparison.OrdinalIgnoreCase));
 	}

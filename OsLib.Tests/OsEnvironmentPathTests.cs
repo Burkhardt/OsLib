@@ -17,14 +17,15 @@ public class OsEnvironmentPathTests
 	}
 
 	[Fact]
-	public void TempDir_MatchesSystemTempPath_WhenNotConfigured()
+	public void TempDir_ThrowsWhenConfigFileMissing()
 	{
 		var root = OsTestEnvironment.NewTestRoot("env-paths");
 		using var env = new OsTestEnvironment(root);
 		env.DeleteConfig();
 
-		Assert.Equal(Path.GetTempPath(), Os.TempDir.Path);
-		Assert.True(Path.IsPathRooted(Os.TempDir.Path));
+		var ex = Assert.Throws<FileNotFoundException>(() => _ = Os.TempDir.Path);
+
+		Assert.Contains(env.ConfigPath, ex.Message);
 	}
 
 	[Fact]
@@ -166,7 +167,7 @@ public class OsEnvironmentPathTests
 	}
 
 	[Fact]
-	public void ConfiguredOnlyCloudResolution_DoesNotCreateMissingConfigFile()
+	public void IsCloudPath_ThrowsWhenConfigFileMissing_AndDoesNotCreateConfigFile()
 	{
 		var root = OsTestEnvironment.NewTestRoot("env-paths");
 		using var env = new OsTestEnvironment(root);
@@ -174,9 +175,9 @@ public class OsEnvironmentPathTests
 
 		Assert.False(File.Exists(env.ConfigPath));
 
-		var isCloud = Os.IsCloudPath((root / "some-path").Path);
+		var ex = Assert.Throws<FileNotFoundException>(() => Os.IsCloudPath((root / "some-path").Path));
 
-		Assert.False(isCloud);
+		Assert.Contains(env.ConfigPath, ex.Message);
 		Assert.False(File.Exists(env.ConfigPath));
 	}
 

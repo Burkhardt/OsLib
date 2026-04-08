@@ -59,21 +59,20 @@ namespace OsLib
 			try
 			{
 				var cf = configFullName ?? ConfigFileFullName;
-				// read it from disk
+				if (!File.Exists(cf))
+				{
+					config = null;
+					InvalidateConfiguredPathCaches();
+					ReportStartupCritical<OsDiagnosticsLogScope>(
+						"config:missing",
+						$"Config file missing at {cf}. Startup cannot continue.",
+						"Config file missing at {ConfigPath}. Startup cannot continue.",
+						cf);
+					throw new FileNotFoundException($"Config file missing at {cf}. Startup cannot continue.", cf);
+				}
+
 				try
 				{
-					if (!File.Exists(cf))
-					{
-						config = null;
-						InvalidateConfiguredPathCaches();
-						ReportStartupCritical<OsDiagnosticsLogScope>(
-							"config:missing",
-							$"Config file missing at {cf}. Startup continues in degraded mode.",
-							"Config file missing at {ConfigPath}. Startup continues in degraded mode.",
-							cf);
-						return config;
-					}
-
 					var json = File.ReadAllText(cf);
 					if (string.IsNullOrWhiteSpace(json))
 					{
@@ -81,10 +80,10 @@ namespace OsLib
 						InvalidateConfiguredPathCaches();
 						ReportStartupCritical<OsDiagnosticsLogScope>(
 							"config:empty",
-							$"Config file malformed or empty at {cf}. Startup continues in degraded mode.",
-							"Config file malformed or empty at {ConfigPath}. Startup continues in degraded mode.",
+							$"Config file malformed or empty at {cf}. Startup cannot continue.",
+							"Config file malformed or empty at {ConfigPath}. Startup cannot continue.",
 							cf);
-						return config;
+						throw new InvalidDataException($"Config file malformed or empty at {cf}. Startup cannot continue.");
 					}
 
 					config = JsonConvert.DeserializeObject<dynamic>(json);
@@ -93,10 +92,10 @@ namespace OsLib
 						InvalidateConfiguredPathCaches();
 						ReportStartupCritical<OsDiagnosticsLogScope>(
 							"config:malformed-null",
-							$"Config file malformed at {cf}. Startup continues in degraded mode.",
-							"Config file malformed at {ConfigPath}. Startup continues in degraded mode.",
+							$"Config file malformed at {cf}. Startup cannot continue.",
+							"Config file malformed at {ConfigPath}. Startup cannot continue.",
 							cf);
-						return config;
+						throw new InvalidDataException($"Config file malformed at {cf}. Startup cannot continue.");
 					}
 
 					InvalidateConfiguredPathCaches();
@@ -111,16 +110,17 @@ namespace OsLib
 					{
 					}
 				}
-				catch (Exception ex)
+				catch (Exception ex) when (ex is not InvalidDataException)
 				{
 					config = null;
 					InvalidateConfiguredPathCaches();
 					ReportStartupCritical<OsDiagnosticsLogScope>(
 						"config:malformed",
 						ex,
-						$"Config file malformed at {cf}. Startup continues in degraded mode.",
-						"Config file malformed at {ConfigPath}. Startup continues in degraded mode.",
+						$"Config file malformed at {cf}. Startup cannot continue.",
+						"Config file malformed at {ConfigPath}. Startup cannot continue.",
 						cf);
+					throw new InvalidDataException($"Config file malformed at {cf}. Startup cannot continue.", ex);
 				}
 			}
 			finally
@@ -131,6 +131,10 @@ namespace OsLib
 		}
 
 		private const string cloudDiscoveryGuidePath = "OsLib/CLOUD_STORAGE_DISCOVERY.md";
+		private static bool IsFatalConfigLoadException(Exception ex)
+		{
+			return ex is FileNotFoundException || ex is InvalidDataException;
+		}
 		public static bool IsCloudPath(RaiPath p) => IsCloudPath(p?.ToString());
 		public static bool IsCloudPath(string path)
 		{
@@ -154,7 +158,7 @@ namespace OsLib
 						return true;
 				}
 			}
-			catch (Exception ex)
+			catch (Exception ex) when (!IsFatalConfigLoadException(ex))
 			{
 				LogError<OsDiagnosticsLogScope>(ex, "Error checking if path is a cloud path: {Path}", path);
 			}
@@ -178,7 +182,7 @@ namespace OsLib
 					sb.AppendLine($"- {provider}: {(string.IsNullOrWhiteSpace(root) ? "<not configured>" : root)}");
 				}
 			}
-			catch (Exception ex)
+			catch (Exception ex) when (!IsFatalConfigLoadException(ex))
 			{
 				LogError<OsDiagnosticsLogScope>(ex, "Error generating cloud discovery report");
 			}
@@ -205,7 +209,7 @@ namespace OsLib
 						order.Add(provider.ToString());
 				}
 			}
-			catch (Exception ex)
+			catch (Exception ex) when (!IsFatalConfigLoadException(ex))
 			{
 				LogError<OsDiagnosticsLogScope>(ex, "Error reading configured default cloud order");
 			}

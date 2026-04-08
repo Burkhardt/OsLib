@@ -97,7 +97,7 @@ namespace OsLib
 		const int maxWaitCount = 60;  // raised from 15 as a result of a failed test case: TestComparePic9AndPic7ZoomTrees, 2012-12-23, RSB.
 									  // raised from 20 as a result of a failed test case: TestUserRoleSubscriberAccess, Pic8, 2014-03-03, RSB.
 									  // raised from 25 as a result of a failed test runs on Pic8 (which probably has a slow disk compared to other servers), 2014-03-16, RSB.
-		private string name;
+		protected string name;
 		public bool Cloud;
 		/// <summary>
 		/// // without dir structure and without extension
@@ -106,8 +106,8 @@ namespace OsLib
 		{
 			get { return string.IsNullOrEmpty(name) ? string.Empty : name; }
 			set // sets name and ext; override to set more name components
-			{	
-				(_, string n) = RaiPath.splitPathAndName(value);
+			{
+				(_, string n) = RaiPath.SplitPathAndName(value);
 				(name, ext) = splitNameAndExt(n, ext);
 			}
 		}
@@ -525,50 +525,49 @@ namespace OsLib
 		/// <param name="copy">moves if false, copies otherwise</param>
 		/// <returns>name of backupfile is the same as the original file plus a timestamp; same Ext</returns>
 		/// <remarks>the Os.LocalBackupDir will be used</remarks>
-		public string backup(bool copy = false)
+		public RaiFile backup(bool copy = false)
 		{
 			if (!File.Exists(FullName))
 				return null;   // no file no backup
 			var backupFile = new RaiFile(FullName);
-			backupFile.Path = Os.LocalBackupDir / GetBackupRelativeDirectoryPath(backupFile.FullName);
+			backupFile.Path = Os.LocalBackupDir / BackupRelativePath(backupFile.Path);
 			backupFile.mkdir();
 			backupFile.Name = backupFile.Name + "_" + DateTimeOffset.UtcNow.ToString(Os.DATEFORMAT);
 			backupFile.Ext = Ext;
 			if (copy)
 				backupFile.cp(this);
 			else backupFile.mv(this);
-			return backupFile.FullName;
+			return backupFile;
 		}
 		/// <summary>
-		/// Breaking change: Prepends the Os.LocalBackupDir to the passed-in Path (without drive letter if Windows)
+		/// Returns the relative directory tail that gets appended under Os.LocalBackupDir
+		/// during backup. Cloud-backed paths are made relative to their configured cloud
+		/// root; local absolute paths have their machine-specific root stripped.
 		/// </summary>
-		/// <param name="sourceDirectoryPath"></param>
-		/// <returns></returns>
-		internal static RaiPath GetBackupDirectoryPath(RaiPath sourceDirectoryPath)
+		internal static RaiRelPath BackupRelativePath(RaiPath sourceDirectoryPath)
 		{
-			return GetBackupRelativeDirectoryPath(sourceDirectoryPath?.ToString());
-		}
-		internal static RaiPath GetBackupRelativeDirectoryPath(string sourcePath)
-		{
+			var sourcePath = sourceDirectoryPath?.Path;
 			if (string.IsNullOrWhiteSpace(sourcePath))
-				return new RaiPath(string.Empty);
-			var normalizedSourcePath = Os.NormSeperator(Os.ExpandLeadingDirectorySymbols(sourcePath));
+				return new RaiRelPath();
 			foreach (Cloud provider in Enum.GetValues(typeof(Cloud)))
 			{
 				var cloudRoot = Os.GetCloudStorageRoot(provider)?.Path;
 				if (string.IsNullOrWhiteSpace(cloudRoot))
 					continue;
-				if (!normalizedSourcePath.StartsWith(cloudRoot, StringComparison.OrdinalIgnoreCase))
+				if (!sourcePath.StartsWith(cloudRoot, StringComparison.OrdinalIgnoreCase))
 					continue;
-				var relativePath = normalizedSourcePath.Substring(cloudRoot.Length)
+				var relative = sourcePath.Substring(cloudRoot.Length)
 					.TrimStart(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
-				if (normalizedSourcePath.EndsWith(Os.DIR, StringComparison.Ordinal))
-					relativePath = relativePath.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
-				return new RaiPath(relativePath);
+				return string.IsNullOrWhiteSpace(relative)
+					? new RaiRelPath()
+					: new RaiRelPath(relative);
 			}
-			if (Os.IsWindows && normalizedSourcePath.Length > 1 && normalizedSourcePath[1] == ':')
-				normalizedSourcePath = normalizedSourcePath.Substring(2);
-			return new RaiPath(normalizedSourcePath);
+			if (Os.IsWindows && sourcePath.Length > 2 && sourcePath[1] == ':')
+				return new RaiRelPath(sourcePath.Substring(3));
+			var stripped = sourcePath.TrimStart(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+			return string.IsNullOrWhiteSpace(stripped)
+				? new RaiRelPath()
+				: new RaiRelPath(stripped);
 		}
 		public string[] DirList
 		{
