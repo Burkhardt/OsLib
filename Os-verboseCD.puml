@@ -1,5 +1,5 @@
 @startuml OsLib-Os-Verbose-ClassDiagram
-' Release: 3.7.3
+' Release: 3.7.4
 
 title OsLib Os Verbose Class Diagram
 
@@ -46,12 +46,6 @@ package "OsLib" {
 		Ubuntu
 	}
 
-	enum "<size:18>Cloud</size>" as Cloud << (E,#f59e0b) >> {
-		Dropbox
-		OneDrive
-		GoogleDrive
-	}
-
 	interface "<size:18>IStartupDiagnosticSink</size>" as IStartupDiagnosticSink {
 		+WriteError(message : string) : void
 	}
@@ -61,31 +55,35 @@ package "OsLib" {
 	}
 
 	class "<size:18>OsDiagnosticsLogScope</size>" as OsDiagnosticsLogScope {
-		-internal OsDiagnosticsLogScope(category : string)
-		+Dispose() : void
-		--
-		-category : string
 	}
 
-	class "<size:18>DisposableScope</size>" as DisposableScope {
-		-internal DisposableScope(onDispose : Action)
-		+Dispose() : void
-		--
-		-onDispose : Action
-		-disposed : bool
+	class "<size:18>CloudPathWiring</size>" as CloudPathWiring {
+		+{static} Initialize() : void
 	}
 
 	class "<size:18>RaiPath</size>" as RaiPath {
 		+Path : string
+		+Parent : RaiPath
+		+Cloud : bool
+		+{static} InvalidFileNameChars : char[]
+		+{static} CloudEvaluator : Func<string, bool>
 		+RaiPath(s : string = ".")
+		+RaiPath(other : RaiPath)
+		+RaiPath(other : RaiBasePath)
 		+RaiPath(f : RaiFile)
 		+operator /(self : RaiPath, subDir : string) : RaiPath
-		+operator /(self : RaiPath, subDir : RaiPath) : RaiPath
-		+GetFiles(searchPattern : string, searchOption : SearchOption = TopDirectoryOnly) : List<RaiFile>
+		+operator /(self : RaiPath, subDir : RaiRelPath) : RaiPath
+		+SplitRaiPathAndName(filename : string) : (RaiPath path, string name)
 		+EnumerateFiles(searchPattern : string, searchOption : SearchOption = TopDirectoryOnly) : IEnumerable<RaiFile>
 		+Exists() : bool
 		+mkdir() : RaiPath
+		+mkdir(dirname : string = null) : RaiPath
 		+rmdir(depth : int = 0, deleteFiles : bool = false) : void
+		--
+		~splitPathAndName(pathAndName : string) : (string path, string name)
+		-{static} maxWaitCount : int
+		-awaitDirMaterializing() : int
+		-awaitDirVanishing() : int
 	}
 
 	class "<size:18>RaiFile</size>" as RaiFile {
@@ -107,58 +105,29 @@ package "OsLib" {
 		+{static} AppRootDir : RaiPath
 		+{static} TempDir : RaiPath
 		+{static} LocalBackupDir : RaiPath
-		+{static} CloudStorageRootDir : RaiPath
-		+{static} CloudProviders : string[]
 		+{static} Config : dynamic
+		+{static} IsConfigLoaded : bool
 		+{static} ConfigFileFullName : string
-		+{static} RemoteConfigs : IReadOnlyDictionary<string, dynamic>
 		--
 		+{static} ConfigureDiagnostics(loggerFactory : ILoggerFactory, startupDiagnosticSink : IStartupDiagnosticSink = null) : void
 		+{static} ParseDateTime(datetimeInDATEFORMAT : string) : DateTimeOffset
-		+{static} escapeParam(param : string) : string
-		+{static} escapeBlank(name : string) : string
-		+{static} winInternal(fullname : string) : string
-		+{static} NormPath(path : string) : string
 		+{static} Escape(s : string, mode : EscapeMode) : string
+		+{static} NormPath(path : string) : string
 		+{static} NormSeperator(s : string) : string
 		+{static} NewShortId(length : int = 4) : string
-		+{static} IsCloudPath(path : RaiPath) : bool
-		+{static} IsCloudPath(path : string) : bool
-		+{static} LoadConfig(configFullName : string = null) : dynamic
-		+{static} GetCloudDiscoveryReport(refresh : bool = false) : string
-		+{static} GetCloudConfigurationDiagnosticReport(refresh : bool = false) : string
-		+{static} GetCloudStorageSetupGuidance() : string
-		+{static} GetCloudStorageProviderForPath(path : RaiPath) : Cloud
-		+{static} GetCloudStorageRoot(provider : Cloud, refresh : bool = false) : RaiPath
-		+{static} GetObserverSshTarget(observerName : string) : string
-		+{static} GetRemoteConfig(observer : string, refresh : bool = false) : dynamic
-		+{static} GetRemoteCloudRootFromConfig(observerName : string, provider : Cloud? = null, refresh : bool = false) : string
-		+{static} GetRemoteTempDirFromConfig(observerName : string, refresh : bool = false) : string
-		+{static} TryGetRemoteConfig(observerName : string, remoteConfig : dynamic) : bool
-		+{static} InvalidateRemoteConfig(observerName : string = null) : void
-		~{static} ParseCloudRootFromConfigJson(json : string, provider : Cloud) : string
-		~{static} ParseTempDirFromConfigJson(json : string) : string
-		~{static} GetLogger<TCategory>() : ILogger<TCategory>
-		~{static} LogDebug<TCategory>(message : string, args : object[]) : void
-		~{static} LogInformation<TCategory>(message : string, args : object[]) : void
-		~{static} LogWarning<TCategory>(message : string, args : object[]) : void
-		~{static} LogWarningOnce<TCategory>(key : string, message : string, args : object[]) : void
-		~{static} LogError<TCategory>(ex : Exception, message : string, args : object[]) : void
-		~{static} ReportStartupCritical<TCategory>(key : string, consoleMessage : string, logMessage : string, args : object[]) : void
-		~{static} ReportStartupCritical<TCategory>(key : string, ex : Exception, consoleMessage : string, logMessage : string, args : object[]) : void
-		~{static} ResetDiagnosticsForTesting() : void
-		~{static} EnsureTrailingDirectorySeparator(s : string) : string
-		~{static} ParentDirectory(s : string) : string
-		~{static} ExpandLeadingDirectorySymbols(s : string) : string
+		+{static} EscapeParam(param : string) : string
+		+{static} EscapeBlank(name : string) : string
+		+{static} WinInternal(fullname : string) : string
+		--
+		~{static} resetDiagnosticsForTesting() : void
+		~{static} ensureTrailingDirSeparator(s : string) : string
+		~{static} parentDir(s : string) : string
+		~{static} expandLeadingDirSymbols(s : string) : string
+		--
 		-{static} defaultConfigFileLocation : string
-		-{static} defaultCloudOrder : Cloud[]
-		-{static} cloudDiscoveryGuidePath : string
 		-{static} config : dynamic
-		-{static} remoteConfigs : ConcurrentDictionary<string, dynamic>
-		-{static} configLoadDepth : int
 		-{static} userHomeDir : RaiPath
 		-{static} appRootDir : RaiPath
-		-{static} cloudStorageRootDir : RaiPath
 		-{static} type : OsType?
 		-{static} tempDir : RaiPath
 		-{static} localBackupDir : RaiPath
@@ -166,33 +135,29 @@ package "OsLib" {
 		-{static} loggerFactory : ILoggerFactory
 		-{static} startupDiagnosticSink : IStartupDiagnosticSink
 		-{static} emittedDiagnostics : HashSet<string>
-		-{static} IsConfigLoading : bool
-		-{static} InvalidateConfiguredPathCaches() : void
-		-{static} TryAddRoot(roots : Dictionary<Cloud, string>, provider : Cloud, candidate : string) : bool
-		-{static} NormalizePathForComparison(value : string) : string
-		-{static} GetIntrinsicUserHomePath() : string
-		-{static} PathIsUnderCloudRoot(normalizedCandidate : string, root : string) : bool
-		-{static} IsDropboxMetadataPath(normalizedPath : string) : bool
-		-{static} SafeEnumerateDirectories(path : string, pattern : string) : IEnumerable<string>
-		-{static} GetEffectiveDefaultCloudOrder(activeConfig : dynamic = null) : IReadOnlyList<Cloud>
-		-{static} GetConfiguredCloudRootOrEmpty(activeConfig : dynamic, provider : Cloud) : string
-		-{static} DetectOsType() : OsType
-		-{static} IsUbuntuRuntime() : bool
-		-{static} TryRegisterDiagnostic(key : string) : bool
-		-{static} WriteStartupDiagnosticOnce(key : string, message : string) : void
-		-{static} ResetDiagnosticState() : void
+		-{static} loadConfig() : void
+		-{static} tryRegisterDiagnostic(key : string) : bool
+		-{static} resetDiagnosticState() : void
+		===
+		~{static} GetLogger<TCategory>() : ILogger<TCategory>
+		~{static} LogDebug<TCategory>(message : string, args : object[]) : void
+		~{static} LogInformation<TCategory>(message : string, args : object[]) : void
+		~{static} LogWarning<TCategory>(message : string, args : object[]) : void
+		~{static} LogWarningOnce<TCategory>(key : string, message : string, args : object[]) : void
+		~{static} LogError<TCategory>(ex : Exception, message : string, args : object[]) : void
 	}
 }
 
 ConsoleErrorStartupDiagnosticSink ..|> IStartupDiagnosticSink
 Os ..> EscapeMode : uses
 Os ..> OsType : uses
-Os ..> Cloud : cloud provider selection
 Os ..> RaiPath : path contracts
 Os ..> RaiFile : config file resolution
 Os ..> IStartupDiagnosticSink : diagnostics sink
 Os ..> OsDiagnosticsLogScope : log category
-Os ..> DisposableScope : scoped overrides
+CloudPathWiring ..> Os : boot-state check
+CloudPathWiring ..> RaiPath : assigns evaluator
+RaiPath ..> Os : path normalization
 
 class "Legend<size:10>ⓈⒶⓅ</size>" as LegendSample {
 	+{static} staticMethod() : void
@@ -223,8 +188,11 @@ note bottom of Os
 	- private
 	members aggregated
 	from Os.cs
-	Os.CloudStorage.cs
+	Os.Config.cs
 	Os.Diagnostics.cs
+	CloudPathWiring.cs is shown
+	as the delegate bridge for
+	RaiPath cloud awareness.
 end note
 
 @enduml

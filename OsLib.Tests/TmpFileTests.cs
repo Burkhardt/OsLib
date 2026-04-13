@@ -75,7 +75,7 @@ public class TmpFileTests
 
 			Assert.True(sut.Exists());
 			Assert.Equal(deep.Path, sut.Path.ToString());
-			Assert.False(new RaiFile(deep.Path).dirEmpty);
+			Assert.False(new RaiFile(deep.Path).DirEmpty);
 		}
 		finally
 		{

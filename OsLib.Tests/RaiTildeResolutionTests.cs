@@ -11,25 +11,27 @@ public class RaiTildeResolutionTests
 	[Fact]
 	public void RaiFile_And_RaiPath_Parse_ConfigPath_From_RealHomeDirectory()
 	{
-		var expectedPath = $"{userHomeDir}.config{Path.DirectorySeparatorChar}RAIkeep{Path.DirectorySeparatorChar}"; // i.e. /Users/RSB/.config/RAIkeep/
+		var expectedPath = $"{userHomeDir}.config{Path.DirectorySeparatorChar}"; // i.e. /Users/RSB/.config/
 
-		var file = new RaiFile("~/.config/RAIkeep/osconfig.json5");
+		var file = new RaiFile("~/.config/RAIkeep.json5");
 		Assert.Equal(expectedPath, file.Path.ToString());
-		Assert.Equal("osconfig", file.Name);
+		Assert.Equal("RAIkeep", file.Name);
 		Assert.Equal("json5", file.Ext);
 
-		var path = new RaiPath("~/.config/RAIkeep/osconfig.json5");
-		Assert.Equal(expectedPath, path.Path.ToString());
+		(var path, _) = RaiPath.SplitRaiPathAndName("~/.config/RAIkeep.json5");
+		Assert.Equal(expectedPath, path.FullPath);
 	}
 	[Fact]
 	public void RaiFile_And_RaiPath_Parse()
 	{
 		var expected = $"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}samples{Path.DirectorySeparatorChar}otw.software.json"; // i.e. /Users/RSB/test/
 
-		var path = new RaiPath("samples/otw.software.json");
+		(var path, _) = RaiPath.SplitRaiPathAndName("samples/otw.software.json");
 		var file1 = new RaiFile(path, "otw.software.json");
 		var file2 = new RaiFile("samples/otw.software.json");
 		var file3 = new RaiFile(path, "otw.software", "json");
+		Assert.StartsWith(Os.DIR, path.FullPath);
+		Assert.EndsWith($"samples{Os.DIR}", path.FullPath);
 		Assert.Equal("otw.software", file1.Name);
 		Assert.Equal("otw.software", file2.Name);
 		Assert.Equal("otw.software", file3.Name);
@@ -74,17 +76,20 @@ public class RaiTildeResolutionTests
 		Assert.Equal(otwSoftwareConfig, file4.FullName);
 	}
 	[Fact]
-	public void RaiPath_Only_Takes_Path_From_FullName()
+	public void RaiPath_AlwaysTakeParameterAsPath_Split_FullName_First()
 	{
-		var expectedPath = $"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}samples{Path.DirectorySeparatorChar}"; // i.e. /Users/RSB/test/samples/
-		var expectedFile = $"{expectedPath}otw.software.json";
-		var expectedButWrongFile = $"{expectedPath}samples{Path.DirectorySeparatorChar}otw.software.json"; 
-		
-		var path = new RaiPath("samples/otw.software.json");	// everything after / is not considered part of the path, but part of the filename
-		Assert.Equal(expectedPath, path.Path.ToString());
-		var file = new RaiFile(path, "samples/otw.software.json");
-		Assert.Equal(expectedButWrongFile, file.FullName);
-		var file2 = new RaiFile(path, "otw.software.json");
-		Assert.Equal(expectedFile, file2.FullName);
+		var expectedPath = $"{Directory.GetCurrentDirectory()}{Os.DIR}otw.software{Os.DIR}"; // i.e. /Users/RSB/test/samples/
+		var expectedFile = $"{expectedPath}sample.json"; // i.e. /Users/RSB/test/samples/otw.software/sample.json
+		var expectedButNotIntendedPath = $"{expectedPath}sample.json{Os.DIR}";
+		var expectedButNotIntendedFile = $"{expectedButNotIntendedPath}sample.json";
+		var path1 = new RaiPath("otw.software/sample.json");	// everything after / is now also considered part of the path, not part of the filename
+		var path2 = new RaiPath("otw.software/sample.json/");   // everything after / is now also considered part of the path, not part of the filename
+		Assert.Equal(expectedButNotIntendedPath, path1.FullPath);
+		Assert.Equal(expectedButNotIntendedPath, path2.FullPath);
+		var (path3, nameWithExt) = RaiPath.SplitRaiPathAndName("otw.software/sample.json");
+		var file1 = new RaiFile(path3, nameWithExt);
+		Assert.Equal(expectedFile, file1.FullName);
+		var file2 = new RaiFile(path2, "sample.json");
+		Assert.Equal(expectedButNotIntendedFile, file2.FullName);
 	}
 }

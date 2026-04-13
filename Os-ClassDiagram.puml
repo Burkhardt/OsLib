@@ -1,5 +1,5 @@
 @startuml OsLib-Os-ClassDiagram
-' Release: 3.7.3
+' Release: 3.7.4
 
 title OsLib Os Class Diagram
 
@@ -46,18 +46,19 @@ package "OsLib" {
 		Ubuntu
 	}
 
-	enum "<size:18>Cloud</size>" as Cloud << (E,#f59e0b) >> {
-		Dropbox
-		OneDrive
-		GoogleDrive
-	}
-
 	interface "<size:18>IStartupDiagnosticSink</size>" as IStartupDiagnosticSink {
 		+WriteError(message : string) : void
 	}
 
+	class "<size:18>CloudPathWiring</size>" as CloudPathWiring {
+		+{static} Initialize() : void
+	}
+
 	class "<size:18>RaiPath</size>" as RaiPath {
+		+{static} CloudEvaluator : Func<string, bool>
+		+Cloud : bool
 		+RaiPath(s : string = ".")
+		+RaiPath(other : RaiPath)
 		+RaiPath(f : RaiFile)
 	}
 
@@ -80,11 +81,9 @@ package "OsLib" {
 		+{static} AppRootDir : RaiPath
 		+{static} TempDir : RaiPath
 		+{static} LocalBackupDir : RaiPath
-		+{static} CloudStorageRootDir : RaiPath
-		+{static} CloudProviders : string[]
 		+{static} Config : dynamic
+		+{static} IsConfigLoaded : bool
 		+{static} ConfigFileFullName : string
-		+{static} RemoteConfigs : IReadOnlyDictionary<string, dynamic>
 		--
 		+{static} ConfigureDiagnostics(loggerFactory : ILoggerFactory, startupDiagnosticSink : IStartupDiagnosticSink = null) : void
 		+{static} ParseDateTime(datetimeInDATEFORMAT : string) : DateTimeOffset
@@ -92,32 +91,20 @@ package "OsLib" {
 		+{static} NormPath(path : string) : string
 		+{static} NormSeperator(s : string) : string
 		+{static} NewShortId(length : int = 4) : string
-		+{static} IsCloudPath(path : string) : bool
-		+{static} IsCloudPath(path : RaiPath) : bool
-		+{static} LoadConfig(configFullName : string = null) : dynamic
 		+{static} EscapeParam(param : string) : string
 		+{static} EscapeBlank(name : string) : string
 		+{static} WinInternal(fullname : string) : string
-		+{static} GetCloudStorageRoot(provider : Cloud, refresh : bool = false) : RaiPath
-		+{static} GetCloudStorageProviderForPath(path : RaiPath) : Cloud
-		+{static} GetCloudDiscoveryReport(refresh : bool = false) : string
-		+{static} GetCloudConfigurationDiagnosticReport(refresh : bool = false) : string
-		+{static} GetCloudStorageSetupGuidance() : string
-		+{static} GetObserverSshTarget(observerName : string) : string
-		+{static} GetRemoteConfig(observer : string, refresh : bool = false) : dynamic
-		+{static} GetRemoteCloudRootFromConfig(observerName : string, provider : Cloud? = null, refresh : bool = false) : string
-		+{static} GetRemoteTempDirFromConfig(observerName : string, refresh : bool = false) : string
-		+{static} TryGetRemoteConfig(observerName : string, remoteConfig : dynamic) : bool
-		+{static} InvalidateRemoteConfig(observerName : string = null) : void
 	}
 }
 
 Os ..> OsType : uses
 Os ..> EscapeMode : uses
-Os ..> Cloud : cloud provider selection
 Os ..> RaiPath : path contracts
 Os ..> RaiFile : config file resolution
 Os ..> IStartupDiagnosticSink : diagnostics sink
+CloudPathWiring ..> Os : boot-state check
+CloudPathWiring ..> RaiPath : assigns evaluator
+RaiPath ..> Os : path normalization
 
 class "Legend<size:10>ⓈⒶⓅ</size>" as LegendSample {
 	+{static} staticMethod() : void
@@ -143,10 +130,13 @@ note bottom of Os
 	Os is a static partial
 	class composed from:
 	- Os.cs
-	- Os.CloudStorage.cs
+	- Os.Config.cs
 	- Os.Diagnostics.cs
+	- CloudPathWiring.cs
 	Current config model is
 	dynamic (`osconfig.json5`)
+	with lazy loading and a
+	RaiPath delegate firewall
 	rather than a dedicated
 	config-file wrapper type.
 end note

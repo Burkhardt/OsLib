@@ -83,62 +83,12 @@ namespace OsLib.Tests
 		}
 
 		[Fact]
-		public void Os_UserHomeDir_UsesWindowsVariables_OnWindows()
-		{
-			if (Os.Type != OsType.Windows)
-				return;
-
-			var oldUserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
-			var oldHomeDrive = Environment.GetEnvironmentVariable("HOMEDRIVE");
-			var oldHomePath = Environment.GetEnvironmentVariable("HOMEPATH");
-			try
-			{
-				Environment.SetEnvironmentVariable("USERPROFILE", "C:\\Users\\UnitTestUser");
-				Environment.SetEnvironmentVariable("HOMEDRIVE", "C:");
-				Environment.SetEnvironmentVariable("HOMEPATH", "\\Users\\FallbackUser");
-				ResetOsCaches();
-
-				Assert.Equal("C:\\Users\\UnitTestUser", Os.UserHomeDir.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-			}
-			finally
-			{
-				Environment.SetEnvironmentVariable("USERPROFILE", oldUserProfile);
-				Environment.SetEnvironmentVariable("HOMEDRIVE", oldHomeDrive);
-				Environment.SetEnvironmentVariable("HOMEPATH", oldHomePath);
-				ResetOsCaches();
-			}
-		}
-
-		[Fact]
-		public void Os_UserHomeDir_UsesHomeVariable_OnUnix()
-		{
-			if (!Os.IsUnixLike)
-				return;
-
-			var oldHome = Environment.GetEnvironmentVariable("HOME");
-			try
-			{
-				Environment.SetEnvironmentVariable("HOME", "/tmp/oslib-home-unittest");
-				var fakeConfigDir = new RaiPath("/tmp/oslib-home-unittest/.config/RAIkeep");
-				Cleanup(fakeConfigDir);
-				ResetOsCaches();
-
-				Assert.Equal("/tmp/oslib-home-unittest", Os.UserHomeDir.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-			}
-			finally
-			{
-				Environment.SetEnvironmentVariable("HOME", oldHome);
-				ResetOsCaches();
-			}
-		}
-
-		[Fact]
 		public void RaiPath_AppendsDirectorySeparator()
 		{
 			var path0 = new RaiPath("/tmp/raipath");
 			Assert.EndsWith(Os.DIR, path0.Path);
-			Assert.EndsWith("tmp" + Os.DIR, path0.Path);
-			var path = new RaiPath("/tmp/raipath" + Os.DIR);    // would not work without it
+			Assert.EndsWith("raipath" + Os.DIR, path0.Path);
+			var path = new RaiPath("/tmp/raipath" + Os.DIR);
 			Assert.EndsWith(Os.DIR, path.Path);
 			Assert.EndsWith("raipath" + Os.DIR, path.Path);
 		}

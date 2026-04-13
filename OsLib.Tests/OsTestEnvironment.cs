@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Newtonsoft.Json.Linq;
 
 namespace OsLib.Tests;
 
@@ -21,7 +20,6 @@ internal sealed class OsTestEnvironment : IDisposable
 		Home = (root / "home").Path;
 		AppData = (root / "app-data").Path;
 		LocalAppData = (root / "local-app-data").Path;
-		ConfigPath = (new RaiPath(Home) / ".config" / "RAIkeep").Path + "osconfig.json5";
 
 		Directory.CreateDirectory(Home);
 		Directory.CreateDirectory(AppData);
@@ -49,76 +47,6 @@ internal sealed class OsTestEnvironment : IDisposable
 	internal string Home { get; }
 	internal string AppData { get; }
 	internal string LocalAppData { get; }
-	internal string ConfigPath { get; }
-
-	internal void WriteConfig(
-		string? dropbox = null,
-		string? oneDrive = null,
-		string? googleDrive = null,
-		string? tempDir = null,
-		string? localBackupDir = null,
-		IEnumerable<Cloud>? defaultCloudOrder = null,
-		Dictionary<string, string>? observers = null,
-		bool includeTempDir = true,
-		bool loadConfig = false)
-	{
-		var effectiveTempDir = includeTempDir
-			? NormalizeDirectoryValue(string.IsNullOrWhiteSpace(tempDir) ? (Root / "temp").Path : tempDir)
-			: null;
-		if (!string.IsNullOrWhiteSpace(effectiveTempDir))
-			Directory.CreateDirectory(effectiveTempDir);
-
-		var cloud = new JObject
-		{
-			["Dropbox"] = NormalizeForJson(dropbox),
-			["OneDrive"] = NormalizeForJson(oneDrive),
-			["GoogleDrive"] = NormalizeForJson(googleDrive)
-		};
-
-		var json = new JObject
-		{
-			["Cloud"] = cloud
-		};
-
-		if (!string.IsNullOrWhiteSpace(effectiveTempDir))
-			json["TempDir"] = effectiveTempDir;
-		if (!string.IsNullOrWhiteSpace(localBackupDir))
-			json["LocalBackupDir"] = NormalizeDirectoryValue(localBackupDir);
-		if (defaultCloudOrder != null)
-			json["DefaultCloudOrder"] = new JArray(defaultCloudOrder.Select(x => x.ToString()));
-
-		if (observers != null && observers.Count > 0)
-		{
-			var observersJson = new JArray();
-			foreach (var kvp in observers)
-				observersJson.Add(new JObject
-				{
-					["Name"] = kvp.Key,
-					["SshTarget"] = kvp.Value
-				});
-			json["Observers"] = observersJson;
-		}
-
-		PersistTestConfigFile(json, loadConfig);
-	}
-
-	private void PersistTestConfigFile(JObject json, bool loadConfig)
-	{
-		var configDirectory = Path.GetDirectoryName(ConfigPath);
-		if (!string.IsNullOrWhiteSpace(configDirectory))
-			Directory.CreateDirectory(configDirectory);
-		File.WriteAllText(ConfigPath, json.ToString().Replace("\r\n", "\n"));
-		if (loadConfig)
-			Os.LoadConfig();
-	}
-
-	internal void DeleteConfig()
-	{
-		var configPath = ConfigPath;
-		if (File.Exists(configPath))
-			File.Delete(configPath);
-		ResetOsCaches();
-	}
 
 	internal static RaiPath NewTestRoot(string area, string? suffix = null, [CallerMemberName] string testName = "")
 	{
@@ -145,19 +73,9 @@ internal sealed class OsTestEnvironment : IDisposable
 	internal static void ResetOsCaches()
 	{
 		var osType = typeof(Os);
-		osType.GetField("userHomeDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-		osType.GetField("appRootDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-		osType.GetField("cloudStorageRootDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("type", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
 		osType.GetField("dIRSEPERATOR", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, System.IO.Path.DirectorySeparatorChar.ToString());
-		osType.GetField("tempDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-		osType.GetField("localBackupDir", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-		osType.GetField("localBackupDirDisabled", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, false);
-		osType.GetField("config", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-		osType.GetField("remoteConfigs", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-		osType.GetField("remoteTestConfig", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-		//Os.ResetCloudStorageCache();
-		Os.ResetDiagnosticsForTesting();
+		Os.resetDiagnosticsForTesting();
 	}
 
 	public void Dispose()
@@ -173,23 +91,6 @@ internal sealed class OsTestEnvironment : IDisposable
 	{
 		before[name] = Environment.GetEnvironmentVariable(name);
 		Environment.SetEnvironmentVariable(name, value);
-	}
-
-	private static string NormalizeForJson(string? value)
-	{
-		return string.IsNullOrWhiteSpace(value) ? string.Empty : NormalizeDirectoryValue(value);
-	}
-
-	private static string NormalizeDirectoryValue(string value)
-	{
-		if (string.IsNullOrWhiteSpace(value))
-			return string.Empty;
-
-		var normalized = Os.NormSeperator(value);
-		if (!normalized.EndsWith(Os.DIR, StringComparison.Ordinal))
-			normalized += Os.DIR;
-
-		return new RaiPath(normalized).Path;
 	}
 
 	private static string SanitizeSegment(string? value)
