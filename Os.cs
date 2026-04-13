@@ -14,7 +14,7 @@ namespace OsLib
 	public enum OsType { Windows, MacOS, Ubuntu };
 	public static partial class Os
 	{
-		private static readonly string defaultConfigFileLocation = "~/.config/RAIkeep.json5";
+		public static readonly string DefaultConfigFileLocation = "~/.config/RAIkeep.json5";
 		private static RaiPath userHomeDir = null;
 		private static RaiPath appRootDir = null;
 		private static OsType? type = null;

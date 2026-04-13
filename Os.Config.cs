@@ -38,7 +38,7 @@ namespace OsLib
 		}
 		private static string GetBootstrapConfigPath()
 		{
-			string rawPath = defaultConfigFileLocation;
+			string rawPath = DefaultConfigFileLocation;
 			if (rawPath.StartsWith("~/"))
 			{
 				string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
