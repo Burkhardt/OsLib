@@ -2,6 +2,19 @@
 
 Date: 2026-03-21
 
+## 3.7.5 Historical Note
+
+This document is a design note from an earlier refactor stage.
+
+Parts of it are now historical rather than current behavior. In particular:
+
+- the active config contract is now `osconfig.json5`, not `osconfig.json`
+- `Os.Config` is a lazy `dynamic` object; there is no public typed `LoadConfig(...)` workflow
+- missing or malformed config now falls back to a baseline `TempDir` model instead of being documented as the current startup-fatal public contract
+- `CloudStorageRootDir`, `DefaultCloudOrder`, and related provider-selection APIs are no longer part of the current public `Os` surface
+
+Use [OSCONFIG-BREAKING-CHANGE.md](OSCONFIG-BREAKING-CHANGE.md), [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md), and [API.md](API.md) for the current contract.
+
 ## Intent
 
 This refactor separates intrinsic OS/runtime paths from application configuration, removes normal library console chatter, and adds structured diagnostics suitable for server applications.

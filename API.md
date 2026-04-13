@@ -1,19 +1,15 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable API overview.
+This document provides a detailed, foldable overview of the current `OsLib 3.7.5` API surface.
 
-## 3.7.3 scope note
-
-- Minor release: path and canonicalization alignment for JsonPit integration.
-- `OsLib 3.7.3` keeps the public API surface stable while refining path behavior.
-- `CanonicalPath` remains available for compatibility but is deprecated; prefer direct `RaiPath` composition.
+Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
 ## core types
 
 - <details>
-	<summary>Os: OS-aware environment and path utilities.</summary>
+	<summary>Os: OS-aware environment, lazy config access, and diagnostics.</summary>
 
-	- Responsibilities: platform detection, intrinsic runtime path resolution, config-driven directory resolution, separator and escaping helpers, and provider-based cloud discovery.
+	- Responsibilities: platform detection, intrinsic runtime path resolution, config-driven temp/backup resolution, separator and escaping helpers, and diagnostic logging.
 	- <details>
 		<summary>UserHomeDir: intrinsic OS user home directory.</summary>
 
@@ -27,118 +23,87 @@ This document provides a detailed, foldable API overview.
 		- This value is never taken from config.
 		</details>
 	- <details>
-		<summary>CloudStorageRootDir: preferred discovered cloud root by default provider order.</summary>
+		<summary>Config / IsConfigLoaded / ConfigFileFullName: lazy config entry points.</summary>
 
-		- Uses the configured `defaultCloudOrder`, which defaults to OneDrive, Dropbox, and GoogleDrive, and throws if nothing is configured or discovered.
-		- Returns `RaiPath` so callers stay on `RaiPath`/`RaiFile` composition.
+		- `Config` exposes the current `dynamic` config object backed by `osconfig.json5`.
+		- `IsConfigLoaded` reports whether that object has been materialized yet.
+		- `ConfigFileFullName` resolves the active config file path.
+		- Config loading is lazy and internal; callers do not invoke a public `LoadConfig(...)` API.
 		</details>
 	- <details>
-		<summary>GetCloudStorageRoots(refresh): discover all available provider roots.</summary>
+		<summary>TempDir / LocalBackupDir: config-driven directories.</summary>
 
-		- Applies precedence in this order: `Os.Config` values first, then OS-specific probing.
-		- The default configuration file is `~/.config/RAIkeep/osconfig.json` on macOS and Linux, and `%APPDATA%\RAIkeep\osconfig.json` on Windows.
-		- On Ubuntu and other Linux setups with custom mounts, callers should edit `cloud.googledrive` or the other `cloud.*` entries directly in config.
+		- `TempDir` resolves from config and falls back to `Path.GetTempPath()` if config cannot be read.
+		- `LocalBackupDir` is optional. If it is not configured, backup features stay disabled.
 		</details>
 	- <details>
-		<summary>Config / LoadConfig(refresh): typed `OsConfigModel` access.</summary>
+		<summary>NormPath(path), NormSeperator(value), and Escape(value, mode): path helpers.</summary>
 
-		- `Config` exposes the reusable `OsConfigFile` wrapper.
-		- `LoadConfig()` restores the typed object from JSON, while `LoadConfig(refresh: true)` forces a reload.
-		- Missing, unreadable, or malformed `osconfig.json` is treated as startup-critical and logged as degraded mode.
-		- The config object includes `TempDir`, `LocalBackupDir`, `DefaultCloudOrder`, and nested `Cloud` settings.
-		- Legacy `homeDir` is accepted only for compatibility, ignored at runtime, and logged as deprecated.
-		</details>
-	- <details>
-		<summary>GetDefaultConfigPath() / GetDefaultCloudConfigPath(): config file helpers.</summary>
-
-		- `GetDefaultConfigPath()` resolves the active `osconfig.json` path.
-		- `GetDefaultCloudConfigPath()` remains only as an obsolete compatibility alias.
-		</details>
-	- <details>
-		<summary>GetCloudStorageRoot(provider, refresh): return one provider root or null.</summary>
-
-		- Useful when callers need a specific provider instead of the default preferred order.
-		</details>
-	- <details>
-		<summary>GetPreferredCloudStorageRoot(order): resolve a custom provider precedence.</summary>
-
-		- Returns the first available provider root from the supplied order.
-		- The `GetPreferredCloudStorageRootDir(order)` companion returns `RaiPath`.
-		</details>
-	- <details>
-		<summary>ResetCloudStorageCache(): force re-discovery after environment or config changes.</summary>
-
-		- Clears cached provider roots so later lookups observe updated config or machine state.
-		</details>
-	- <details>
-		<summary>GetCloudDiscoveryReport(refresh): readable diagnostics for all providers.</summary>
-
-		- Lists each provider and the resolved root or a not-found marker.
-		- This is the recommended startup diagnostic for Ubuntu development environments with mounted Google Drive paths.
-		- Console output remains reserved for startup-critical configuration failures.
-		</details>
-	- <details>
-		<summary>NormPath(path): normalize path to current OS conventions.</summary>
-
-		- Converts separators where needed and keeps path representation consistent.
-		</details>
-	- <details>
-		<summary>Escape(value, mode): apply selected escaping strategy.</summary>
-
-		- Supports `noEsc`, `blankEsc`, `paramEsc`, and `backslashed` modes.
-		</details>
-	- <details>
-		<summary>NormSeperator(value): normalize slash direction to OS separator.</summary>
-
-		- Replaces backslashes using the active `DIRSEPERATOR`.
+		- Normalize separators and apply the selected escaping mode.
+		- Supports `noEsc`, `blankEsc`, `paramEsc`, and `backslashed` escape modes.
 		</details>
 	</details>
 
 - <details>
-	<summary>RaiPath: directory path value object.</summary>
+	<summary>CloudPathWiring: delegate bridge between `Os.Config` and `RaiPath`.</summary>
 
-	- Responsibilities: keep directory path semantics and trailing separator; allow fluent path composition.
+	- Responsibilities: initialize `RaiPath.CloudEvaluator` from the current config contract.
+	- There is no public provider-enum selection API in `Os`; cloud path classification is delegated to `RaiPath` through this wiring layer.
+	</details>
+
+- <details>
+	<summary>RaiPath: directory path value object with buffered cloud state.</summary>
+
+	- Responsibilities: keep directory path semantics, preserve trailing separator behavior, classify cloud-backed paths, and own directory wait behavior.
 	- <details>
-		<summary>Path: normalized directory path with trailing separator.</summary>
+		<summary>Path / Cloud: normalized directory path and buffered cloud classification.</summary>
 
 		- Setting `Path` ensures directory semantics by clearing file components internally.
+		- `Cloud` is buffered when the path is set and is driven by `CloudEvaluator`.
 		</details>
 	- <details>
-		<summary>operator /(self, subDir): append subdirectory.</summary>
+		<summary>CloudEvaluator: delegate firewall for cloud awareness.</summary>
 
-		- Builds a new `RaiPath` by adding one segment plus separator.
+		- Defaults to `false` until initialized.
+		- `CloudPathWiring.Initialize()` assigns the production evaluator from `Os.Config`.
 		</details>
 	- <details>
-		<summary>mkdir(): create the directory represented by this path.</summary>
+		<summary>operator /(self, subDir) and Parent: directory composition helpers.</summary>
 
-		- Delegates to `RaiFile.mkdir()` so chained composition like `new RaiPath(root) / "ProjectRoot"` can materialize directly.
+		- Builds new `RaiPath` values while preserving directory semantics.
+		</details>
+	- <details>
+		<summary>mkdir() / rmdir(...): directory mutation and cloud-aware waits.</summary>
+
+		- `mkdir` waits for materialization only when the buffered `Cloud` flag is true.
+		- `rmdir` waits for vanishing only when the buffered `Cloud` flag is true.
 		</details>
 	</details>
 
 - <details>
-	<summary>RaiFile: generic file and directory utility.</summary>
+	<summary>RaiFile: generic file utility with cloud-aware file waits.</summary>
 
-	- Responsibilities: parse/compose file identity, IO operations, and cloud-aware waiting semantics based on discovered provider roots.
+	- Responsibilities: parse and compose file identity, perform IO operations, and own file wait behavior.
 	- <details>
 		<summary>Name / Ext / Path / FullName: core file identity properties.</summary>
 
-		- `Name` setter parses extension; `Path` normalizes separators and ensures trailing separator.
+		- `Path` copies the buffered `Cloud` flag from the assigned `RaiPath`.
 		</details>
 	- <details>
-		<summary>Exists(), rm(), cp(), mv(...): existence, delete, copy, move lifecycle.</summary>
+		<summary>Exists(), rm(), cp(), mv(...): existence, delete, copy, and move lifecycle.</summary>
 
-		- Includes optional replacement/backup behavior and cloud synchronization checks.
+		- `rm()` waits for vanishing only when the buffered `Cloud` flag is true.
 		</details>
 	- <details>
-		<summary>mkdir(), rmdir(...): directory creation and recursive cleanup.</summary>
+		<summary>AwaitVanishing() / AwaitMaterializing(...): public wrappers over file wait logic.</summary>
 
-		- `mkdir` creates target directories; `rmdir` supports depth and optional file deletion.
+		- These stay on `RaiFile` because they are about physical file latency, not directory latency.
 		</details>
 	- <details>
-		<summary>backup(copy): create dated backup file.</summary>
+		<summary>mkdir(), rmdir(...), backup(copy): directory materialization and backup helpers.</summary>
 
-		- Creates a timestamped backup in the resolved local backup location; `Os.LocalBackupDir` avoids discovered cloud roots and can be configured in `osconfig.json`.
-		- Backup path composition stays on `RaiPath`: `GetBackupRelativeDirectoryPath(...)` returns `RaiPath`, and `backup(copy)` composes the destination as `Os.LocalBackupDir / relativePath`.
+		- Directory creation/deletion delegates to `RaiPath`.
+		- `backup(copy)` composes the destination below `Os.LocalBackupDir` when backups are enabled.
 		</details>
 	</details>
 
@@ -239,26 +204,14 @@ This document provides a detailed, foldable API overview.
 	</details>
 
 - <details>
-	<summary>SshSystem / SshFileProbe: reusable remote execution and remote file observation over ssh.</summary>
+	<summary>SshSystem: reusable remote execution over ssh.</summary>
 
-	- Responsibilities: execute remote commands and scripts through `ssh`, capture structured results via `RaiSystem`, and support remote file checks needed for integration diagnostics.
+	- Responsibilities: execute remote commands and scripts through `ssh` and read remote `osconfig.json5` content when needed.
 	- <details>
 		<summary>SshSystem(target, remoteCommand): execute one remote command using argument-list-safe process launch.</summary>
 
 		- Reuses `RaiSystem` instead of ad hoc `Process` code.
-		- Provides `ExecuteRemoteCommand(...)` and `ExecuteScript(...)` for command and script execution.
-		</details>
-	- <details>
-		<summary>SshFileProbe: remote file and directory observation helpers.</summary>
-
-		- Supports `DirectoryExists`, `ReadFile`, `RemoveDirectory`, `WaitForFileContainingAll`, and `WaitForMissing`.
-		- Intended for real-cloud integration tests and remote diagnostics where another synchronized node must be observed over ssh.
-		</details>
-	- <details>
-		<summary>RemoteCloudSyncProbe: bind one local cloud root to one remote observer/root pair.</summary>
-
-		- Resolves a local provider root through `Os.GetCloudStorageRoot(...)` and validates remote access through environment-driven ssh configuration.
-		- Exposes `LocalCloudRoot`, `RemoteCloudRoot`, `Observer`, and relative-path helpers so OsLib and JsonPit tests can share the same real-cloud probe setup.
+		- Provides `ExecuteRemoteCommand(...)`, `ExecuteScript(...)`, and `ReadRemoteConfigJson5(...)`.
 		</details>
 	</details>
 

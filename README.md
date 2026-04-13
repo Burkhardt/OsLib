@@ -1,37 +1,27 @@
 # OsLib
 
-	Handling of files and system calls.
+Handling of files, paths, temp/backup directories, and system calls.
 
 _formerly_ __OsLibCore__
 
-## 3.7.3
+## 3.7.5
 
-- Patch: includes the RaiPath bug fix from commit `RaiPath fix`.
-- Keeps NuGet publish order so OsLibCore lands on NuGet before downstream packages (RaiUtils, RaiImage, JsonPit).
+- Documents the current `osconfig.json5` contract and lazy `Os.Config` behavior.
+- Clarifies that `UserHomeDir` and `AppRootDir` are intrinsic runtime values, while `TempDir` and `LocalBackupDir` are config-driven.
+- Documents the delegate firewall between `Os` and `RaiPath`: `CloudPathWiring`, `RaiPath.CloudEvaluator`, and buffered `RaiPath.Cloud`.
+- Documents cloud-aware wait loops by responsibility: `RaiPath` owns directory waits and `RaiFile` owns file waits.
+- Removes outdated references to `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, and observer-specific `Os` APIs from the current guidance.
 
-## 3.7.3
-
-- Patch: corrects NuGet publish order so OsLibCore lands on NuGet before downstream packages (RaiUtils, RaiImage, JsonPit).
-- Documents the supported cloud-backed provider claim as `OneDrive`, `GoogleDrive`, and `Dropbox`.
-- Keeps `osconfig.json` and `defaultCloudOrder` as the shared machine-local contract used across the `RAIkeep` package stack.
-- Separates intrinsic OS/runtime directories from config-driven directories: `UserHomeDir` and `AppRootDir` are intrinsic, while `TempDir`, `LocalBackupDir`, and `CloudStorageRootDir` are resolved through explicit config validation.
-- Moves `*Dir` properties to `RaiPath` return values to encourage `RaiPath` and `RaiFile` composition instead of `Path.Combine` call-site sprawl.
-- Treats missing or invalid `osconfig.json5` as a startup-fatal condition with structured logging plus explicit console startup diagnostics.
-- Aligns OsLib documentation with JsonPit's `Id`-based identifier contract and legacy `Name` normalization policy.
-- Refreshes the packaged NuGet icon asset to a square `128x128` PNG.
-- Documents `CanonicalPath` as deprecated legacy API surface; prefer direct `RaiPath` composition.
-- Adds `PathConventionsTests` constructor tests for directory-style cloud-storage paths.
-
-## namespace 
+## namespace
 
 OsLib
 
 ## classes
 
 <details>
-<summary>RaiSystem: Run external processes with optional output capture.</summary>
+<summary>RaiSystem: Run external processes with structured output capture.</summary>
 
-- RaiSystem: `Exec`, `Start`, `CreateScript`
+- RaiSystem: `Exec`, `ExecResult`, `Start`, `CreateScript`
 </details>
 
 <details>
@@ -41,33 +31,39 @@ OsLib
 </details>
 
 <details>
-<summary>RaiNetDrive: Windows network drive mount helper.</summary>
-
-- RaiNetDrive: `Mount`, `Unmount`
-</details>
-
-<details>
 <summary>EscapeMode: Defines escape modes for path and parameter handling.</summary>
 
 - EscapeMode
 </details>
 
 <details>
-<summary>OsType: Identifies the OS type (UNIX or Windows).</summary>
+<summary>OsType: Identifies the OS type.</summary>
 
 - OsType
 </details>
 
 <details>
-<summary>Os: Platform helpers for paths, escaping, provider-based cloud storage discovery, and local backup placement.</summary>
+<summary>Os: Platform helpers, lazy config access, diagnostics, and path normalization.</summary>
 
-- Os: `UserHomeDir`, `AppRootDir`, `TempDir`, `LocalBackupDir`, `CloudStorageRootDir`, `GetCloudStorageRoots`, `GetCloudStorageRoot`, `GetCloudStorageRootDir`, `GetPreferredCloudStorageRoot`, `GetPreferredCloudStorageRootDir`, `ResetCloudStorageCache`, `GetCloudDiscoveryReport`, `Escape`, `NormSeperator`
+- Os: `UserHomeDir`, `AppRootDir`, `TempDir`, `LocalBackupDir`, `Config`, `IsConfigLoaded`, `ConfigFileFullName`, `Escape`, `NormPath`, `NormSeperator`
 </details>
 
 <details>
-<summary>RaiFile: File and directory utility with path parsing and cloud-aware behaviors.</summary>
+<summary>CloudPathWiring: Initializes the `RaiPath.CloudEvaluator` delegate from `Os.Config`.</summary>
 
-- RaiFile: `Exists`, `rm`, `mv`, `cp`, `mkdir`, `rmdir`, `Zip`, `backup`
+- CloudPathWiring: `Initialize`
+</details>
+
+<details>
+<summary>RaiPath: Directory path type with buffered cloud classification.</summary>
+
+- RaiPath: `Path`, `Cloud`, `CloudEvaluator`, `/` operator, `Parent`, `mkdir`, `rmdir`, `EnumerateFiles`
+</details>
+
+<details>
+<summary>RaiFile: File utility with cloud-aware wait behavior.</summary>
+
+- RaiFile: `Exists`, `rm`, `mv`, `cp`, `mkdir`, `rmdir`, `AwaitVanishing`, `AwaitMaterializing`, `Zip`, `backup`
 </details>
 
 <details>
@@ -77,58 +73,24 @@ OsLib
 </details>
 
 <details>
-<summary>RaiPath: Represents a directory path and enforces a trailing directory separator.</summary>
-
-- RaiPath: `Path`, `/` operator, `mkdir`
-</details>
-
-<details>
-<summary>CanonicalPath: deprecated legacy RaiPath convention where folder name equals file stem.</summary>
-
-- CanonicalPath: `RootPath`, `FileStem`, `Apply`
-- Status: deprecated legacy type retained for compatibility; prefer direct `RaiPath` composition.
-</details>
-
-<details>
-<summary>PathConventionType and IPathConventionFile: Shared path-convention contract for convention-aware files.</summary>
-
-- PathConventionType: `CanonicalByName`, `ItemIdTree3x3`, `ItemIdTree8x2`
-- IPathConventionFile: `ConventionName`, `ApplyPathConvention`
-</details>
-
-<details>
-<summary>TextFile: Text file with cached line operations and save support.</summary>
+<summary>TextFile, CsvFile, TmpFile: Text/data-file helpers built on RaiFile.</summary>
 
 - TextFile: `Read`, `Save`, `Append`, `Delete`
-</details>
-
-<details>
-<summary>CsvFile: Tab-delimited CSV reader with object conversion.</summary>
-
 - CsvFile: `Read`, `Objects`, `ToJsonFile`
+- TmpFile: `create`
 </details>
 
 <details>
-<summary>TmpFile: Temporary file wrapper.</summary>
+<summary>CanonicalPath, CanonicalFile, and path conventions: retained compatibility helpers.</summary>
 
-- TmpFile: `create` (creates missing parent directories via `TextFile.Save`/`RaiFile.mkdir`)
+- CanonicalPath: deprecated legacy type retained for compatibility; prefer direct `RaiPath` composition.
+- PathConventionType / IPathConventionFile: convention-aware file contracts.
 </details>
 
 <details>
-<summary>CanonicalFile: Enforces canonical file-in-folder convention.</summary>
+<summary>SshSystem and CLI wrappers: remote shell execution and typed command launchers.</summary>
 
-- CanonicalFile
-</details>
-
-<details>
-<summary>ShellHelper: Helpers for running shell commands.</summary>
-
-- ShellHelper: `Bash`
-</details>
-
-<details>
-<summary>CliCommand and tool wrappers: executable discovery, install hints, and process execution.</summary>
-
+- SshSystem: `ExecuteRemoteCommand`, `ExecuteScript`, `ReadRemoteConfigJson5`
 - CliCommand: `IsAvailable`, `TryResolveExecutable`, `Run`, `RunAsync`, `GetInstallCommand`, `GetUpdateCommand`
 - Built-in wrappers: `CurlCommand`, `ZipCommand`, `SevenZipCommand`, `RCloneCommand`
 </details>
@@ -146,29 +108,28 @@ https://www.nuget.org/packages/OsLibCore/
 ## detailed api
 
 - Foldable class and method-level documentation: [API.md](API.md)
-- Cloud root discovery setup, provider precedence, and cloud-aware IO behavior: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
-- Path/config/logging design note for the 2026 housekeeping pass: [PATH_CONFIG_LOGGING_REFACTOR.md](PATH_CONFIG_LOGGING_REFACTOR.md)
+- Current cloud configuration and buffered cloud-path behavior: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
+- Historical path/config/logging design note, now marked with 3.7.5 caveats: [PATH_CONFIG_LOGGING_REFACTOR.md](PATH_CONFIG_LOGGING_REFACTOR.md)
 - CLI command hierarchy and external tool wrappers: [../CliCommand-Hierarchy.puml](../CliCommand-Hierarchy.puml)
-- Local backup placement: `Os.LocalBackupDir` is optional; when absent or unusable, backup features are disabled instead of falling back.
-- Structured logging: OsLib diagnostics use `ILogger<T>` templates; startup-fatal configuration failures emit console diagnostics.
-- Ubuntu/Mzansi guidance: prefer explicit `cloud.*` entries in `osconfig.json` over probe-only discovery for stable Google Drive roots across machines.
+- Local backup placement: `Os.LocalBackupDir` is optional; when absent, backup features are disabled instead of falling back.
+- Structured logging: OsLib diagnostics use `ILogger<T>` templates. The current config path falls back to a baseline `TempDir` model rather than treating missing config as a startup-fatal public API contract.
+- Cloud config guidance: prefer explicit `Cloud.*` entries in `osconfig.json5` when you want stable cloud-backed path classification.
 - Script helper: use `RaiSystem.CreateScript(path, name, content)` or `new Script(path, name, content)` when tests or tools need an executable script file.
 
 ## unit tests
 
 - Local unit tests are in [OsLib.Tests](OsLib.Tests).
-- Run from repository root: `dotnet test`
-- Additional integration/usage tests still exist across JsonPitSolution.
+- Run from repository root: `dotnet test OsLib/OsLib.Tests/OsLib.Tests.csproj --nologo -v minimal`
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.7.3.md](RELEASE_NOTES_3.7.3.md)
+- Current release notes: [RELEASE_NOTES_3.7.5.md](RELEASE_NOTES_3.7.5.md)
 
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.7.3`)
+- Trigger: push a version tag in format `v*` (example: `v3.7.5`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.7.3 -m "v3.7.3" && git push origin v3.7.3`
+	- `git tag -a v3.7.5 -m "v3.7.5" && git push origin v3.7.5`

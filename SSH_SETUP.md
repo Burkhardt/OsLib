@@ -1,5 +1,11 @@
 # SSH Setup For Remote Observer Tests
 
+## Historical note for 3.7.5
+
+This guide documents an older remote-observer test harness.
+
+It remains useful as setup history, but it should not be read as the current OsLib public API contract. In particular, references below to `DefaultCloudOrder` and `Observers` describe an older config shape than the stripped-down current `Os.Config` guidance.
+
 This guide explains how to make OsLib remote-observer tests work on macOS, Ubuntu, and Windows.
 
 The tests do not depend on a specific observer name such as `Mzansi`.
