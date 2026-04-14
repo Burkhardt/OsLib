@@ -239,7 +239,7 @@ public class PathConventionsTests
 		var can3 = new CanonicalFile(p, "Nomsa.net", "json");
 		var can4 = new CanonicalFile(p / "Nomsa.net", "Nomsa.net.json");
 		var can5 = new CanonicalFile(p / "Nomsa.net", "Nomsa.net", "json");
-		var can6 = new CanonicalFile(p / "Nomsa.net", "Nomsa.net");	// the second "Nomsa.net" will be interpreted as Name.Ext and split into Name="Nomsa" and Ext="net"
+		var can6 = new CanonicalFile(p / "Nomsa.net", "Nomsa.net"); // the second "Nomsa.net" will be interpreted as Name.Ext and split into Name="Nomsa" and Ext="net"
 		var can7 = new CanonicalFile("/tmp/storage/otw.software/Nomsa.net/Nomsa.net.json");
 
 		Assert.Equal("/tmp/storage/otw.software/AfricaStage/AfricaStage.json", can1.FullName);
@@ -253,7 +253,15 @@ public class PathConventionsTests
 		Assert.Equal("net", can6.Ext);
 		Assert.Equal("/tmp/storage/otw.software/Nomsa.net/Nomsa.net.json", can7.FullName);
 		Assert.Equal("json", can7.Ext);
+	}
 
+	[Fact]
+	public void ApplyPathConvention_CanonicalFile()
+	{
+		string s = "/Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/pits/output/Person.pit";
+		string expected = "/Users/RSB/Library/CloudStorage/OneDrive/OneDriveData/pits/output/Person/Person.pit";
+		var can = new CanonicalFile(s);
+		Assert.Equal(expected, can.FullName);
 	}
 
 	[Fact]
