@@ -186,6 +186,57 @@ namespace OsLib
 				return DateTimeOffset.UtcNow - info.CreationTimeUtc;
 			}
 		}
+		/// <summary>
+		/// Default propagation delay (ms) for <see cref="BackdateCreationTime"/>.
+		/// Can be overridden per-call or globally via <c>Os.Config.SyncPropagationDelayMs</c>
+		/// in the RAIkeep.json5 config file.
+		/// </summary>
+		public static int DefaultSyncPropagationDelayMs { get; set; } = 10_000;
+		/// <summary>
+		/// Backdates the file's <see cref="FileAge"/> (CreationTimeUtc) and waits for
+		/// cloud sync providers to propagate the change.
+		/// <para>
+		/// A sentinel file is written next to the target file before the wait begins
+		/// and deleted after the delay.  This nudges cloud sync providers (OneDrive,
+		/// Dropbox, rclone/GDrive) to pick up the metadata change promptly.
+		/// </para>
+		/// <para>
+		/// The delay is read from <c>Os.Config.SyncPropagationDelayMs</c> if present,
+		/// otherwise falls back to <see cref="DefaultSyncPropagationDelayMs"/> (10 s).
+		/// Pass an explicit <paramref name="propagationDelayMs"/> to override both.
+		/// </para>
+		/// </summary>
+		/// <param name="utc">The backdated CreationTimeUtc to set.</param>
+		/// <param name="propagationDelayMs">
+		/// Override delay in milliseconds.  When null, uses the config value or
+		/// <see cref="DefaultSyncPropagationDelayMs"/>.
+		/// </param>
+		public void BackdateCreationTime(DateTime utc, int? propagationDelayMs = null)
+		{
+			if (!Exists())
+				throw new FileNotFoundException($"Cannot backdate: file does not exist: {FullName}");
+			File.SetCreationTimeUtc(FullName, utc);
+			// Write a sentinel file to trigger a cloud sync event
+			var sentinelName = $"{Name}.backdate.tmp";
+			var sentinel = new RaiFile(Path, sentinelName);
+			try
+			{
+				File.WriteAllText(sentinel.FullName, utc.ToString("o"));
+			}
+			catch { /* best effort — sentinel is optional */ }
+			// Wait for propagation
+			int delay = propagationDelayMs
+				?? (int?)(Os.Config?.SyncPropagationDelayMs)
+				?? DefaultSyncPropagationDelayMs;
+			if (delay > 0) Thread.Sleep(delay);
+			// Clean up sentinel
+			try
+			{
+				if (File.Exists(sentinel.FullName))
+					File.Delete(sentinel.FullName);
+			}
+			catch { /* best effort */ }
+		}
 		public void cd() => Directory.SetCurrentDirectory(path.ToString());
 		public bool HasAbsolutePath()
 		{
