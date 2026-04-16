@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLib 3.7.5` API surface.
+This document provides a detailed, foldable overview of the current `OsLib 3.7.6` API surface.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -23,11 +23,11 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		- This value is never taken from config.
 		</details>
 	- <details>
-		<summary>Config / IsConfigLoaded / ConfigFileFullName: lazy config entry points.</summary>
+		<summary>Config / IsConfigLoaded / DefaultConfigFileLocation: lazy config entry points.</summary>
 
-		- `Config` exposes the current `dynamic` config object backed by `osconfig.json5`.
+		- `Config` exposes the current `dynamic` config object backed by `RAIkeep.json5`.
 		- `IsConfigLoaded` reports whether that object has been materialized yet.
-		- `ConfigFileFullName` resolves the active config file path.
+		- `DefaultConfigFileLocation` exposes the default config path used by bootstrap loading.
 		- Config loading is lazy and internal; callers do not invoke a public `LoadConfig(...)` API.
 		</details>
 	- <details>
@@ -98,6 +98,13 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		<summary>AwaitVanishing() / AwaitMaterializing(...): public wrappers over file wait logic.</summary>
 
 		- These stay on `RaiFile` because they are about physical file latency, not directory latency.
+		</details>
+	- <details>
+		<summary>FileAge / DefaultSyncPropagationDelayMs / BackdateCreationTime(...): deterministic file-age control.</summary>
+
+		- `FileAge` is derived from `CreationTimeUtc`.
+		- `BackdateCreationTime(...)` writes a best-effort sentinel file, waits for propagation, and removes the sentinel after the wait.
+		- Delay precedence is explicit parameter, then `Os.Config.SyncPropagationDelayMs`, then `DefaultSyncPropagationDelayMs`.
 		</details>
 	- <details>
 		<summary>mkdir(), rmdir(...), backup(copy): directory materialization and backup helpers.</summary>
@@ -206,7 +213,7 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 - <details>
 	<summary>SshSystem: reusable remote execution over ssh.</summary>
 
-	- Responsibilities: execute remote commands and scripts through `ssh` and read remote `osconfig.json5` content when needed.
+	- Responsibilities: execute remote commands and scripts through `ssh` and read remote `RAIkeep.json5` content when needed.
 	- <details>
 		<summary>SshSystem(target, remoteCommand): execute one remote command using argument-list-safe process launch.</summary>
 

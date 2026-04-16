@@ -4,13 +4,13 @@ Handling of files, paths, temp/backup directories, and system calls.
 
 _formerly_ __OsLibCore__
 
-## 3.7.5
+## 3.7.6
 
-- Documents the current `osconfig.json5` contract and lazy `Os.Config` behavior.
-- Clarifies that `UserHomeDir` and `AppRootDir` are intrinsic runtime values, while `TempDir` and `LocalBackupDir` are config-driven.
+- Documents the current `RAIkeep.json5` contract and lazy `Os.Config` behavior.
+- Adds `RaiFile.BackdateCreationTime(...)` and `RaiFile.DefaultSyncPropagationDelayMs` to the current public surface.
+- Clarifies the propagation-delay precedence: explicit parameter, then `Os.Config.SyncPropagationDelayMs`, then the static default.
 - Documents the delegate firewall between `Os` and `RaiPath`: `CloudPathWiring`, `RaiPath.CloudEvaluator`, and buffered `RaiPath.Cloud`.
 - Documents cloud-aware wait loops by responsibility: `RaiPath` owns directory waits and `RaiFile` owns file waits.
-- Removes outdated references to `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, and observer-specific `Os` APIs from the current guidance.
 
 ## namespace
 
@@ -45,7 +45,7 @@ OsLib
 <details>
 <summary>Os: Platform helpers, lazy config access, diagnostics, and path normalization.</summary>
 
-- Os: `UserHomeDir`, `AppRootDir`, `TempDir`, `LocalBackupDir`, `Config`, `IsConfigLoaded`, `ConfigFileFullName`, `Escape`, `NormPath`, `NormSeperator`
+- Os: `UserHomeDir`, `AppRootDir`, `TempDir`, `LocalBackupDir`, `Config`, `IsConfigLoaded`, `DefaultConfigFileLocation`, `Escape`, `NormPath`, `NormSeperator`
 </details>
 
 <details>
@@ -63,7 +63,7 @@ OsLib
 <details>
 <summary>RaiFile: File utility with cloud-aware wait behavior.</summary>
 
-- RaiFile: `Exists`, `rm`, `mv`, `cp`, `mkdir`, `rmdir`, `AwaitVanishing`, `AwaitMaterializing`, `Zip`, `backup`
+- RaiFile: `Exists`, `rm`, `mv`, `cp`, `mkdir`, `rmdir`, `AwaitVanishing`, `AwaitMaterializing`, `BackdateCreationTime`, `DefaultSyncPropagationDelayMs`, `Zip`, `backup`
 </details>
 
 <details>
@@ -109,11 +109,12 @@ https://www.nuget.org/packages/OsLibCore/
 
 - Foldable class and method-level documentation: [API.md](API.md)
 - Current cloud configuration and buffered cloud-path behavior: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
-- Historical path/config/logging design note, now marked with 3.7.5 caveats: [PATH_CONFIG_LOGGING_REFACTOR.md](PATH_CONFIG_LOGGING_REFACTOR.md)
+- Historical path/config/logging design note, now marked with 3.7.6 caveats: [PATH_CONFIG_LOGGING_REFACTOR.md](PATH_CONFIG_LOGGING_REFACTOR.md)
 - CLI command hierarchy and external tool wrappers: [../CliCommand-Hierarchy.puml](../CliCommand-Hierarchy.puml)
 - Local backup placement: `Os.LocalBackupDir` is optional; when absent, backup features are disabled instead of falling back.
 - Structured logging: OsLib diagnostics use `ILogger<T>` templates. The current config path falls back to a baseline `TempDir` model rather than treating missing config as a startup-fatal public API contract.
-- Cloud config guidance: prefer explicit `Cloud.*` entries in `osconfig.json5` when you want stable cloud-backed path classification.
+- Cloud config guidance: prefer explicit `Cloud.*` entries in `RAIkeep.json5` when you want stable cloud-backed path classification.
+- Metadata propagation guidance: `RaiFile.BackdateCreationTime(...)` uses `SyncPropagationDelayMs` from config when no explicit delay is passed.
 - Script helper: use `RaiSystem.CreateScript(path, name, content)` or `new Script(path, name, content)` when tests or tools need an executable script file.
 
 ## unit tests
@@ -123,13 +124,13 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.7.5.md](RELEASE_NOTES_3.7.5.md)
+- Current release notes: [RELEASE_NOTES_3.7.6.md](RELEASE_NOTES_3.7.6.md)
 
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.7.5`)
+- Trigger: push a version tag in format `v*` (example: `v3.7.6`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.7.5 -m "v3.7.5" && git push origin v3.7.5`
+	- `git tag -a v3.7.6 -m "v3.7.6" && git push origin v3.7.6`

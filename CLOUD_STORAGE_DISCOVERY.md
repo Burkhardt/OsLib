@@ -1,22 +1,22 @@
 # Cloud Storage Configuration
 
-This note describes the current `OsLib 3.7.5` cloud-related contract.
+This note describes the current `OsLib 3.7.6` cloud-related contract.
 
 Historical docs that mention `CloudStorageRootDir`, public `LoadConfig(...)`, provider-precedence APIs, `DefaultCloudOrder`, or observer-specific `Os` APIs describe older package lines and should not be treated as current.
 
 ## Current Model
 
-The active configuration file is `osconfig.json5`.
+The active configuration file is `RAIkeep.json5`.
 
-Default locations:
-- macOS / Linux: `~/.config/RAIkeep/osconfig.json5`
-- Windows: `%APPDATA%\RAIkeep\osconfig.json5`
+Default location used by the current code:
+- `~/.config/RAIkeep.json5`
 
 `Os.Config` exposes the active dynamic config object. Loading is lazy and internal.
 
 Current config values used by the cloud/path model:
 - `TempDir`
 - `LocalBackupDir`
+- `SyncPropagationDelayMs`
 - `Cloud.Dropbox`
 - `Cloud.OneDrive`
 - `Cloud.GoogleDrive`
@@ -45,6 +45,7 @@ That means cloud-aware waits stay close to the object that mutates the filesyste
 {
 	TempDir: "/var/folders/.../T/",
 	LocalBackupDir: "/Users/me/Library/Application Support/OsLib/Backup/",
+	SyncPropagationDelayMs: 15000,
 	Cloud: {
 		Dropbox: "/Users/me/Library/CloudStorage/Dropbox/",
 		OneDrive: "/Users/me/Library/CloudStorage/OneDrive-Contoso/",
@@ -59,7 +60,7 @@ Example: use the configured Google Drive root explicitly.
 
 ```csharp
 var configuredRootText = (string?)Os.Config.Cloud?.GoogleDrive
-	?? throw new InvalidOperationException("Configure Cloud.GoogleDrive in osconfig.json5 first.");
+	?? throw new InvalidOperationException("Configure Cloud.GoogleDrive in RAIkeep.json5 first.");
 
 var configuredRoot = new RaiPath(configuredRootText);
 var personRoot = configuredRoot / "AfricaStage" / "OTW" / "person";
@@ -80,3 +81,18 @@ The current model is intentionally lightweight.
 - When it is configured, `RaiFile.backup(copy)` composes backup destinations below that root.
 - When it is absent, backup features stay disabled.
 - There is no fallback back into a preferred cloud root.
+
+## Metadata Propagation Delay
+
+`RaiFile.BackdateCreationTime(...)` exists for scenarios where tests or tools must manipulate `FileAge` deterministically and still give cloud providers a chance to observe the metadata change.
+
+- The method sets `CreationTimeUtc`.
+- It writes a best-effort `{name}.backdate.tmp` sentinel file next to the target.
+- It waits for a propagation delay.
+- It deletes the sentinel afterward.
+
+Delay priority:
+
+- explicit `propagationDelayMs`
+- `Os.Config.SyncPropagationDelayMs`
+- `RaiFile.DefaultSyncPropagationDelayMs` (10 seconds)

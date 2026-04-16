@@ -1,5 +1,5 @@
 @startuml OsLib-RaiFile-Hierarchy
-' Release: 3.7.3
+' Release: 3.7.6
 
 title OsLib RaiFile Hierarchy
 
@@ -77,7 +77,10 @@ package "OsLib" {
 		+Path : RaiPath
 		+NameWithExtension : string
 		+FullName : string
+		+FileAge : TimeSpan
+		+{static} DefaultSyncPropagationDelayMs : int
 		+Exists() : bool
+		+BackdateCreationTime(utc : DateTime, propagationDelayMs : int? = null) : void
 		+rm() : int
 		+mv(from : RaiFile, replace : bool, keepBackup : bool) : int
 		+cp(from : RaiFile) : int

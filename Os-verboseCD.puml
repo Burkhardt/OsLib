@@ -1,5 +1,5 @@
 @startuml OsLib-Os-Verbose-ClassDiagram
-' Release: 3.7.5
+' Release: 3.7.6
 
 title OsLib Os Verbose Class Diagram
 
@@ -89,6 +89,9 @@ package "OsLib" {
 	class "<size:18>RaiFile</size>" as RaiFile {
 		+RaiFile(filename : string)
 		+RaiFile(p : RaiPath, name : string = null, ext : string = null)
+		+FileAge : TimeSpan
+		+{static} DefaultSyncPropagationDelayMs : int
+		+BackdateCreationTime(utc : DateTime, propagationDelayMs : int? = null) : void
 	}
 
 	class "<size:24>Os</size> ⓈⓅ" as Os {
@@ -107,7 +110,7 @@ package "OsLib" {
 		+{static} LocalBackupDir : RaiPath
 		+{static} Config : dynamic
 		+{static} IsConfigLoaded : bool
-		+{static} ConfigFileFullName : string
+		+{static} DefaultConfigFileLocation : string
 		--
 		+{static} ConfigureDiagnostics(loggerFactory : ILoggerFactory, startupDiagnosticSink : IStartupDiagnosticSink = null) : void
 		+{static} ParseDateTime(datetimeInDATEFORMAT : string) : DateTimeOffset
@@ -124,7 +127,6 @@ package "OsLib" {
 		~{static} parentDir(s : string) : string
 		~{static} expandLeadingDirSymbols(s : string) : string
 		--
-		-{static} defaultConfigFileLocation : string
 		-{static} config : dynamic
 		-{static} userHomeDir : RaiPath
 		-{static} appRootDir : RaiPath
