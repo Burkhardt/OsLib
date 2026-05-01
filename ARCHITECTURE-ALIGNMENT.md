@@ -2,10 +2,10 @@
 
 This repository aligns with private internal architecture decisions maintained outside this public repository.
 
-## 3.7.6 release alignment
+## 3.7.7 release alignment
 
-- Minor release: aligns path and canonicalization behavior used by JsonPit cloud integration workflows with the new metadata backdating helper.
-- Public API remains stable for downstream libraries aside from the additive `RaiFile.BackdateCreationTime(...)` and sync propagation delay controls.
+- Patch release: refreshes current docs and diagrams around the post-purge OsLib architecture.
+- Public API remains stable for downstream libraries; the `RaiFile.BackdateCreationTime(...)` and sync propagation delay controls are unchanged in this release.
 
 ## intent for OsLib
 

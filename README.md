@@ -4,13 +4,11 @@ Handling of files, paths, temp/backup directories, and system calls.
 
 _formerly_ __OsLibCore__
 
-## 3.7.6
+## 3.7.7
 
-- Documents the current `RAIkeep.json5` contract and lazy `Os.Config` behavior.
-- Adds `RaiFile.BackdateCreationTime(...)` and `RaiFile.DefaultSyncPropagationDelayMs` to the current public surface.
-- Clarifies the propagation-delay precedence: explicit parameter, then `Os.Config.SyncPropagationDelayMs`, then the static default.
-- Documents the delegate firewall between `Os` and `RaiPath`: `CloudPathWiring`, `RaiPath.CloudEvaluator`, and buffered `RaiPath.Cloud`.
-- Documents cloud-aware wait loops by responsibility: `RaiPath` owns directory waits and `RaiFile` owns file waits.
+- Current release line for `OsLibCore` is `3.7.7`.
+- Live docs and PlantUML diagrams were refreshed so the current `RAIkeep.json5` contract and cloud-aware wait responsibilities stay in sync with the code.
+- No new public OsLib API surface was introduced in this patch release.
 
 ## namespace
 
@@ -109,7 +107,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 - Foldable class and method-level documentation: [API.md](API.md)
 - Current cloud configuration and buffered cloud-path behavior: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
-- Historical path/config/logging design note, now marked with 3.7.6 caveats: [PATH_CONFIG_LOGGING_REFACTOR.md](PATH_CONFIG_LOGGING_REFACTOR.md)
+- Historical path/config/logging design note, now marked with 3.7.7 caveats: [PATH_CONFIG_LOGGING_REFACTOR.md](PATH_CONFIG_LOGGING_REFACTOR.md)
 - CLI command hierarchy and external tool wrappers: [../CliCommand-Hierarchy.puml](../CliCommand-Hierarchy.puml)
 - Local backup placement: `Os.LocalBackupDir` is optional; when absent, backup features are disabled instead of falling back.
 - Structured logging: OsLib diagnostics use `ILogger<T>` templates. The current config path falls back to a baseline `TempDir` model rather than treating missing config as a startup-fatal public API contract.
@@ -124,13 +122,13 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.7.6.md](RELEASE_NOTES_3.7.6.md)
+- Current release notes: [RELEASE_NOTES_3.7.7.md](RELEASE_NOTES_3.7.7.md)
 
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.7.6`)
+- Trigger: push a version tag in format `v*` (example: `v3.7.7`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.7.6 -m "v3.7.6" && git push origin v3.7.6`
+	- `git tag -a v3.7.7 -m "v3.7.7" && git push origin v3.7.7`
