@@ -4,11 +4,13 @@ Handling of files, paths, temp/backup directories, and system calls.
 
 _formerly_ __OsLibCore__
 
-## 3.7.7
+## 3.7.8
 
-- Current release line for `OsLibCore` is `3.7.7`.
-- Live docs and PlantUML diagrams were refreshed so the current `RAIkeep.json5` contract and cloud-aware wait responsibilities stay in sync with the code.
-- No new public OsLib API surface was introduced in this patch release.
+- Current release line for `OsLibCore` is `3.7.8`.
+- Bug fixes in `RaiPath.mv()` for the `replace` / `keepBackup` combinations.
+- `RaiPath.cp()` is now fully implemented via `RaiPath.EnumerateFiles`, `RaiPath.EnumerateDirectories`, `RaiPath.mkdir()`, and `RaiFile.cp()` — no direct `System.IO` traversal.
+- New `RaiPath.backup(bool copy = false)` method, symmetrical to `RaiFile.backup`. When `keepBackup: true`, both `RaiPath.mv()` and `RaiPath.cp()` delegate to it instead of creating sibling `_backup_<id>` directories.
+- See [RELEASE_NOTES_3.7.8.md](RELEASE_NOTES_3.7.8.md) for details.
 
 ## namespace
 
@@ -55,7 +57,7 @@ OsLib
 <details>
 <summary>RaiPath: Directory path type with buffered cloud classification.</summary>
 
-- RaiPath: `Path`, `Cloud`, `CloudEvaluator`, `/` operator, `Parent`, `mkdir`, `rmdir`, `EnumerateFiles`
+- RaiPath: `Path`, `Cloud`, `CloudEvaluator`, `/` operator, `Parent`, `mkdir`, `rmdir`, `mv`, `cp`, `backup`, `EnumerateFiles`, `EnumerateDirectories`
 </details>
 
 <details>
@@ -122,13 +124,13 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.7.7.md](RELEASE_NOTES_3.7.7.md)
+- Current release notes: [RELEASE_NOTES_3.7.8.md](RELEASE_NOTES_3.7.8.md)
 
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.7.7`)
+- Trigger: push a version tag in format `v*` (example: `v3.7.8`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.7.7 -m "v3.7.7" && git push origin v3.7.7`
+	- `git tag -a v3.7.8 -m "v3.7.8" && git push origin v3.7.8`

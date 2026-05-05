@@ -347,6 +347,101 @@ namespace OsLib
 			}
 			return path;
 		}
+		/// <summary>
+		/// Move a directory from the location given by <paramref name="from"/> to the
+		/// location of the current RaiPath instance.
+		/// If the current RaiPath already exists, behavior depends on
+		/// <paramref name="replace"/>: throws when false, replaces otherwise.
+		/// When <paramref name="keepBackup"/> is true and the existing target is being
+		/// replaced, the existing target is first moved to <see cref="Os.LocalBackupDir"/>
+		/// via <see cref="backup"/> instead of being deleted.
+		/// Returns 0 on success.
+		/// </summary>
+		public int mv(RaiPath from, bool replace, bool keepBackup)
+		{
+			if (from == null) throw new ArgumentNullException(nameof(from));
+			if (!from.Exists()) throw new DirectoryNotFoundException("Source directory does not exist: " + from.Path);
+			if (Exists())
+			{
+				if (!replace) throw new IOException("Target directory already exists: " + Path);
+				if (keepBackup) backup(copy: false);
+				else
+				{
+					rmdir(depth: int.MaxValue, deleteFiles: true);
+					if (Cloud) awaitDirVanishing();
+				}
+			}
+			Directory.Move(from.Path, Path);
+			if (Cloud) awaitDirMaterializing();
+			return 0; // success
+		}
+		/// <summary>
+		/// Copy a directory tree from the location given by <paramref name="from"/> to
+		/// the location of the current RaiPath instance, including all files and
+		/// subdirectories. Implemented in terms of <see cref="RaiPath.EnumerateFiles"/>,
+		/// <see cref="RaiPath.EnumerateDirectories"/>, <see cref="RaiPath.mkdir()"/> and
+		/// <see cref="RaiFile.cp"/> — no direct System.IO calls for traversal.
+		/// If the current RaiPath already exists, behavior depends on
+		/// <paramref name="replace"/>: throws when false, replaces otherwise.
+		/// When <paramref name="keepBackup"/> is true and the existing target is being
+		/// replaced, the existing target is first moved to <see cref="Os.LocalBackupDir"/>
+		/// via <see cref="backup"/>.
+		/// Returns 0 on success.
+		/// </summary>
+		public int cp(RaiPath from, bool replace, bool keepBackup = false)
+		{
+			if (from == null) throw new ArgumentNullException(nameof(from));
+			if (!from.Exists()) throw new DirectoryNotFoundException("Source directory does not exist: " + from.Path);
+			if (Exists())
+			{
+				if (!replace) throw new IOException("Target directory already exists: " + Path);
+				if (keepBackup) backup(copy: false);
+				else
+				{
+					rmdir(depth: int.MaxValue, deleteFiles: true);
+					if (Cloud) awaitDirVanishing();
+				}
+			}
+			mkdir();
+			foreach (var srcFile in from.EnumerateFiles("*").ToList())
+			{
+				var destFile = new RaiFile(this, srcFile.Name, srcFile.Ext);
+				destFile.cp(srcFile);
+			}
+			foreach (var srcSub in from.EnumerateDirectories("*").ToList())
+			{
+				var leaf = srcSub.Segments.LastOrDefault();
+				if (string.IsNullOrEmpty(leaf)) continue;
+				var destSub = this / leaf;
+				destSub.cp(srcSub, replace: true, keepBackup: false);
+			}
+			if (Cloud) awaitDirMaterializing();
+			return 0; // success
+		}
+		/// <summary>
+		/// Symmetrical to <see cref="RaiFile.backup"/>: relocates (or copies) this
+		/// directory tree into <see cref="Os.LocalBackupDir"/>, mirroring the original
+		/// path under that root and appending a UTC timestamp to the leaf segment.
+		/// When <paramref name="copy"/> is true the original is left in place;
+		/// otherwise it is moved.
+		/// Returns the resulting backup path, or null if the source does not exist.
+		/// </summary>
+		public RaiPath backup(bool copy = false)
+		{
+			if (!Exists()) return null;
+			var backupRoot = Os.LocalBackupDir ?? throw new InvalidOperationException("LocalBackupDir not configured.");
+			var trimmed = path.TrimEnd(Os.DIR[0]);
+			var pos = trimmed.LastIndexOf(Os.DIR[0]);
+			var parentDir = pos < 0 ? string.Empty : trimmed.Substring(0, pos + 1);
+			var leaf = pos < 0 ? trimmed : trimmed.Substring(pos + 1);
+			var parentRel = RaiFile.BackupRelativePath(new RaiPath(parentDir));
+			var stamped = leaf + "_" + DateTimeOffset.UtcNow.ToString(Os.DATEFORMAT);
+			var backupTarget = backupRoot / parentRel / stamped;
+			backupTarget.Parent.mkdir();
+			if (copy) backupTarget.cp(this, replace: false, keepBackup: false);
+			else backupTarget.mv(this, replace: false, keepBackup: false);
+			return backupTarget;
+		}
 		public void rmdir(int depth = 0, bool deleteFiles = false)
 		{
 			if (string.IsNullOrEmpty(Path) || !Exists()) return;

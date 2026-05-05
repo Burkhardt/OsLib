@@ -230,6 +230,172 @@ public class PathConventionsTests
 	}
 
 	[Fact]
+	public void RaiPath_Mv_MovesDirectory_WhenTargetDoesNotExist()
+	{
+		var root = NewTestRoot();
+		var source = root / "source";
+		var target = root / "target";
+
+		try
+		{
+			source.mkdir();
+			var probe = new TextFile(source, "probe.txt");
+			probe.Append("payload");
+			probe.Save();
+
+			var result = target.mv(source, replace: false, keepBackup: false);
+
+			Assert.Equal(0, result);
+			Assert.False(Directory.Exists(source.Path));
+			Assert.True(Directory.Exists(target.Path));
+			Assert.True(new RaiFile(target.Path + "probe.txt").Exists());
+		}
+		finally
+		{
+			CleanupDir(root);
+		}
+	}
+
+	[Fact]
+	public void RaiPath_Mv_Throws_WhenTargetExists_AndReplaceFalse()
+	{
+		var root = NewTestRoot();
+		var source = root / "source";
+		var target = root / "target";
+
+		try
+		{
+			source.mkdir();
+			target.mkdir();
+
+			Assert.Throws<IOException>(() => target.mv(source, replace: false, keepBackup: false));
+			Assert.True(Directory.Exists(source.Path));
+			Assert.True(Directory.Exists(target.Path));
+		}
+		finally
+		{
+			CleanupDir(root);
+		}
+	}
+
+	[Fact]
+	public void RaiPath_Mv_ReplacesTarget_WithoutBackup_WhenReplaceTrue()
+	{
+		var root = NewTestRoot();
+		var source = root / "source";
+		var target = root / "target";
+
+		try
+		{
+			source.mkdir();
+			var sourceProbe = new TextFile(source, "src.txt");
+			sourceProbe.Append("from-source");
+			sourceProbe.Save();
+
+			target.mkdir();
+			var targetProbe = new TextFile(target, "tgt.txt");
+			targetProbe.Append("from-target");
+			targetProbe.Save();
+
+			var result = target.mv(source, replace: true, keepBackup: false);
+
+			Assert.Equal(0, result);
+			Assert.False(Directory.Exists(source.Path));
+			Assert.True(Directory.Exists(target.Path));
+			Assert.True(new RaiFile(target.Path + "src.txt").Exists());
+			Assert.False(new RaiFile(target.Path + "tgt.txt").Exists());
+		}
+		finally
+		{
+			CleanupDir(root);
+		}
+	}
+
+	[Fact]
+	public void RaiPath_Mv_ReplacesTarget_AndKeepsBackup_WhenKeepBackupTrue()
+	{
+		var root = NewTestRoot();
+		var source = root / "source";
+		var target = root / "target";
+
+		var backupRoot = Os.LocalBackupDir;
+		Assert.NotNull(backupRoot); // requires LocalBackupDir to be configured
+
+		var backupMirrorParent = backupRoot! / RaiFile.BackupRelativePath(root);
+		// Clear any stale backups from previous runs of this test
+		if (backupMirrorParent.Exists())
+			backupMirrorParent.rmdir(depth: int.MaxValue, deleteFiles: true);
+		RaiPath createdBackup = null!;
+
+		try
+		{
+			source.mkdir();
+			var sourceProbe = new TextFile(source, "src.txt");
+			sourceProbe.Append("from-source");
+			sourceProbe.Save();
+
+			target.mkdir();
+			var targetProbe = new TextFile(target, "tgt.txt");
+			targetProbe.Append("from-target");
+			targetProbe.Save();
+
+			var result = target.mv(source, replace: true, keepBackup: true);
+
+			Assert.Equal(0, result);
+			Assert.False(Directory.Exists(source.Path));
+			Assert.True(Directory.Exists(target.Path));
+			Assert.True(new RaiFile(target.Path + "src.txt").Exists());
+
+			Assert.True(backupMirrorParent.Exists(),
+				$"Expected backup mirror parent to exist: {backupMirrorParent.Path}");
+			var backups = Directory.EnumerateDirectories(backupMirrorParent.Path, "target_*").ToList();
+			Assert.Single(backups);
+			createdBackup = new RaiPath(backups[0]);
+			Assert.True(new RaiFile(createdBackup.Path + "tgt.txt").Exists());
+		}
+		finally
+		{
+			if (createdBackup != null) createdBackup.rmdir(depth: int.MaxValue, deleteFiles: true);
+			if (backupMirrorParent.Exists()) backupMirrorParent.rmdir(depth: int.MaxValue, deleteFiles: true);
+			CleanupDir(root);
+		}
+	}
+
+	[Fact]
+	public void RaiPath_Mv_Throws_WhenSourceMissing()
+	{
+		var root = NewTestRoot();
+		var source = root / "missing-source";
+		var target = root / "target";
+
+		try
+		{
+			root.mkdir();
+			Assert.Throws<DirectoryNotFoundException>(() => target.mv(source, replace: false, keepBackup: false));
+		}
+		finally
+		{
+			CleanupDir(root);
+		}
+	}
+
+	[Fact]
+	public void RaiPath_Mv_Throws_WhenSourceIsNull()
+	{
+		var root = NewTestRoot();
+		var target = root / "target";
+
+		try
+		{
+			Assert.Throws<ArgumentNullException>(() => target.mv(null!, replace: false, keepBackup: false));
+		}
+		finally
+		{
+			CleanupDir(root);
+		}
+	}
+
+	[Fact]
 	public void CanonicalFile_Appends_Folder()
 	{
 		var root = new RaiPath("/tmp/storage/");
