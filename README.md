@@ -4,12 +4,12 @@ Handling of files, paths, temp/backup directories, and system calls.
 
 _formerly_ __OsLibCore__
 
-## 3.7.11
+## 3.8.0
 
-- Current release line for `OsLibCore` is `3.7.11`.
+- Current release line for `OsLibCore` is `3.8.0`.
 - Carries forward the async `RaiFile` APIs added in `3.7.10`: `WriteFromAsync(Stream, CancellationToken)` and `ReadAllBytesAsync(CancellationToken)`.
-- Refreshes the packaged README and release-facing metadata so NuGet displays the current OsLib feature line instead of the older `3.7.9` summary.
-- See [RELEASE_NOTES_3.7.11.md](RELEASE_NOTES_3.7.11.md) for details.
+- Establishes the coordinated `3.8.0` package line and refreshes current docs and PlantUML sources.
+- See [RELEASE_NOTES_3.8.0.md](RELEASE_NOTES_3.8.0.md) for details.
 
 ## namespace
 
@@ -123,13 +123,13 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.7.11.md](RELEASE_NOTES_3.7.11.md)
+- Current release notes: [RELEASE_NOTES_3.8.0.md](RELEASE_NOTES_3.8.0.md)
 
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.7.11`)
+- Trigger: push a version tag in format `v*` (example: `v3.8.0`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.7.11 -m "v3.7.11" && git push origin v3.7.11`
+	- `git tag -a v3.8.0 -m "v3.8.0" && git push origin v3.8.0`
