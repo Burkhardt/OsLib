@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Xunit;
 using OsLib;
 
@@ -138,6 +139,50 @@ namespace OsLib.Tests
 
 				moved.rm();
 				Assert.False(moved.Exists());
+			}
+			finally
+			{
+				root.rmdir(depth: 9, deleteFiles: true);
+			}
+		}
+
+		[Fact]
+		public async Task RaiFile_WriteFromAsync_WritesStreamToDisk()
+		{
+			var cancellationToken = TestContext.Current.CancellationToken;
+			var root = CreateTempDir();
+			try
+			{
+				var target = new RaiFile(root / "nested" / "child", "payload", "bin");
+				var bytes = new byte[] { 1, 2, 3, 4, 5 };
+				await using var source = new MemoryStream(bytes);
+
+				await target.WriteFromAsync(source, cancellationToken);
+
+				Assert.True(target.Exists());
+				Assert.Equal(bytes, File.ReadAllBytes(target.FullName));
+			}
+			finally
+			{
+				root.rmdir(depth: 9, deleteFiles: true);
+			}
+		}
+
+		[Fact]
+		public async Task RaiFile_ReadAllBytesAsync_ReturnsFileContents()
+		{
+			var cancellationToken = TestContext.Current.CancellationToken;
+			var root = CreateTempDir();
+			try
+			{
+				var target = new RaiFile(root, "payload", "bin");
+				var bytes = new byte[] { 9, 8, 7, 6 };
+				await using var source = new MemoryStream(bytes);
+
+				await target.WriteFromAsync(source, cancellationToken);
+				var actual = await target.ReadAllBytesAsync(cancellationToken);
+
+				Assert.Equal(bytes, actual);
 			}
 			finally
 			{

@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-		<Version>3.7.9</Version>
+		<Version>3.7.10</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-		<PackageReleaseNotes>3.7.9 patch: refreshes current release docs and package metadata after the 3.7.8 RaiPath filesystem fixes; no new public API changes.</PackageReleaseNotes>
+		<PackageReleaseNotes>3.7.10 patch: adds RaiFile.WriteFromAsync(Stream, CancellationToken) and RaiFile.ReadAllBytesAsync(CancellationToken) for async byte-stream file IO without changing existing path behavior.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 

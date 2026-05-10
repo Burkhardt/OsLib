@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
@@ -295,6 +296,15 @@ namespace OsLib
 		public bool DirEmpty => string.IsNullOrEmpty(Path?.ToString()) || !Directory.EnumerateFileSystemEntries(Path.ToString()).Any();
 		public RaiPath mkdir() => Path?.mkdir() ?? RaiPath.mkdir();
 		public static RaiPath mkdir(string dirname = null) => RaiPath.mkdir(dirname);
+		public async Task WriteFromAsync(Stream source, CancellationToken ct = default)
+		{
+			if (source == null) throw new ArgumentNullException(nameof(source));
+			mkdir();
+			await using var target = new FileStream(FullName, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
+			await source.CopyToAsync(target, ct);
+		}
+		public Task<byte[]> ReadAllBytesAsync(CancellationToken ct = default)
+			=> File.ReadAllBytesAsync(FullName, ct);
 		public RaiFile Zip()
 		{
 			var zipFile = new RaiFile(FullName);
