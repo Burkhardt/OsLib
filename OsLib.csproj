@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-		<Version>3.7.8</Version>
+		<Version>3.7.9</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-		<PackageReleaseNotes>3.7.8 patch: fixes RaiPath.mv() target-replacement bugs, completes RaiPath.cp() with RaiFile/RaiPath-only traversal, and adds a RaiPath.backup() method symmetrical to RaiFile.backup().</PackageReleaseNotes>
+		<PackageReleaseNotes>3.7.9 patch: refreshes current release docs and package metadata after the 3.7.8 RaiPath filesystem fixes; no new public API changes.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 
