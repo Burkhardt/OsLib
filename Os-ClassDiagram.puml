@@ -66,6 +66,8 @@ package "OsLib" {
 		+RaiFile(filename : string)
 		+RaiFile(p : RaiPath, name : string = null, ext : string = null)
 		+{static} DefaultSyncPropagationDelayMs : int
+		+WriteFromAsync(source : Stream, ct : CancellationToken = default) : Task
+		+ReadAllBytesAsync(ct : CancellationToken = default) : Task<byte[]>
 		+BackdateCreationTime(utc : DateTime, propagationDelayMs : int? = null) : void
 	}
 

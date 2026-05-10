@@ -80,6 +80,8 @@ package "OsLib" {
 		+FileAge : TimeSpan
 		+{static} DefaultSyncPropagationDelayMs : int
 		+Exists() : bool
+		+WriteFromAsync(source : Stream, ct : CancellationToken = default) : Task
+		+ReadAllBytesAsync(ct : CancellationToken = default) : Task<byte[]>
 		+BackdateCreationTime(utc : DateTime, propagationDelayMs : int? = null) : void
 		+rm() : int
 		+mv(from : RaiFile, replace : bool, keepBackup : bool) : int
