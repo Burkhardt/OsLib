@@ -4,14 +4,12 @@ Handling of files, paths, temp/backup directories, and system calls.
 
 _formerly_ __OsLibCore__
 
-## 3.7.9
+## 3.7.11
 
-- Current release line for `OsLibCore` is `3.7.9`.
-- Bug fixes in `RaiPath.mv()` for the `replace` / `keepBackup` combinations.
-- `RaiPath.cp()` is now fully implemented via `RaiPath.EnumerateFiles`, `RaiPath.EnumerateDirectories`, `RaiPath.mkdir()`, and `RaiFile.cp()` — no direct `System.IO` traversal.
-- New `RaiPath.backup(bool copy = false)` method, symmetrical to `RaiFile.backup`. When `keepBackup: true`, both `RaiPath.mv()` and `RaiPath.cp()` delegate to it instead of creating sibling `_backup_<id>` directories.
-- Current package metadata and live docs were refreshed for the `3.7.9` release line.
-- See [RELEASE_NOTES_3.7.9.md](RELEASE_NOTES_3.7.9.md) for details.
+- Current release line for `OsLibCore` is `3.7.11`.
+- Carries forward the async `RaiFile` APIs added in `3.7.10`: `WriteFromAsync(Stream, CancellationToken)` and `ReadAllBytesAsync(CancellationToken)`.
+- Refreshes the packaged README and release-facing metadata so NuGet displays the current OsLib feature line instead of the older `3.7.9` summary.
+- See [RELEASE_NOTES_3.7.11.md](RELEASE_NOTES_3.7.11.md) for details.
 
 ## namespace
 
@@ -64,7 +62,7 @@ OsLib
 <details>
 <summary>RaiFile: File utility with cloud-aware wait behavior.</summary>
 
-- RaiFile: `Exists`, `rm`, `mv`, `cp`, `mkdir`, `rmdir`, `AwaitVanishing`, `AwaitMaterializing`, `BackdateCreationTime`, `DefaultSyncPropagationDelayMs`, `Zip`, `backup`
+- RaiFile: `Exists`, `rm`, `mv`, `cp`, `mkdir`, `rmdir`, `WriteFromAsync`, `ReadAllBytesAsync`, `AwaitVanishing`, `AwaitMaterializing`, `BackdateCreationTime`, `DefaultSyncPropagationDelayMs`, `Zip`, `backup`
 </details>
 
 <details>
@@ -125,13 +123,13 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.7.9.md](RELEASE_NOTES_3.7.9.md)
+- Current release notes: [RELEASE_NOTES_3.7.11.md](RELEASE_NOTES_3.7.11.md)
 
 ## nuget publish automation
 
 - GitHub Actions workflow: `.github/workflows/publish-nuget.yml`
-- Trigger: push a version tag in format `v*` (example: `v3.7.9`)
+- Trigger: push a version tag in format `v*` (example: `v3.7.11`)
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.7.9 -m "v3.7.9" && git push origin v3.7.9`
+	- `git tag -a v3.7.11 -m "v3.7.11" && git push origin v3.7.11`

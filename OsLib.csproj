@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-		<Version>3.7.10</Version>
+		<Version>3.7.11</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-		<PackageReleaseNotes>3.7.10 patch: adds RaiFile.WriteFromAsync(Stream, CancellationToken) and RaiFile.ReadAllBytesAsync(CancellationToken) for async byte-stream file IO without changing existing path behavior.</PackageReleaseNotes>
+		<PackageReleaseNotes>3.7.11 patch: refreshes the packaged README and release-facing metadata so NuGet reflects the current RaiFile async API line introduced in 3.7.10.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 
