@@ -1,5 +1,5 @@
 @startuml OsLib-RaiFile-Hierarchy
-' Release: 3.8.0
+' Release: 3.8.1
 
 title OsLib RaiFile Hierarchy
 
@@ -86,7 +86,7 @@ package "OsLib" {
 		+rm() : int
 		+mv(from : RaiFile, replace : bool, keepBackup : bool) : int
 		+cp(from : RaiFile) : int
-		+mkdir() : RaiPath
+		+{virtual} mkdir() : RaiPath
 		+rmdir(depth : int, deleteFiles : bool) : void
 		+backup(copy : bool = false) : string
 	}

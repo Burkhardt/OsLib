@@ -1,5 +1,5 @@
 @startuml OsLib-Os-ClassDiagram
-' Release: 3.8.0
+' Release: 3.8.1
 
 title OsLib Os Class Diagram
 
@@ -66,6 +66,7 @@ package "OsLib" {
 		+RaiFile(filename : string)
 		+RaiFile(p : RaiPath, name : string = null, ext : string = null)
 		+{static} DefaultSyncPropagationDelayMs : int
+			+{virtual} mkdir() : RaiPath
 		+WriteFromAsync(source : Stream, ct : CancellationToken = default) : Task
 		+ReadAllBytesAsync(ct : CancellationToken = default) : Task<byte[]>
 		+BackdateCreationTime(utc : DateTime, propagationDelayMs : int? = null) : void

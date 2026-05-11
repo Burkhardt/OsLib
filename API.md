@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLib 3.8.0` API surface.
+This document provides a detailed, foldable overview of the current `OsLib 3.8.1` API surface.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -109,7 +109,8 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 	- <details>
 		<summary>mkdir(), rmdir(...), backup(copy): directory materialization and backup helpers.</summary>
 
-		- Directory creation/deletion delegates to `RaiPath`.
+		- `mkdir()` is virtual so derived `RaiFile` types can override directory creation through normal polymorphic dispatch.
+		- Directory creation/deletion delegates to `RaiPath` in the base implementation.
 		- `backup(copy)` composes the destination below `Os.LocalBackupDir` when backups are enabled.
 		</details>
 	</details>

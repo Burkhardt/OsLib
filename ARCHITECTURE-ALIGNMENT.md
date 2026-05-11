@@ -2,9 +2,9 @@
 
 This repository aligns with private internal architecture decisions maintained outside this public repository.
 
-## 3.8.0 release alignment
+## 3.8.1 release alignment
 
-- Coordinated release: refreshes current docs and diagrams around the post-purge OsLib architecture for the `3.8.0` package line.
+- Patch release: makes `RaiFile.mkdir()` virtual so base-class write flows dispatch to derived directory-creation behavior where implemented.
 - Public API remains stable for downstream libraries; the `RaiFile.BackdateCreationTime(...)`, `WriteFromAsync(...)`, `ReadAllBytesAsync(...)`, and sync propagation delay controls are unchanged in this release.
 
 ## intent for OsLib
