@@ -294,7 +294,7 @@ namespace OsLib
 		}
 		public void rmdir(int depth = 0, bool deleteFiles = false) => Path?.rmdir(depth, deleteFiles);
 		public bool DirEmpty => string.IsNullOrEmpty(Path?.ToString()) || !Directory.EnumerateFileSystemEntries(Path.ToString()).Any();
-		public RaiPath mkdir() => Path?.mkdir() ?? RaiPath.mkdir();
+		public virtual RaiPath mkdir() => Path?.mkdir() ?? RaiPath.mkdir();
 		public static RaiPath mkdir(string dirname = null) => RaiPath.mkdir(dirname);
 		public async Task WriteFromAsync(Stream source, CancellationToken ct = default)
 		{
