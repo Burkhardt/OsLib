@@ -4,12 +4,12 @@ Handling of files, paths, temp/backup directories, and system calls.
 
 _formerly_ __OsLibCore__
 
-## 3.8.6
+## 3.8.11
 
-- Current release line for `OsLibCore` is `3.8.6`.
+- Current release line for `OsLibCore` is `3.8.11`.
 - Makes `RaiFile.mkdir()` virtual so base-class operations dispatch to derived directory creation behavior.
 - Carries forward the async `RaiFile` APIs added in `3.7.10`: `WriteFromAsync(Stream, CancellationToken)` and `ReadAllBytesAsync(CancellationToken)`.
-- See [RELEASE_NOTES_3.8.6.md](RELEASE_NOTES_3.8.6.md) for details.
+- See [RELEASE_NOTES_3.8.11.md](RELEASE_NOTES_3.8.11.md) for details.
 
 ## namespace
 
@@ -123,7 +123,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.8.6.md](RELEASE_NOTES_3.8.6.md)
+- Current release notes: [RELEASE_NOTES_3.8.11.md](RELEASE_NOTES_3.8.11.md)
 
 ## nuget publish automation
 

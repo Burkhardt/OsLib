@@ -265,7 +265,7 @@ namespace OsLib
 					if (newFileOldName)
 					{
 						var info = new FileInfo(FullName);
-						done = DateTime.Now.Subtract(info.LastWriteTimeUtc).TotalMilliseconds < 100;
+						done = DateTime.UtcNow.Subtract(info.LastWriteTimeUtc).TotalMilliseconds < 100;
 					}
 					else done = File.Exists(FullName);
 				}
