@@ -1,6 +1,6 @@
 # Cloud Storage Configuration
 
-This note describes the current `OsLib 3.8.11` cloud-related contract.
+This note describes the current `OsLib 3.8.12` cloud-related contract.
 
 Historical docs that mention `CloudStorageRootDir`, public `LoadConfig(...)`, provider-precedence APIs, `DefaultCloudOrder`, or observer-specific `Os` APIs describe older package lines and should not be treated as current.
 

@@ -2,10 +2,10 @@
 
 This repository aligns with private internal architecture decisions maintained outside this public repository.
 
-## 3.8.11 release alignment
+## 3.8.12 release alignment
 
-- Patch release: makes `RaiFile.mkdir()` virtual so base-class write flows dispatch to derived directory-creation behavior where implemented.
-- Public API remains stable for downstream libraries; the `RaiFile.BackdateCreationTime(...)`, `WriteFromAsync(...)`, `ReadAllBytesAsync(...)`, and sync propagation delay controls are unchanged in this release.
+- Patch-line refresh: package metadata, release notes, README links, and diagram markers are aligned with the coordinated `RAIkeep` release line.
+- Public API remains stable for downstream libraries; `RaiFile.mkdir()`, `RaiFile.BackdateCreationTime(...)`, `WriteFromAsync(...)`, `ReadAllBytesAsync(...)`, and sync propagation delay controls are unchanged from `3.8.11`.
 
 ## intent for OsLib
 
