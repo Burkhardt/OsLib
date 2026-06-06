@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-		<Version>3.8.13</Version>
+		<Version>3.8.14</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-		<PackageReleaseNotes>3.8.12 release: advances OsLibCore to the coordinated patch line with refreshed package docs and no public API changes from 3.8.11.</PackageReleaseNotes>
+		<PackageReleaseNotes>3.8.14 release: aligns OsLibCore metadata/docs/diagrams with coordinated package chain; no public API changes from 3.8.13.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 
