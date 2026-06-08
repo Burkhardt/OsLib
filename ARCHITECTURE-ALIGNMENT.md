@@ -2,10 +2,10 @@
 
 This repository aligns with private internal architecture decisions maintained outside this public repository.
 
-## 3.9.1 release alignment
+## 3.10.0 release alignment
 
 - Minor-line refresh: package metadata, release notes, README links, and diagram markers are aligned with the coordinated `RAIkeep` release line.
-- Public API remains stable for downstream libraries; `RaiFile.mkdir()`, `RaiFile.BackdateCreationTime(...)`, `WriteFromAsync(...)`, `ReadAllBytesAsync(...)`, and sync propagation delay controls are unchanged from `3.8.11`.
+- Public API remains stable for downstream libraries; `RaiFile.mkdir()`, `RaiFile.BackdateCreationTime(...)`, `WriteFromAsync(...)`, `ReadAllBytesAsync(...)`, and sync propagation delay controls are unchanged from `3.9.1`.
 
 ## intent for OsLib
 
