@@ -42,13 +42,13 @@ OsLib
 </details>
 
 <details>
-<summary>Os: Platform helpers, lazy config access, diagnostics, and path normalization.</summary>
+<summary>Os: Platform helpers, immutable runtime config snapshot, diagnostics, and path normalization.</summary>
 
-- Os: `UserHomeDir`, `AppRootDir`, `TempDir`, `LocalBackupDir`, `Config`, `IsConfigLoaded`, `DefaultConfigFileLocation`, `Escape`, `NormPath`, `NormSeperator`
+- Os: `UserHomeDir`, `AppRootDir`, `TempDir`, `LocalBackupDir`, `Config`, `IsConfigLoaded`, `ConfigFileFullName`, `DefaultConfigFileLocation`, `Escape`, `NormPath`, `NormSeperator`
 </details>
 
 <details>
-<summary>CloudPathWiring: Initializes the `RaiPath.CloudEvaluator` delegate from `Os.Config`.</summary>
+<summary>CloudPathWiring: Compatibility initializer for older callers.</summary>
 
 - CloudPathWiring: `Initialize`
 </details>
@@ -56,7 +56,7 @@ OsLib
 <details>
 <summary>RaiPath: Directory path type with buffered cloud classification.</summary>
 
-- RaiPath: `Path`, `Cloud`, `CloudEvaluator`, `/` operator, `Parent`, `mkdir`, `rmdir`, `mv`, `cp`, `backup`, `EnumerateFiles`, `EnumerateDirectories`
+- RaiPath: `Path`, `Cloud`, `/` operator, `Parent`, `mkdir`, `rmdir`, `mv`, `cp`, `backup`, `EnumerateFiles`, `EnumerateDirectories`
 </details>
 
 <details>

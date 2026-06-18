@@ -29,10 +29,11 @@ Notes:
 
 ## How Cloud Awareness Works
 
-Cloud awareness now flows through `RaiPath`, not through provider-selection helpers on `Os`.
+Cloud awareness now flows through `RaiPath` and the immutable `Os` runtime snapshot, not through provider-selection helpers or mutable process-global delegates.
 
-- `CloudPathWiring.Initialize()` assigns `RaiPath.CloudEvaluator`.
+- `Os` reads config once into a runtime snapshot.
 - `RaiPath.Path` buffers its `Cloud` flag when the path is set.
+- `RaiPath` asks the `Os` snapshot whether the normalized path sits below any configured `Cloud.*` root.
 - `RaiFile.Path` copies that buffered `Cloud` flag from the assigned `RaiPath`.
 
 That means cloud-aware waits stay close to the object that mutates the filesystem:

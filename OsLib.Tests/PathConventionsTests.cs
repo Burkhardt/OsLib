@@ -1,9 +1,8 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json.Linq;
 using OsLib;
-using Xunit.Runner.Common;
-using Xunit.Sdk;
 
 namespace OsLib.Tests;
 
@@ -49,26 +48,41 @@ public class PathConventionsTests
 
 		return string.IsNullOrWhiteSpace(cleaned) ? "test" : cleaned;
 	}
-	[Fact]
-	public void CloudStatus_Fails_WhenConfigIsMissing()
+
+	private static string RequireConfiguredCloudRoot()
 	{
-		// Ensure the engine has attempted to load the environment
+		var config = Os.Config as JObject;
+		var cloud = config?["Cloud"] as JObject;
+		foreach (var provider in new[] { "GoogleDrive", "OneDrive", "Dropbox" })
+		{
+			var root = cloud?[provider]?.ToString();
+			if (!string.IsNullOrWhiteSpace(root))
+				return root;
+		}
+
+		Assert.Skip($"No cloud provider configured in {Os.ConfigFileFullName}.");
+		return string.Empty;
+	}
+
+	[Fact]
+	public void CloudPathWiring_Initialize_IsCompatibilityNoOp()
+	{
+		var pathBefore = new RaiPath(Path.GetTempPath()) / "RAIkeep" / "local-probe";
+
 		CloudPathWiring.Initialize();
-		// If you've renamed your config file, this should be false.
-		// This is the "Proper Way" to prove the system isn't faking it.
-		Assert.True(Os.IsConfigLoaded, "System should report config is NOT loaded.");
-		var path = new RaiPath("/Users/RSB/Dropbox/");
-		// Because the config is missing, the evaluator MUST return false.
-		Assert.False(path.Cloud, "Path should NOT be cloud-aware without a valid config file.");
+
+		var pathAfter = new RaiPath(pathBefore.Path);
+		Assert.Equal(pathBefore.Cloud, pathAfter.Cloud);
 	}
+
 	[Fact]
-	public void RaiPath_MustFailCloudStatus_IfConfigIsMissing()
+	public void OsConfig_IsLoaded_AndAvailableAsReadOnlyRuntimeSnapshot()
 	{
-		dynamic cfg = Os.Config;
-		// We don't use mocks here. We want the RAW production truth.
-		// If the file is missing, Os.IsConfigLoaded should be false.
-		Assert.True(Os.IsConfigLoaded, "CRITICAL: Config file 'RAIkeep.json5' is missing or renamed!");
+		Assert.True(Os.IsConfigLoaded, $"CRITICAL: Config file '{Os.ConfigFileFullName}' is missing or malformed.");
+		Assert.NotNull(Os.Config);
+		Assert.NotNull(Os.TempDir);
 	}
+
 	[Fact]
 	public void RaiPath_ProperWayToSplitFullName()
 	{
@@ -93,93 +107,46 @@ public class PathConventionsTests
 	[Fact]
 	public void RaiPath_CloudStatus_PersistsThroughNavigation()
 	{
-		var originalEvaluator = RaiPath.CloudEvaluator;
-		try
-		{
-			// 1. Force the engine to perform its "Production Stomp" now.
-			// This ensures the static constructor/wiring has already fired.
-			CloudPathWiring.Initialize();
-			// 2. NOW overwrite it with our mock. 
-			// Our assignment happens LAST, so we win the race.
-			RaiPath.CloudEvaluator = p => p.Contains("Dropbox");
-			// 3. Constructor runs, calls our mock, sets the private Cloud property.
-			var root = new RaiPath("/Users/RSB/Dropbox/");
-			Assert.True(root.Cloud);
-		}
-		finally
-		{
-			// 4. Put the toys back in the box.
-			RaiPath.CloudEvaluator = originalEvaluator;
-		}
-	}// Define the static named evaluator inside your test class
-	private static bool MockDropboxEvaluator(string path)
-	{
-		if (string.IsNullOrWhiteSpace(path)) return false;
-		return path.Contains("Dropbox", StringComparison.Ordinal);
+		var root = new RaiPath(RequireConfiguredCloudRoot());
+		var child = root / "workspace";
+
+		Assert.True(root.Cloud);
+		Assert.True(child.Cloud);
 	}
+
 	[Fact]
-	public void RaiPath_StringAssignment_ReevaluatesCloudState_fakeEvaluator()
+	public void RaiPath_StringAssignment_ReevaluatesCloudState_FromRuntimeSnapshot()
 	{
-		var originalEvaluator = RaiPath.CloudEvaluator;
-		// option1: outside try catch lamda works
-		RaiPath.CloudEvaluator = path => !path.Contains("tmp/", StringComparison.Ordinal);
-		try
-		{
-			// option2: inside try catch lamda didn't work for me but this one does too, so leaving it here for reference
-			RaiPath.CloudEvaluator = MockDropboxEvaluator;
-			// Problem 1 Fix: Extract the directory from the initial string
-			var (initialDir, _) = RaiPath.splitPathAndName("/tmp/local/workspace/file.txt");
-			var path = new RaiPath(initialDir);
-			// Problem 1 Fix: Extract the directory from the target string
-			var (newDir, _) = RaiPath.splitPathAndName("/Dropbox/workspace/file.txt");
-			// Act: Assign the new clean directory path
-			path.Path = newDir;
-			// Assert: The setter should have triggered the MockDropboxEvaluator
-			Assert.True(path.Cloud);
-		}
-		finally
-		{
-			// Restore the original environment
-			RaiPath.CloudEvaluator = originalEvaluator;
-		}
+		var path = new RaiPath(Path.GetTempPath()) / "RAIkeep" / "local-probe";
+		var cloudPath = new RaiPath(RequireConfiguredCloudRoot()) / "workspace";
+
+		Assert.False(path.Cloud);
+
+		path.Path = cloudPath.Path;
+
+		Assert.True(path.Cloud);
 	}
+
 	[Fact]
 	public void RaiPath_StringAssignment_ReevaluatesCloudState()
-	{   // this test uses the original evaluator
-		try
-		{
-			var path = new RaiPath("/tmp/local/workspace/");
-			string changedPath = (new RaiPath((string)Os.Config.Cloud.GoogleDrive) / "workspace/").FullPath;
-			path.Path = changedPath;
-			Assert.True(path.Cloud);
-		}
-		catch (Exception) { }
+	{
+		var path = new RaiPath(Path.GetTempPath()) / "RAIkeep" / "local-workspace";
+		var changedPath = (new RaiPath(RequireConfiguredCloudRoot()) / "workspace").FullPath;
+
+		path.Path = changedPath;
+
+		Assert.True(path.Cloud);
 	}
+
 	[Fact]
 	public void RaiPath_CopyConstruction_UsesBufferedCloudState()
 	{
-		var originalEvaluator = RaiPath.CloudEvaluator;
-		try
-		{
-			var evaluationCount = 0;
-			RaiPath.CloudEvaluator = path =>
-			{
-				evaluationCount++;
-				return path.Contains("Dropbox", StringComparison.Ordinal);
-			};
+		var source = new RaiPath(RequireConfiguredCloudRoot());
 
-			var source = new RaiPath("/tmp/Dropbox/workspace/file.txt");
-			evaluationCount = 0;
+		var copy = new RaiPath(source);
 
-			var copy = new RaiPath(source);
-
-			Assert.True(copy.Cloud);
-			Assert.Equal(0, evaluationCount);
-		}
-		finally
-		{
-			RaiPath.CloudEvaluator = originalEvaluator;
-		}
+		Assert.True(source.Cloud);
+		Assert.True(copy.Cloud);
 	}
 	[Fact]
 	public void RaiPath_Mkdir_CreatesDirectory_ForPathCompositionStyle()

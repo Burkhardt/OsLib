@@ -66,7 +66,6 @@ package "OsLib" {
 		+Parent : RaiPath
 		+Cloud : bool
 		+{static} InvalidFileNameChars : char[]
-		+{static} CloudEvaluator : Func<string, bool>
 		+RaiPath(s : string = ".")
 		+RaiPath(other : RaiPath)
 		+RaiPath(other : RaiBasePath)
@@ -161,7 +160,7 @@ Os ..> RaiFile : config file resolution
 Os ..> IStartupDiagnosticSink : diagnostics sink
 Os ..> OsDiagnosticsLogScope : log category
 CloudPathWiring ..> Os : boot-state check
-CloudPathWiring ..> RaiPath : assigns evaluator
+CloudPathWiring ..> RaiPath : compatibility initializer
 RaiPath ..> Os : path normalization
 
 class "Legend<size:10>ⓈⒶⓅ</size>" as LegendSample {
@@ -196,8 +195,9 @@ note bottom of Os
 	Os.Config.cs
 	Os.Diagnostics.cs
 	CloudPathWiring.cs is shown
-	as the delegate bridge for
-	RaiPath cloud awareness.
+	as a compatibility initializer;
+	RaiPath asks the Os snapshot
+	for cloud awareness.
 end note
 
 @enduml

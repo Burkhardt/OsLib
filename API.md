@@ -45,10 +45,10 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 	</details>
 
 - <details>
-	<summary>CloudPathWiring: delegate bridge between `Os.Config` and `RaiPath`.</summary>
+	<summary>CloudPathWiring: compatibility initializer for older callers.</summary>
 
-	- Responsibilities: initialize `RaiPath.CloudEvaluator` from the current config contract.
-	- There is no public provider-enum selection API in `Os`; cloud path classification is delegated to `RaiPath` through this wiring layer.
+	- Responsibilities: keep the historical `Initialize()` entry point available without mutating runtime state.
+	- Cloud path classification now flows from `RaiPath` into the immutable `Os` runtime snapshot.
 	</details>
 
 - <details>
@@ -59,13 +59,7 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		<summary>Path / Cloud: normalized directory path and buffered cloud classification.</summary>
 
 		- Setting `Path` ensures directory semantics by clearing file components internally.
-		- `Cloud` is buffered when the path is set and is driven by `CloudEvaluator`.
-		</details>
-	- <details>
-		<summary>CloudEvaluator: delegate firewall for cloud awareness.</summary>
-
-		- Defaults to `false` until initialized.
-		- `CloudPathWiring.Initialize()` assigns the production evaluator from `Os.Config`.
+		- `Cloud` is buffered when the path is set and is driven by the immutable `Os` runtime snapshot.
 		</details>
 	- <details>
 		<summary>operator /(self, subDir) and Parent: directory composition helpers.</summary>

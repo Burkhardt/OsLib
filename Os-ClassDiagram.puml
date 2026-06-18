@@ -55,7 +55,6 @@ package "OsLib" {
 	}
 
 	class "<size:18>RaiPath</size>" as RaiPath {
-		+{static} CloudEvaluator : Func<string, bool>
 		+Cloud : bool
 		+RaiPath(s : string = ".")
 		+RaiPath(other : RaiPath)
@@ -88,6 +87,7 @@ package "OsLib" {
 		+{static} LocalBackupDir : RaiPath
 		+{static} Config : dynamic
 		+{static} IsConfigLoaded : bool
+		+{static} ConfigFileFullName : string
 		+{static} DefaultConfigFileLocation : string
 		--
 		+{static} ConfigureDiagnostics(loggerFactory : ILoggerFactory, startupDiagnosticSink : IStartupDiagnosticSink = null) : void
@@ -108,7 +108,7 @@ Os ..> RaiPath : path contracts
 Os ..> RaiFile : config file resolution
 Os ..> IStartupDiagnosticSink : diagnostics sink
 CloudPathWiring ..> Os : boot-state check
-CloudPathWiring ..> RaiPath : assigns evaluator
+CloudPathWiring ..> RaiPath : compatibility initializer
 RaiPath ..> Os : path normalization
 
 class "Legend<size:10>ⓈⒶⓅ</size>" as LegendSample {
@@ -140,8 +140,8 @@ note bottom of Os
 	- CloudPathWiring.cs
 	Current config model is
 	dynamic (`RAIkeep.json5`)
-	with lazy loading and a
-	RaiPath delegate firewall
+	with a boot-time immutable
+	runtime snapshot
 	rather than a dedicated
 	config-file wrapper type.
 end note

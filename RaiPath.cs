@@ -156,21 +156,6 @@ namespace OsLib
 	public class RaiPath : RaiBasePath
 	{
 		private const int maxWaitCount = 60;
-		//public static Func<string, bool> CloudEvaluator { get; set; } = (path) => false;
-		// Instead of a hidden lambda, use a named private method
-		// public static Func<string, bool> CloudEvaluator = DefaultEvaluator;
-		public static Func<string, bool> CloudEvaluator
-		{
-			get => _cloudEvaluator;
-			set => _cloudEvaluator = value;
-		}
-		private static Func<string, bool> _cloudEvaluator = DefaultEvaluator;
-		private static bool DefaultEvaluator(string path)
-		{
-			// YOU CAN NOW PUT A BREAKPOINT HERE
-			// This is likely calling your CloudPathWiring logic
-			return false;
-		}
 		public bool Cloud { get; private set; }
 		/// <summary>
 		/// The absolute directory path string.
@@ -184,7 +169,7 @@ namespace OsLib
 			{
 				var dirName = Os.ensureTrailingDirSeparator(value);
 				(path, _) = splitPathAndName(dirName);
-				Cloud = CloudEvaluator(path);
+				Cloud = Os.IsCloudPath(path);
 			}
 		}
 		internal static (string path, string name) splitPathAndName(string pathAndName)
@@ -252,13 +237,6 @@ namespace OsLib
 			{
 				yield return new RaiPath(dir);
 			}
-		}
-		/// <summary>
-		/// static Constructor to set up the default CloudEvaluator.
-		/// </summary>
-		static RaiPath()
-		{
-			CloudPathWiring.Initialize();
 		}
 		/// <summary>
 		/// Constructor that takes a string path; the caller knows that this is a directory path.

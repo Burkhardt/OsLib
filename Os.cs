@@ -15,10 +15,7 @@ namespace OsLib
 	public static partial class Os
 	{
 		public static readonly string DefaultConfigFileLocation = "~/.config/RAIkeep.json5";
-		private static RaiPath userHomeDir = null;
-		private static RaiPath appRootDir = null;
 		private static OsType? type = null;
-		private static RaiPath localBackupDir = null;
 		private static readonly string DIRSEPERATOR = System.IO.Path.DirectorySeparatorChar.ToString();
 		public static readonly string DIR = DIRSEPERATOR;
 		public const string ESCAPECHAR = "\\";
@@ -46,46 +43,25 @@ namespace OsLib
 		{
 			get
 			{
-				if (userHomeDir == null)
-				{
-					string resolved = Type == OsType.Windows
-						? ensureTrailingDirSeparator(Environment.GetEnvironmentVariable("USERPROFILE"))
-						: ensureTrailingDirSeparator(Environment.GetEnvironmentVariable("HOME"));
-					if (string.IsNullOrWhiteSpace(resolved) && Type == OsType.Windows)
-					{
-						var homeDrive = Environment.GetEnvironmentVariable("HOMEDRIVE");
-						var homePath = ensureTrailingDirSeparator(Environment.GetEnvironmentVariable("HOMEPATH"));
-						if (!string.IsNullOrEmpty(homeDrive) && !string.IsNullOrEmpty(homePath))
-							resolved = NormSeperator(homeDrive + homePath);
-					}
-					if (string.IsNullOrEmpty(resolved))
-						resolved = ensureTrailingDirSeparator(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ?? string.Empty);
-					if (string.IsNullOrWhiteSpace(resolved))
-						LogWarningOnce<OsDiagnosticsLogScope>("fallback:userhome:empty", "User home directory could not be resolved.");
-					userHomeDir = new RaiPath(resolved);
-				}
-				LogDebug<OsDiagnosticsLogScope>("Resolved user home directory to {UserHomeDir}", userHomeDir.Path);
-				return userHomeDir;
+				var path = runtime.UserHomeDir;
+				LogDebug<OsDiagnosticsLogScope>("Resolved user home directory to {UserHomeDir}", path.Path);
+				return path;
 			}
 		}
 		public static RaiPath AppRootDir
 		{
 			get
 			{
-				appRootDir ??= new RaiPath(ensureTrailingDirSeparator(Directory.GetCurrentDirectory()));
-				LogDebug<OsDiagnosticsLogScope>("Resolved application root directory to {AppRootDir}", appRootDir.Path);
-				return appRootDir;
+				var path = runtime.AppRootDir;
+				LogDebug<OsDiagnosticsLogScope>("Resolved application root directory to {AppRootDir}", path.Path);
+				return path;
 			}
 		}
 		public static RaiPath LocalBackupDir
 		{
 			get
 			{
-				if (localBackupDir != null) return localBackupDir;
-				var configuredLocalBackupDir = (Config as JObject)?["LocalBackupDir"]?.ToString()?.Trim() ?? string.Empty;
-				if (string.IsNullOrWhiteSpace(configuredLocalBackupDir)) return null;
-				localBackupDir = new RaiPath(expandLeadingDirSymbols(NormSeperator(configuredLocalBackupDir)));
-				return localBackupDir;
+				return runtime.LocalBackupDir;
 			}
 		}
 		public static string NewShortId(int length = 4)
