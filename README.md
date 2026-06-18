@@ -4,12 +4,12 @@ Handling of files, paths, temp/backup directories, and system calls.
 
 _formerly_ __OsLibCore__
 
-## 3.10.1
+## 3.10.2
 
-- Current release line for `OsLibCore` is `3.10.1`.
+- Current release line for `OsLibCore` is `3.10.2`.
 - Patch-line refresh: package metadata, release notes, README links, and diagram markers stay aligned with the coordinated `RAIkeep` release line.
 - No public API changes from `3.10.0`; the `RaiFile.mkdir()` virtual dispatch, UTC timestamp handling, and async `RaiFile` APIs remain current.
-- See [RELEASE_NOTES_3.10.1.md](RELEASE_NOTES_3.10.1.md) for details.
+- See [RELEASE_NOTES_3.10.2.md](RELEASE_NOTES_3.10.2.md) for details.
 
 ## namespace
 
@@ -123,7 +123,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.10.1.md](RELEASE_NOTES_3.10.1.md)
+- Current release notes: [RELEASE_NOTES_3.10.2.md](RELEASE_NOTES_3.10.2.md)
 
 ## nuget publish automation
 
