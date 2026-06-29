@@ -4,12 +4,12 @@ Handling of files, paths, temp/backup directories, and system calls.
 
 _formerly_ __OsLibCore__
 
-## 3.12.1
+## 3.13.0
 
-- Current release line for `OsLibCore` is `3.12.1`.
-- Coordinated patch-line refresh: package metadata, release notes, README links, and diagram markers stay aligned with the `RAIkeep` `3.12.1` release line.
-- No public API changes from `3.12.0`; the `RaiFile.mkdir()` virtual dispatch, UTC timestamp handling, and async `RaiFile` APIs remain current.
-- See [RELEASE_NOTES_3.12.1.md](RELEASE_NOTES_3.12.1.md) for details.
+- Current release line for `OsLibCore` is `3.13.0`.
+- Coordinated minor-line refresh: package metadata, release notes, README links, and diagram markers stay aligned with the `RAIkeep` `3.13.0` release line.
+- No public API changes from `3.12.1`; the `RaiFile.mkdir()` virtual dispatch, UTC timestamp handling, and async `RaiFile` APIs remain current.
+- See [RELEASE_NOTES_3.13.0.md](RELEASE_NOTES_3.13.0.md) for details.
 
 ## namespace
 
@@ -123,7 +123,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [RELEASE_NOTES_3.12.1.md](RELEASE_NOTES_3.12.1.md)
+- Current release notes: [RELEASE_NOTES_3.13.0.md](RELEASE_NOTES_3.13.0.md)
 
 ## nuget publish automation
 
@@ -132,4 +132,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.12.1 -m "v3.12.1" && git push origin v3.12.1`
+	- `git tag -a v3.13.0 -m "v3.13.0" && git push origin v3.13.0`
