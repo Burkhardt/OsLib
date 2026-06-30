@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-		<Version>3.13.0</Version>
+		<Version>3.12.1</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-		<PackageReleaseNotes>3.13.0 minor release: carries forward the coordinated package line, refreshes current docs and diagrams, and makes no public API changes from 3.12.1.</PackageReleaseNotes>
+		<PackageReleaseNotes>3.12.1 patch release: carries forward the coordinated package line, refreshes current docs and diagrams, and makes no public API changes from 3.12.0.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 
