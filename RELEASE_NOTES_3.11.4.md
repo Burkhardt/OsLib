@@ -1,10 +1,10 @@
-# OsLibCore 3.11.3 Release Notes
+# OsLibCore 3.11.4 Release Notes
 
 ## Summary
 
-- Releases `OsLibCore` version `3.11.3`.
+- Releases `OsLibCore` version `3.11.4`.
 - Carries forward the coordinated `RAIkeep` package line with refreshed package metadata, README links, and diagram release markers.
-- No public API changes from `3.11.2`.
+- No public API changes from `3.11.3`.
 
 ## Validation
 
