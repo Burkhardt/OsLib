@@ -1,5 +1,5 @@
 @startuml OsLib-RaiFile-Hierarchy
-' Release: 3.13.0
+' Release: 3.13.1
 
 title OsLib RaiFile Hierarchy
 
@@ -97,6 +97,7 @@ package "OsLib" {
 		+Read() : List<string>
 		+ReadAllText() : string
 		+Save(backup : bool = false) : TextFile
+		+SaveInPlace() : TextFile
 		+Append(line : string) : TextFile
 	}
 

@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLib 3.13.0` API surface.
+This document provides a detailed, foldable overview of the current `OsLib 3.13.1` API surface.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -121,9 +121,10 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		- Provides lazy loading and indexed read/write with change tracking.
 		</details>
 	- <details>
-		<summary>Read(), Save(backup): load and persist lines.</summary>
+		<summary>Read(), Save(backup), SaveInPlace(): load and persist lines.</summary>
 
 		- `Save` can optionally create backups and handles cloud materialization semantics.
+		- `SaveInPlace` writes directly to the target path without deleting or renaming it first; use it for small coordination files on cloud-synced paths.
 		</details>
 	- <details>
 		<summary>Append(), Insert(), Delete(), Sort(): editing helpers.</summary>
