@@ -94,6 +94,11 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		- These stay on `RaiFile` because they are about physical file latency, not directory latency.
 		</details>
 	- <details>
+		<summary>LastWriteTimeUtc: physical file modification time.</summary>
+
+		- Reads the filesystem's UTC last-write timestamp through `RaiFile`, keeping consumers independent of direct `System.IO.FileInfo` access.
+		</details>
+	- <details>
 		<summary>FileAge / DefaultSyncPropagationDelayMs / BackdateCreationTime(...): deterministic file-age control.</summary>
 
 		- `FileAge` is derived from `CreationTimeUtc`.

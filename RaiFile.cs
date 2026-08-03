@@ -132,6 +132,10 @@ namespace OsLib
 		public virtual string FullName => (Path?.FullPath ?? string.Empty) + NameWithExtension;
 		public override string ToString() => FullName;
 		public bool Exists() => File.Exists(FullName);
+		/// <summary>
+		/// Gets the physical file's last-write timestamp in UTC.
+		/// </summary>
+		public DateTimeOffset LastWriteTimeUtc => File.GetLastWriteTimeUtc(FullName);
 		public int rm()
 		{
 			if (!File.Exists(FullName)) return 0;

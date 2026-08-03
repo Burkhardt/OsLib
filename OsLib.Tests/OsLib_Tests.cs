@@ -147,6 +147,47 @@ namespace OsLib.Tests
 		}
 
 		[Fact]
+		public void RaiFile_LastWriteTimeUtc_ReturnsPhysicalFileTimestamp()
+		{
+			var root = CreateTempDir();
+			try
+			{
+				var file = new TextFile(root, "last-write.txt", content: "data");
+				var expected = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+				File.SetLastWriteTimeUtc(file.FullName, expected);
+
+				Assert.Equal(new DateTimeOffset(expected), file.LastWriteTimeUtc);
+			}
+			finally
+			{
+				root.rmdir(depth: 9, deleteFiles: true);
+			}
+		}
+
+		[Fact]
+		public void TextFile_SaveInPlace_UpdatesExistingContent()
+		{
+			var root = CreateTempDir();
+			try
+			{
+				var coordinationFile = new TextFile(root, "coordination.flag");
+				coordinationFile.Lines = new List<string> { "first" };
+				coordinationFile.Changed = true;
+				coordinationFile.SaveInPlace();
+
+				coordinationFile.Lines = new List<string> { "second" };
+				coordinationFile.Changed = true;
+				coordinationFile.SaveInPlace();
+
+				Assert.Equal("second" + Environment.NewLine, new TextFile(coordinationFile.FullName).ReadAllText());
+			}
+			finally
+			{
+				root.rmdir(depth: 9, deleteFiles: true);
+			}
+		}
+
+		[Fact]
 		public async Task RaiFile_WriteFromAsync_WritesStreamToDisk()
 		{
 			var cancellationToken = TestContext.Current.CancellationToken;

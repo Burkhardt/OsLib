@@ -138,6 +138,23 @@ namespace OsLib
 			return this;
 		}
 
+		/// <summary>
+		/// Saves directly to the existing path without deleting or renaming the file first.
+		/// Use this for small coordination files in cloud-synced directories where a
+		/// delete/recreate cycle can briefly make the path unavailable to the next process.
+		/// </summary>
+		public TextFile SaveInPlace()
+		{
+			if (Changed || !Exists())
+			{
+				new RaiFile(FullName).mkdir();
+				File.WriteAllLines(FullName, lines ?? new List<string>(), new UTF8Encoding(false));
+				AwaitMaterializing(true);
+				Changed = false;
+			}
+			return this;
+		}
+
 		public TextFile(string name, string content = null)
 			: base(name)
 		{
