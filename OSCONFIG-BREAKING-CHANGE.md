@@ -22,6 +22,7 @@ Older docs that mention `osconfig.json`, camelCase keys, compatibility rewrites,
 - `Cloud.Dropbox`
 - `Cloud.OneDrive`
 - `Cloud.GoogleDrive`
+- `Cloud.ICloudDrive`
 - `Observers.<name>.SshTarget`
 
 ## Why This Is Breaking
@@ -70,11 +71,12 @@ Important:
 	HomeDir: "/ignored/if/present/",
 	TempDir: "~/temp/",
 	LocalBackupDir: "./backup/",
-	DefaultCloudOrder: ["OneDrive", "Dropbox", "GoogleDrive"],
+	DefaultCloudOrder: ["OneDrive", "Dropbox", "GoogleDrive", "ICloudDrive"],
 	Cloud: {
 		Dropbox: "/Users/me/Library/CloudStorage/Dropbox/",
 		OneDrive: "/Users/me/Library/CloudStorage/OneDrive-Contoso/",
-		GoogleDrive: "/Users/me/Library/CloudStorage/GoogleDrive-me@example.com/My Drive/"
+		GoogleDrive: "/Users/me/Library/CloudStorage/GoogleDrive-me@example.com/My Drive/",
+		ICloudDrive: "/Users/me/Library/Mobile Documents/com~apple~CloudDocs/"
 	},
 	Observers: {
 		mzansi: {

@@ -20,6 +20,7 @@ Current config values used by the cloud/path model:
 - `Cloud.Dropbox`
 - `Cloud.OneDrive`
 - `Cloud.GoogleDrive`
+- `Cloud.ICloudDrive`
 
 Notes:
 - `UserHomeDir` is intrinsic and not config-driven.
@@ -50,7 +51,8 @@ That means cloud-aware waits stay close to the object that mutates the filesyste
 	Cloud: {
 		Dropbox: "/Users/me/Library/CloudStorage/Dropbox/",
 		OneDrive: "/Users/me/Library/CloudStorage/OneDrive-Contoso/",
-		GoogleDrive: "/Users/me/Library/CloudStorage/GoogleDrive-me@example.com/My Drive/"
+		GoogleDrive: "/Users/me/Library/CloudStorage/GoogleDrive-me@example.com/My Drive/",
+		ICloudDrive: "/Users/me/Library/Mobile Documents/com~apple~CloudDocs/"
 	}
 }
 ```

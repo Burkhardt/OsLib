@@ -11,6 +11,7 @@ _formerly_ __OsLibCore__
 - Current release line for `OsLibCore` is `3.13.1`.
 - Coordinated patch-line refresh: package metadata, release notes, README links, and diagram markers stay aligned with the `RAIkeep` `3.13.1` release line.
 - `TextFile.SaveInPlace()` writes a small coordination file without a preceding delete or rename, while retaining cloud materialization checks.
+- Configured cloud-path classification recognizes `Dropbox`, `OneDrive`, `GoogleDrive`, and `ICloudDrive` roots.
 - The `RaiFile.mkdir()` virtual dispatch, UTC timestamp handling, and async `RaiFile` APIs remain current.
 - See [OsLib_RELEASE_NOTES_3.13.1.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_3.13.1.md) for details.
 

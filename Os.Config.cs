@@ -117,7 +117,7 @@ namespace OsLib
 			{
 				var cloud = config["Cloud"] as JObject;
 				if (cloud == null) return Array.Empty<string>();
-				return new[] { "Dropbox", "OneDrive", "GoogleDrive" }
+				return new[] { "Dropbox", "OneDrive", "GoogleDrive", "ICloudDrive" }
 					.Select(provider => NormalizeOptionalConfiguredDirectory(cloud[provider]?.ToString(), userHomeDirText, appRootDirText))
 					.Where(root => !string.IsNullOrWhiteSpace(root))
 					.Distinct(Type == OsType.Windows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)

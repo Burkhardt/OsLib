@@ -53,7 +53,7 @@ public class PathConventionsTests
 	{
 		var config = Os.Config as JObject;
 		var cloud = config?["Cloud"] as JObject;
-		foreach (var provider in new[] { "GoogleDrive", "OneDrive", "Dropbox" })
+		foreach (var provider in new[] { "GoogleDrive", "OneDrive", "Dropbox", "ICloudDrive" })
 		{
 			var root = cloud?[provider]?.ToString();
 			if (!string.IsNullOrWhiteSpace(root))

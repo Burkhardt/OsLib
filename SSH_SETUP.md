@@ -38,11 +38,12 @@ Example:
 {
 	TempDir: "~/temp/",
 	LocalBackupDir: "~/backup/",
-	DefaultCloudOrder: ["OneDrive", "Dropbox", "GoogleDrive"],
+	DefaultCloudOrder: ["OneDrive", "Dropbox", "GoogleDrive", "ICloudDrive"],
 	Cloud: {
 		OneDrive: "/path/to/OneDrive/",
 		Dropbox: "/path/to/Dropbox/",
-		GoogleDrive: "/path/to/GoogleDrive/"
+		GoogleDrive: "/path/to/GoogleDrive/",
+		ICloudDrive: "/path/to/ICloudDrive/"
 	},
 	Observers: [
 		{
@@ -194,11 +195,12 @@ Example remote file:
 {
 	TempDir: "~/temp/",
 	LocalBackupDir: "~/backup/",
-	DefaultCloudOrder: ["Dropbox", "OneDrive", "GoogleDrive"],
+	DefaultCloudOrder: ["Dropbox", "OneDrive", "GoogleDrive", "ICloudDrive"],
 	Cloud: {
 		OneDrive: "/srv/ServerData/OneDriveData/",
 		Dropbox: "/srv/ServerData/DropboxData/",
-		GoogleDrive: "/srv/ServerData/GDriveData/"
+		GoogleDrive: "/srv/ServerData/GDriveData/",
+		ICloudDrive: "/srv/ServerData/ICloudDriveData/"
 	}
 }
 ```
