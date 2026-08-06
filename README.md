@@ -6,14 +6,14 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
-## 3.13.2
+## 4.0.0
 
-- Current release line for `OsLibCore` is `3.13.2`.
-- Coordinated patch-line refresh: package metadata, release notes, README links, and diagram markers stay aligned with the `RAIkeep` `3.13.2` release line.
+- Current release line for `OsLibCore` is `4.0.0`.
+- Coordinated patch-line refresh: package metadata, release notes, README links, and diagram markers stay aligned with the `RAIkeep` `4.0.0` release line.
 - `TextFile.SaveInPlace()` writes a small coordination file without a preceding delete or rename, while retaining cloud materialization checks.
 - Configured cloud-path classification recognizes `Dropbox`, `OneDrive`, `GoogleDrive`, and `ICloudDrive` roots.
 - The `RaiFile.mkdir()` virtual dispatch, UTC timestamp handling, and async `RaiFile` APIs remain current.
-- See [OsLib_RELEASE_NOTES_3.13.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_3.13.2.md) for details.
+- See [OsLib_RELEASE_NOTES_4.0.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.0.0.md) for details.
 
 ## namespace
 
@@ -127,7 +127,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [OsLib_RELEASE_NOTES_3.13.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_3.13.2.md)
+- Current release notes: [OsLib_RELEASE_NOTES_4.0.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.0.0.md)
 
 ## nuget publish automation
 
@@ -136,4 +136,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v3.13.2 -m "v3.13.2" && git push origin v3.13.2`
+	- `git tag -a v4.0.0 -m "v4.0.0" && git push origin v4.0.0`
