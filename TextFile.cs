@@ -119,18 +119,34 @@ namespace OsLib
 		}
 
 		/// <summary>
-		/// Save the TextFile to disk, including dropbox locations.
+		/// Save the TextFile to disk with the no-delete persistence contract
+		/// (CR003, coordinated v3.13.2).
+		/// <para>
+		/// <c>Save(backup: false)</c> creates the pathname when absent or truncates and
+		/// writes the existing pathname directly in place. It never deletes, renames,
+		/// or replaces the original pathname through a temporary file, so a concurrent
+		/// reader in another process never observes the pathname disappearing.
+		/// </para>
+		/// <para>
+		/// <c>Save(backup: true)</c> first <em>copies</em> the previous content to the
+		/// configured backup location (<see cref="Os.LocalBackupDir"/>) and then
+		/// overwrites the original pathname in place. Backup copies rather than moves,
+		/// so the original pathname never disappears either.
+		/// </para>
+		/// <para>
+		/// In-place writing is not atomic reader visibility: a reader may observe
+		/// partially written content. Callers that need consistent snapshots (JsonPit)
+		/// validate a complete candidate read and retry transient failures.
+		/// </para>
 		/// </summary>
-		/// <param name="backup">With backup == false the wait for materializing is not going to work; only use outside dropbox and alike.</param>
+		/// <param name="backup">Copy the previous content to the backup location before overwriting.</param>
 		public TextFile Save(bool backup = false)
 		{
 			if (Changed || !Exists())
 			{
 				new RaiFile(FullName).mkdir();
 				if (backup)
-					this.backup(); // calls AwaitVanishing()
-				else
-					this.rm(); // calls AwaitVanishing()
+					this.backup(copy: true); // copy, never move — the original pathname must not disappear
 				File.WriteAllLines(FullName, (lines == null ? new List<string>() : lines), new UTF8Encoding(false));
 				AwaitMaterializing(true);
 				Changed = false;
@@ -139,21 +155,11 @@ namespace OsLib
 		}
 
 		/// <summary>
-		/// Saves directly to the existing path without deleting or renaming the file first.
-		/// Use this for small coordination files in cloud-synced directories where a
-		/// delete/recreate cycle can briefly make the path unavailable to the next process.
+		/// Retained for patch-release source and binary compatibility.
+		/// Since v3.13.2 <see cref="Save(bool)"/> itself writes in place without a
+		/// delete/recreate cycle; this method delegates to <c>Save(backup: false)</c>.
 		/// </summary>
-		public TextFile SaveInPlace()
-		{
-			if (Changed || !Exists())
-			{
-				new RaiFile(FullName).mkdir();
-				File.WriteAllLines(FullName, lines ?? new List<string>(), new UTF8Encoding(false));
-				AwaitMaterializing(true);
-				Changed = false;
-			}
-			return this;
-		}
+		public TextFile SaveInPlace() => Save(backup: false);
 
 		public TextFile(string name, string content = null)
 			: base(name)

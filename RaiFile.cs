@@ -258,6 +258,13 @@ namespace OsLib
 		}
 		public int AwaitVanishing() => awaitVanishing();
 		public int AwaitMaterializing(bool newFileOldName = false) => awaitMaterializing(newFileOldName);
+		/// <summary>
+		/// Freshness tolerance for <c>AwaitMaterializing(newFileOldName: true)</c>.
+		/// Some cloud-synced mounts store last-write times with whole-second granularity,
+		/// so the tolerance must exceed one second or every in-place overwrite would be
+		/// reported as unmaterialized on those filesystems.
+		/// </summary>
+		private const int materializeFreshnessMs = 2500;
 		private int awaitMaterializing(bool newFileOldName = false)
 		{
 			var count = 0;
@@ -269,7 +276,7 @@ namespace OsLib
 					if (newFileOldName)
 					{
 						var info = new FileInfo(FullName);
-						done = DateTime.UtcNow.Subtract(info.LastWriteTimeUtc).TotalMilliseconds < 100;
+						done = DateTime.UtcNow.Subtract(info.LastWriteTimeUtc).TotalMilliseconds < materializeFreshnessMs;
 					}
 					else done = File.Exists(FullName);
 				}

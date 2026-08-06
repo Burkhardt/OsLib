@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-				<Version>3.13.1</Version>
+				<Version>3.13.2</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-				<PackageReleaseNotes>3.13.1 patch release: adds TextFile.SaveInPlace for cloud-backed coordination files and read-only RaiFile.LastWriteTimeUtc metadata access.</PackageReleaseNotes>
+				<PackageReleaseNotes>3.13.2 (CR003): TextFile.Save no-delete/no-rename contract with copy-based backup; CanonicalJson (deterministic canonicalization + SHA-256); EventFile create-once canonical-JSON audit events and stateless EventDirectory aggregation.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 
