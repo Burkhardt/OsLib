@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-				<Version>4.0.0</Version>
+				<Version>4.0.1</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-				<PackageReleaseNotes>4.0.0 (CR003): TextFile.Save no-delete/no-rename contract with copy-based backup; CanonicalJson (deterministic canonicalization + SHA-256); EventFile create-once canonical-JSON audit events and stateless EventDirectory aggregation.</PackageReleaseNotes>
+				<PackageReleaseNotes>4.0.1 coordinated patch alignment for CR006; no OsLibCore API or behavior changes from 4.0.0.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 
