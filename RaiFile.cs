@@ -314,6 +314,22 @@ namespace OsLib
 			await using var target = new FileStream(FullName, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
 			await source.CopyToAsync(target, ct);
 		}
+		/// <summary>
+		/// Writes asynchronously supplied byte chunks without exposing a
+		/// <see cref="Stream"/> in the caller's public boundary.
+		/// </summary>
+		public async Task WriteFromAsync(IAsyncEnumerable<byte[]> chunks, CancellationToken ct = default)
+		{
+			if (chunks == null) throw new ArgumentNullException(nameof(chunks));
+			mkdir();
+			await using var target = new FileStream(FullName, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
+			await foreach (var chunk in chunks.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (chunk == null)
+					throw new ArgumentException("Byte chunks cannot contain null values.", nameof(chunks));
+				await target.WriteAsync(chunk, ct).ConfigureAwait(false);
+			}
+		}
 		public Task<byte[]> ReadAllBytesAsync(CancellationToken ct = default)
 			=> File.ReadAllBytesAsync(FullName, ct);
 		public RaiFile Zip()

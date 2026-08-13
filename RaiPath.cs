@@ -296,7 +296,8 @@ namespace OsLib
 				Thread.Sleep(5);
 				count++;
 			}
-			if (count >= maxWaitCount) throw new DirectoryNotFoundException("ensure failed - timeout in awaitDirMaterializing of dir " + path + ".");
+			if (count >= maxWaitCount)
+				throw new RaiPathNotFoundException("Directory did not materialize before the timeout: " + path, path);
 			return -count;
 		}
 		private int awaitDirVanishing()
@@ -311,7 +312,8 @@ namespace OsLib
 				Thread.Sleep(5);
 				count++;
 			}
-			if (count >= maxWaitCount) throw new DirectoryNotFoundException("ensure failed - timeout in awaitDirVanishing of dir " + path + ".");
+			if (count >= maxWaitCount)
+				throw new RaiPathException("Directory did not vanish before the timeout: " + path, path);
 			return -count;
 		}
 		public RaiPath mkdir() => mkdir(Path);
@@ -338,7 +340,7 @@ namespace OsLib
 		public int mv(RaiPath from, bool replace, bool keepBackup)
 		{
 			if (from == null) throw new ArgumentNullException(nameof(from));
-			if (!from.Exists()) throw new DirectoryNotFoundException("Source directory does not exist: " + from.Path);
+			if (!from.Exists()) throw new RaiPathNotFoundException("Source directory does not exist: " + from.Path, from.Path);
 			if (Exists())
 			{
 				if (!replace) throw new IOException("Target directory already exists: " + Path);
@@ -369,7 +371,7 @@ namespace OsLib
 		public int cp(RaiPath from, bool replace, bool keepBackup = false)
 		{
 			if (from == null) throw new ArgumentNullException(nameof(from));
-			if (!from.Exists()) throw new DirectoryNotFoundException("Source directory does not exist: " + from.Path);
+			if (!from.Exists()) throw new RaiPathNotFoundException("Source directory does not exist: " + from.Path, from.Path);
 			if (Exists())
 			{
 				if (!replace) throw new IOException("Target directory already exists: " + Path);

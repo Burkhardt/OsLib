@@ -6,14 +6,17 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
-## 4.0.1
+## 4.1.0
 
-- Current prepared release line for `OsLibCore` is `4.0.1`.
-- This is synchronized package metadata for the CR006 CLI patch; OsLibCore has no API or behavior changes from `4.0.0`.
+- Current prepared release line for `OsLibCore` is `4.1.0`.
+- `Os.TempDir` remains sourced from immutable runtime configuration and is now validated once at first Os initialization with an OsLib `TmpFile` write/remove probe.
+- Startup fails fast when the configured temp directory is not writable; `Os.Config` is neither mutated nor bypassed with a fallback.
+- `RaiPathException` and `RaiPathNotFoundException` provide path-specific failures.
+- `RaiFile.WriteFromAsync(IAsyncEnumerable<byte[]>, CancellationToken)` provides stream-free chunk ingestion.
 - `TextFile.SaveInPlace()` writes a small coordination file without a preceding delete or rename, while retaining cloud materialization checks.
 - Configured cloud-path classification recognizes `Dropbox`, `OneDrive`, `GoogleDrive`, and `ICloudDrive` roots.
 - The `RaiFile.mkdir()` virtual dispatch, UTC timestamp handling, and async `RaiFile` APIs remain current.
-- See [OsLib_RELEASE_NOTES_4.0.1.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.0.1.md) for details.
+- See [OsLib_RELEASE_NOTES_4.1.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.1.0.md) for details.
 
 ## namespace
 
@@ -127,7 +130,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [OsLib_RELEASE_NOTES_4.0.1.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.0.1.md)
+- Current release notes: [OsLib_RELEASE_NOTES_4.1.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.1.0.md)
 
 ## nuget publish automation
 
@@ -136,4 +139,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v4.0.1 -m "v4.0.1" && git push origin v4.0.1`
+	- `git tag -a v4.1.0 -m "v4.1.0" && git push origin v4.1.0`

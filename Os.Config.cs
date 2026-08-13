@@ -12,11 +12,46 @@ namespace OsLib
 		static Os()
 		{
 			runtime = OsRuntimeSnapshot.Create();
+			ValidateTempDir();
 		}
 		public static dynamic Config => runtime.Config;
 		public static bool IsConfigLoaded => runtime.IsConfigLoaded;
 		public static string ConfigFileFullName => runtime.ConfigFileFullName;
+		/// <summary>
+		/// Gets the configured temporary directory as a validated <see cref="RaiPath"/>.
+		/// First access to <see cref="Os"/> fails fast if a temporary file cannot be
+		/// created in this directory.
+		/// </summary>
 		public static RaiPath TempDir => runtime.TempDir;
+		/// <summary>
+		/// Fails fast during first <see cref="Os"/> initialization unless the configured
+		/// temporary directory can create, observe, and remove an OsLib temporary file.
+		/// The configured value is never replaced or mutated by this probe.
+		/// </summary>
+		private static void ValidateTempDir()
+		{
+			TmpFile probe = null;
+			try
+			{
+				var configuredTempDir = runtime.TempDir;
+				configuredTempDir.mkdir();
+				probe = new TmpFile(configuredTempDir, ".oslib-write-probe-" + Guid.NewGuid().ToString("N"), "tmp");
+				probe.create();
+				if (!probe.Exists())
+					throw new InvalidOperationException("The temporary-file probe did not materialize.");
+				probe.rm();
+			}
+			catch (Exception ex)
+			{
+				throw new InvalidOperationException(
+					$"Configured Os.TempDir '{runtime.TempDir.FullPath}' is not writable as a temporary-file directory.", ex);
+			}
+			finally
+			{
+				try { probe?.rm(); }
+				catch { }
+			}
+		}
 		internal static bool IsCloudPath(string path) => runtime.IsCloudPath(path);
 		private sealed class OsRuntimeSnapshot
 		{

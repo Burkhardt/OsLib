@@ -338,7 +338,9 @@ public class PathConventionsTests
 		try
 		{
 			root.mkdir();
-			Assert.Throws<DirectoryNotFoundException>(() => target.mv(source, replace: false, keepBackup: false));
+			var exception = Assert.Throws<RaiPathNotFoundException>(() =>
+				target.mv(source, replace: false, keepBackup: false));
+			Assert.Equal(source.FullPath, exception.PathName);
 		}
 		finally
 		{
