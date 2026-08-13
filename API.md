@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLib 3.13.1` API surface.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.1.0` API surface.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -33,7 +33,8 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 	- <details>
 		<summary>TempDir / LocalBackupDir: config-driven directories.</summary>
 
-		- `TempDir` resolves from config and falls back to `Path.GetTempPath()` if config cannot be read.
+		- `TempDir` comes from the immutable runtime configuration snapshot. Its first initialization performs a one-time OsLib `TmpFile` create/write/remove probe and fails fast if the configured directory does not exist or is not writable.
+		- `TempDir` does not mutate `Os.Config`, bypass it, or fall back to a raw `System.IO` path.
 		- `LocalBackupDir` is optional. If it is not configured, backup features stay disabled.
 		</details>
 	- <details>
@@ -42,6 +43,20 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		- Normalize separators and apply the selected escaping mode.
 		- Supports `noEsc`, `blankEsc`, `paramEsc`, and `backslashed` escape modes.
 		</details>
+	</details>
+
+- <details>
+	<summary>RaiPathException and RaiPathNotFoundException: path-domain failures.</summary>
+
+	- `RaiPathException` is the OsLib path-error base type.
+	- `RaiPathNotFoundException` reports a missing `RaiPath` boundary without exposing raw `System.IO.FileNotFoundException` to consumers.
+	</details>
+
+- <details>
+	<summary>RaiFile.WriteFromAsync(chunks, cancellationToken): stream-free asynchronous ingestion.</summary>
+
+	- Accepts `IAsyncEnumerable&lt;byte[]&gt;` so callers can write chunked content without taking a direct dependency on `System.IO.Stream`.
+	- Honors cancellation and retains RaiFile's established path and lifecycle behavior.
 	</details>
 
 - <details>

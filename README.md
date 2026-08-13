@@ -24,82 +24,58 @@ OsLib
 
 ## classes
 
-<details>
-<summary>RaiSystem: Run external processes with structured output capture.</summary>
+### RaiSystem: Run external processes with structured output capture.
 
 - RaiSystem: `Exec`, `ExecResult`, `Start`, `CreateScript`
-</details>
 
-<details>
-<summary>Script: Executable script file backed by TextFile and RaiSystem.</summary>
+### Script: Executable script file backed by TextFile and RaiSystem.
 
 - Script: create a script file from content, save/update it, and apply Unix executable mode automatically.
-</details>
 
-<details>
-<summary>EscapeMode: Defines escape modes for path and parameter handling.</summary>
+### EscapeMode: Defines escape modes for path and parameter handling.
 
 - EscapeMode
-</details>
 
-<details>
-<summary>OsType: Identifies the OS type.</summary>
+### OsType: Identifies the OS type.
 
 - OsType
-</details>
 
-<details>
-<summary>Os: Platform helpers, immutable runtime config snapshot, diagnostics, and path normalization.</summary>
+### Os: Platform helpers, immutable runtime config snapshot, diagnostics, and path normalization.
 
 - Os: `UserHomeDir`, `AppRootDir`, `TempDir`, `LocalBackupDir`, `Config`, `IsConfigLoaded`, `ConfigFileFullName`, `DefaultConfigFileLocation`, `Escape`, `NormPath`, `NormSeperator`
-</details>
 
-<details>
-<summary>CloudPathWiring: Compatibility initializer for older callers.</summary>
+### CloudPathWiring: Compatibility initializer for older callers.
 
 - CloudPathWiring: `Initialize`
-</details>
 
-<details>
-<summary>RaiPath: Directory path type with buffered cloud classification.</summary>
+### RaiPath: Directory path type with buffered cloud classification.
 
 - RaiPath: `Path`, `Cloud`, `/` operator, `Parent`, `mkdir`, `rmdir`, `mv`, `cp`, `backup`, `EnumerateFiles`, `EnumerateDirectories`
-</details>
 
-<details>
-<summary>RaiFile: File utility with cloud-aware wait behavior.</summary>
+### RaiFile: File utility with cloud-aware wait behavior.
 
 - RaiFile: `Exists`, `LastWriteTimeUtc`, `rm`, `mv`, `cp`, `mkdir`, `rmdir`, `WriteFromAsync`, `ReadAllBytesAsync`, `AwaitVanishing`, `AwaitMaterializing`, `BackdateCreationTime`, `DefaultSyncPropagationDelayMs`, `Zip`, `backup`
-</details>
 
-<details>
-<summary>RaiFileExtensions: Convenience extensions for string and CSV handling.</summary>
+### RaiFileExtensions: Convenience extensions for string and CSV handling.
 
 - RaiFileExtensions: `MakePolicyCompliant`, `Singularize`, `CreateDictionariesFromCsvLines`
-</details>
 
-<details>
-<summary>TextFile, CsvFile, TmpFile: Text/data-file helpers built on RaiFile.</summary>
+### TextFile, CsvFile, TmpFile: Text/data-file helpers built on RaiFile.
 
 - TextFile: `Read`, `Save`, `SaveInPlace`, `Append`, `Delete`
 - CsvFile: `Read`, `Objects`, `ToJsonFile`
 - TmpFile: `create`
-</details>
 
-<details>
-<summary>CanonicalPath, CanonicalFile, and path conventions: retained compatibility helpers.</summary>
+### CanonicalPath, CanonicalFile, and path conventions: retained compatibility helpers.
 
 - CanonicalPath: deprecated legacy type retained for compatibility; prefer direct `RaiPath` composition.
 - PathConventionType / IPathConventionFile: convention-aware file contracts.
-</details>
 
-<details>
-<summary>SshSystem and CLI wrappers: remote shell execution and typed command launchers.</summary>
+### SshSystem and CLI wrappers: remote shell execution and typed command launchers.
 
 - SshSystem: `ExecuteRemoteCommand`, `ExecuteScript`, `ReadRemoteConfigJson5`
 - CliCommand: `IsAvailable`, `TryResolveExecutable`, `Run`, `RunAsync`, `GetInstallCommand`, `GetUpdateCommand`
 - Built-in wrappers: `CurlCommand`, `ZipCommand`, `SevenZipCommand`, `RCloneCommand`
-</details>
 
 ## nuget
 
@@ -113,12 +89,12 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## detailed api
 
-- Foldable class and method-level documentation: [API.md](API.md)
-- Current cloud configuration and buffered cloud-path behavior: [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md)
-- Historical path/config/logging design note, now marked with 3.7.7 caveats: [PATH_CONFIG_LOGGING_REFACTOR.md](PATH_CONFIG_LOGGING_REFACTOR.md)
+- Foldable class and method-level documentation: [API.md](https://github.com/Burkhardt/OsLib/blob/main/API.md)
+- Current cloud configuration and buffered cloud-path behavior: [CLOUD_STORAGE_DISCOVERY.md](https://github.com/Burkhardt/OsLib/blob/main/CLOUD_STORAGE_DISCOVERY.md)
+- Historical path/config/logging design note, now marked with 3.7.7 caveats: [PATH_CONFIG_LOGGING_REFACTOR.md](https://github.com/Burkhardt/OsLib/blob/main/PATH_CONFIG_LOGGING_REFACTOR.md)
 - CLI command hierarchy and external tool wrappers: [../CliCommand-Hierarchy.puml](../CliCommand-Hierarchy.puml)
 - Local backup placement: `Os.LocalBackupDir` is optional; when absent, backup features are disabled instead of falling back.
-- Structured logging: OsLib diagnostics use `ILogger<T>` templates. The current config path falls back to a baseline `TempDir` model rather than treating missing config as a startup-fatal public API contract.
+- Structured logging: OsLib diagnostics use `ILogger<T>` templates. TempDir initialization validates the configured path once and fails fast when its OsLib tempfile probe cannot write; it does not mutate or bypass `Os.Config`.
 - Cloud config guidance: prefer explicit `Cloud.*` entries in `RAIkeep.json5` when you want stable cloud-backed path classification.
 - Metadata propagation guidance: `RaiFile.BackdateCreationTime(...)` uses `SyncPropagationDelayMs` from config when no explicit delay is passed.
 - Script helper: use `RaiSystem.CreateScript(path, name, content)` or `new Script(path, name, content)` when tests or tools need an executable script file.

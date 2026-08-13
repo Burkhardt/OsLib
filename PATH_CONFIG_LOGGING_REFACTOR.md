@@ -13,7 +13,7 @@ Parts of it are now historical rather than current behavior. In particular:
 - missing or malformed config now falls back to a baseline `TempDir` model instead of being documented as the current startup-fatal public contract
 - `CloudStorageRootDir`, `DefaultCloudOrder`, and related provider-selection APIs are no longer part of the current public `Os` surface
 
-Use [OSCONFIG-BREAKING-CHANGE.md](OSCONFIG-BREAKING-CHANGE.md), [CLOUD_STORAGE_DISCOVERY.md](CLOUD_STORAGE_DISCOVERY.md), and [API.md](API.md) for the current contract.
+Use [OSCONFIG-BREAKING-CHANGE.md](https://github.com/Burkhardt/OsLib/blob/main/OSCONFIG-BREAKING-CHANGE.md), [CLOUD_STORAGE_DISCOVERY.md](https://github.com/Burkhardt/OsLib/blob/main/CLOUD_STORAGE_DISCOVERY.md), and [API.md](https://github.com/Burkhardt/OsLib/blob/main/API.md) for the current contract.
 
 ## Intent
 
