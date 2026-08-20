@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace OsLib
@@ -8,14 +10,26 @@ namespace OsLib
 		public string Target { get; }
 
 		public SshSystem(string target, string remoteCommand)
-			: base("ssh", new[] { target ?? string.Empty, remoteCommand ?? string.Empty })
+			: this(target, remoteCommand, options: null)
+		{
+		}
+
+		public SshSystem(string target, string remoteCommand, IEnumerable<string> options)
+			: base(
+				"ssh",
+				(options ?? Enumerable.Empty<string>())
+					.Concat(new[] { target ?? string.Empty, remoteCommand ?? string.Empty }))
 		{
 			Target = target ?? string.Empty;
 		}
 
-		public static RaiSystemResult ExecuteRemoteCommand(string target, string remoteCommand, int timeoutMilliseconds = 120000)
+		public static RaiSystemResult ExecuteRemoteCommand(
+			string target,
+			string remoteCommand,
+			int timeoutMilliseconds = 120000,
+			IEnumerable<string> options = null)
 		{
-			return new SshSystem(target, remoteCommand).ExecResult(timeoutMilliseconds);
+			return new SshSystem(target, remoteCommand, options).ExecResult(timeoutMilliseconds);
 		}
 
 		public static RaiSystemResult ExecuteScript(string target, string script, int timeoutMilliseconds = 120000)

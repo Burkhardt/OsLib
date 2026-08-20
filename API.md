@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.2.0` API surface.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.2.2` API surface.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -57,6 +57,14 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 
 	- Accepts `IAsyncEnumerable&lt;byte[]&gt;` so callers can write chunked content without taking a direct dependency on `System.IO.Stream`.
 	- Honors cancellation and retains RaiFile's established path and lifecycle behavior.
+	</details>
+
+- <details>
+	<summary>RaiFile.ReadAllBytesAsync(cancellationToken) and RaiFileIOException.</summary>
+
+	- Reads the complete file asynchronously through the OsLib file boundary.
+	- Wraps operating-system `IOException` and `UnauthorizedAccessException` failures in `RaiFileIOException`, retaining the original exception as `InnerException` and exposing the affected `FileName`.
+	- `RaiFileIOException` derives from `IOException` for existing catch compatibility. Cancellation remains an `OperationCanceledException` and is not wrapped.
 	</details>
 
 - <details>
@@ -211,8 +219,15 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 	- <details>
 		<summary>ExecResult(timeoutMilliseconds): run and capture structured stdout/stderr results.</summary>
 
-		- Returns `RaiSystemResult` with `StandardOutput`, `StandardError`, combined `Output`, exit code, and timeout state.
+		- Returns `RaiSystemResult` with `StandardOutput`, `StandardError`, combined `Output`, exact tokenized `ArgumentList`, exit code, derived `Succeeded`, and timeout state.
 		- Supports argument-list based commands so higher-level wrappers do not need to hand-roll process execution.
+		</details>
+	- <details>
+		<summary>ExecAsync(timeoutMilliseconds, cancellationToken): asynchronous execution with distinct timeout and caller-cancellation behavior.</summary>
+
+		- Preserves the established off-caller-thread process-start contract and awaits process exit without blocking that caller.
+		- Kills the process tree on timeout or cancellation.
+		- A timeout returns a result with `TimedOut == true`; caller cancellation remains `OperationCanceledException`.
 		</details>
 	- <details>
 		<summary>Start(): async process execution.</summary>
@@ -257,12 +272,15 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 - <details>
 	<summary>CliCommand and tool wrappers: reusable typed command launchers.</summary>
 
-	- Responsibilities: executable resolution, package-manager install/update hints, and `RaiSystem`-backed execution.
+	- Responsibilities: executable resolution, package-manager install/update hints, exact tokenized arguments, and `RaiSystem`-backed execution.
 	- <details>
 		<summary>CliCommand: base abstraction for local CLI tools.</summary>
 
 		- Resolves a working executable from candidate names or explicit paths.
-		- Exposes sync/async execution through `Run(...)` and `RunAsync(...)`.
+		- Exposes sync/async execution through string-compatible and tokenized `Run(...)` and `RunAsync(...)` overloads.
+		- Tokenized overloads accept an optional timeout; completed results retain the exact original argument vector.
+		- Tokenized calls flow through `ProcessStartInfo.ArgumentList`, preserving argument count and values without shell reconstruction.
+		- `BuildPosixShellCommand(...)` safely serializes the executable and argument tokens when an SSH boundary explicitly requires POSIX shell text.
 		</details>
 	- <details>
 		<summary>CurlCommand / ZipCommand / SevenZipCommand: generic command wrappers.</summary>
@@ -274,6 +292,23 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 
 		- Supports optional explicit command-path configuration.
 		- Provides `BuildArguments`, `RunSubcommand`, and `RunSubcommandAsync` for higher-level cloud tooling.
+		</details>
+	- <details>
+		<summary>PitsCommand: typed invocation of the installed `pits` CLI.</summary>
+
+		- `PitsTarget.Pit(...)` and `PitsTarget.Wwwa()` make the target mode explicit.
+		- `PitsSeedRequest`, `PitsExportRequest`, `PitsAuditRequest`, and `PitsCommandOptions` model the preferred 4.x commands and global options.
+		- `BuildSeedArguments`, `BuildExportArguments`, and `BuildAuditArguments` validate required and mutually exclusive values before process start.
+		- `Seed`, `Export`, and `Audit`, with async counterparts, return `RaiSystemResult` containing success/timeout state, original argument tokens, exit code, and separated standard output/error.
+		- `ForManagedAssembly(...)` supports package-owned entry-point testing through `dotnet pits.dll` without hand-built process launch code.
+		</details>
+	- <details>
+		<summary>IorgCommand: typed invocation of the installed `iorg` CLI.</summary>
+
+		- `IorgOrganizeRequest`, `IorgCleanRequest`, and `IorgCommandOptions` model the preferred 4.x `organize` and `clean` commands.
+		- Required source/root/short-name values and numbered path/naming conventions are validated before process start.
+		- `BuildOrganizeArguments`, `BuildCleanArguments`, `Organize`, and `Clean` expose deterministic sync/async calls.
+		- `ForManagedAssembly(...)` supports package-owned entry-point testing through `dotnet ImgSeeder.dll`.
 		</details>
 	</details>
 

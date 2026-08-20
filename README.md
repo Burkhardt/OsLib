@@ -6,18 +6,20 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
-## 4.2.0
+## 4.2.2
 
-- Current prepared release line for `OsLibCore` is `4.2.0`.
-- This coordinated release preserves the CR008 runtime behavior introduced in 4.1.0 while bringing OsLibCore into the seven-package line that introduces RaiDiagram.
+- Current prepared release line for `OsLibCore` is `4.2.2`.
+- This coordinated release preserves the CR008 runtime behavior introduced in 4.1.0 and supplies the remaining asynchronous file-read exception boundary requested by AIA.
 - `Os.TempDir` remains sourced from immutable runtime configuration and is now validated once at first Os initialization with an OsLib `TmpFile` write/remove probe.
 - Startup fails fast when the configured temp directory is not writable; `Os.Config` is neither mutated nor bypassed with a fallback.
 - `RaiPathException` and `RaiPathNotFoundException` provide path-specific failures.
 - `RaiFile.WriteFromAsync(IAsyncEnumerable<byte[]>, CancellationToken)` provides stream-free chunk ingestion.
+- `RaiFile.ReadAllBytesAsync(...)` wraps operating-system file failures in `RaiFileIOException` while preserving cancellation and `IOException` catch compatibility.
+- CR014 adds typed `PitsCommand` and `IorgCommand` wrappers for server/agent invocation of the installed RAIkeep CLIs, including validated preferred-command arguments and exact tokenized process execution.
 - `TextFile.SaveInPlace()` writes a small coordination file without a preceding delete or rename, while retaining cloud materialization checks.
 - Configured cloud-path classification recognizes `Dropbox`, `OneDrive`, `GoogleDrive`, and `ICloudDrive` roots.
 - The `RaiFile.mkdir()` virtual dispatch, UTC timestamp handling, and async `RaiFile` APIs remain current.
-- See [OsLib_RELEASE_NOTES_4.2.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.0.md) for details.
+- See [OsLib_RELEASE_NOTES_4.2.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.2.md) for details.
 
 ## namespace
 
@@ -56,6 +58,7 @@ OsLib
 ### RaiFile: File utility with cloud-aware wait behavior.
 
 - RaiFile: `Exists`, `LastWriteTimeUtc`, `rm`, `mv`, `cp`, `mkdir`, `rmdir`, `WriteFromAsync`, `ReadAllBytesAsync`, `AwaitVanishing`, `AwaitMaterializing`, `BackdateCreationTime`, `DefaultSyncPropagationDelayMs`, `Zip`, `backup`
+- `ReadAllBytesAsync` preserves cancellation and wraps operating-system file I/O failures in `RaiFileIOException`, which retains `IOException` compatibility and exposes the affected `FileName`.
 
 ### RaiFileExtensions: Convenience extensions for string and CSV handling.
 
@@ -75,8 +78,11 @@ OsLib
 ### SshSystem and CLI wrappers: remote shell execution and typed command launchers.
 
 - SshSystem: `ExecuteRemoteCommand`, `ExecuteScript`, `ReadRemoteConfigJson5`
-- CliCommand: `IsAvailable`, `TryResolveExecutable`, `Run`, `RunAsync`, `GetInstallCommand`, `GetUpdateCommand`
-- Built-in wrappers: `CurlCommand`, `ZipCommand`, `SevenZipCommand`, `RCloneCommand`
+- CliCommand: `IsAvailable`, `TryResolveExecutable`, tokenized/string `Run` and `RunAsync`, timeout-aware token execution, `BuildPosixShellCommand`, `GetInstallCommand`, `GetUpdateCommand`
+- RaiSystemResult: exact `ArgumentList`, `StandardOutput`, `StandardError`, `ExitCode`, `Succeeded`, and `TimedOut` process metadata
+- PitsCommand: `BuildSeedArguments`, `BuildExportArguments`, `BuildAuditArguments`, `Seed`, `Export`, `Audit`, async counterparts, and `ForManagedAssembly`
+- IorgCommand: `BuildOrganizeArguments`, `BuildCleanArguments`, `Organize`, `Clean`, async counterparts, and `ForManagedAssembly`
+- Built-in wrappers: `CurlCommand`, `ZipCommand`, `SevenZipCommand`, `RCloneCommand`, `PitsCommand`, `IorgCommand`
 
 ## nuget
 
@@ -107,7 +113,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [OsLib_RELEASE_NOTES_4.2.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.0.md)
+- Current release notes: [OsLib_RELEASE_NOTES_4.2.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.2.md)
 
 ## nuget publish automation
 
@@ -116,4 +122,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- `git tag -a v4.2.0 -m "v4.2.0" && git push origin v4.2.0`
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.2` command after RAI approval.

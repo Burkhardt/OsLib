@@ -232,6 +232,46 @@ namespace OsLib.Tests
 		}
 
 		[Fact]
+		public async Task RaiFile_ReadAllBytesAsync_WrapsOperatingSystemFileFailure()
+		{
+			var root = CreateTempDir();
+			try
+			{
+				var target = new RaiFile(root, "missing", "bin");
+
+				var exception = await Assert.ThrowsAsync<RaiFileIOException>(
+					() => target.ReadAllBytesAsync(TestContext.Current.CancellationToken));
+
+				Assert.Equal(target.FullName, exception.FileName);
+				Assert.IsAssignableFrom<IOException>(exception);
+				Assert.IsAssignableFrom<IOException>(exception.InnerException);
+			}
+			finally
+			{
+				root.rmdir(depth: 9, deleteFiles: true);
+			}
+		}
+
+		[Fact]
+		public async Task RaiFile_ReadAllBytesAsync_DoesNotWrapCancellation()
+		{
+			var root = CreateTempDir();
+			try
+			{
+				var target = new TextFile(root, "payload.bin", content: "payload");
+				using var cancellation = new CancellationTokenSource();
+				cancellation.Cancel();
+
+				await Assert.ThrowsAnyAsync<OperationCanceledException>(
+					() => target.ReadAllBytesAsync(cancellation.Token));
+			}
+			finally
+			{
+				root.rmdir(depth: 9, deleteFiles: true);
+			}
+		}
+
+		[Fact]
 		public void RaiFile_Move_ReplaceFalse_ThrowsWhenDestinationExists()
 		{
 			var root = CreateTempDir();

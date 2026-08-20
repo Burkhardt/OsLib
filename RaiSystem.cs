@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using RunProcessAsTask; // https://github.com/jamesmanning/RunProcessAsTask
@@ -45,12 +46,14 @@ namespace OsLib     // aka OsLibCore
 	{
 		public string Command { get; init; } = string.Empty;
 		public string Arguments { get; init; } = string.Empty;
+		public IReadOnlyList<string> ArgumentList { get; init; } = Array.Empty<string>();
 		public string CommandLine { get; init; } = string.Empty;
 		public string StandardOutput { get; init; } = string.Empty;
 		public string StandardError { get; init; } = string.Empty;
 		public string Output { get; init; } = string.Empty;
 		public int ExitCode { get; init; }
 		public bool TimedOut { get; init; }
+		public bool Succeeded => ExitCode == 0 && !TimedOut;
 		public int WorkerThreadId { get; init; }
 	}
 	public class RaiSystem
@@ -83,48 +86,94 @@ namespace OsLib     // aka OsLibCore
 		}
 		public RaiSystemResult ExecResult(int timeoutMilliseconds = 120000)
 		{
-			using var p = new Process();
-			p.StartInfo = CreateStartInfo(redirectStandardOutput: true, redirectStandardError: true);
-			p.EnableRaisingEvents = true;
-			p.Start();
-			var standardOutput = p.StandardOutput.ReadToEnd();
-			var standardError = p.StandardError.ReadToEnd();
-			var timedOut = timeoutMilliseconds > 0 && !p.WaitForExit(timeoutMilliseconds);
-			if (timedOut)
+			return ExecAsyncCore(timeoutMilliseconds, CancellationToken.None).GetAwaiter().GetResult();
+		}
+		public Task<RaiSystemResult> ExecAsync(CancellationToken cancellationToken = default)
+		{
+			return DispatchAsync(120000, cancellationToken);
+		}
+		public Task<RaiSystemResult> ExecAsync(int timeoutMilliseconds, CancellationToken cancellationToken = default)
+		{
+			return DispatchAsync(timeoutMilliseconds, cancellationToken);
+		}
+		private Task<RaiSystemResult> DispatchAsync(
+			int timeoutMilliseconds,
+			CancellationToken cancellationToken)
+		{
+			return Task.Factory.StartNew(
+				() => ExecAsyncCore(timeoutMilliseconds, cancellationToken),
+				cancellationToken,
+				TaskCreationOptions.LongRunning,
+				TaskScheduler.Default).Unwrap();
+		}
+		private async Task<RaiSystemResult> ExecAsyncCore(
+			int timeoutMilliseconds,
+			CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			var workerThreadId = Environment.CurrentManagedThreadId;
+			using var process = new Process
 			{
-				try
-				{
-					p.Kill(entireProcessTree: true);
-				}
-				catch
-				{
-				}
-			}
-			else if (timeoutMilliseconds <= 0)
+				StartInfo = CreateStartInfo(redirectStandardOutput: true, redirectStandardError: true),
+				EnableRaisingEvents = true
+			};
+			process.Start();
+
+			var standardOutputTask = process.StandardOutput.ReadToEndAsync();
+			var standardErrorTask = process.StandardError.ReadToEndAsync();
+			using var timeout = timeoutMilliseconds > 0
+				? new CancellationTokenSource(timeoutMilliseconds)
+				: null;
+			using var linked = timeout == null
+				? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
+				: CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+
+			var timedOut = false;
+			try
 			{
-				p.WaitForExit();
+				await process.WaitForExitAsync(linked.Token).ConfigureAwait(false);
 			}
-			ExitCode = timedOut ? -1 : p.ExitCode;
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+			{
+				TryKill(process);
+				await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+				await Task.WhenAll(standardOutputTask, standardErrorTask).ConfigureAwait(false);
+				throw;
+			}
+			catch (OperationCanceledException) when (timeout?.IsCancellationRequested == true)
+			{
+				timedOut = true;
+				TryKill(process);
+				await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+			}
+
+			var standardOutput = await standardOutputTask.ConfigureAwait(false);
+			var standardError = await standardErrorTask.ConfigureAwait(false);
+			ExitCode = timedOut ? -1 : process.ExitCode;
 			return new RaiSystemResult
 			{
 				Command = command ?? string.Empty,
 				Arguments = param ?? string.Empty,
+				ArgumentList = argumentList.ToArray(),
 				CommandLine = commandLine ?? string.Empty,
 				StandardOutput = standardOutput,
 				StandardError = standardError,
 				Output = standardOutput + standardError,
 				ExitCode = ExitCode,
 				TimedOut = timedOut,
-				WorkerThreadId = Environment.CurrentManagedThreadId
+				WorkerThreadId = workerThreadId
 			};
 		}
-		public Task<RaiSystemResult> ExecAsync(CancellationToken cancellationToken = default)
+		private static void TryKill(Process process)
 		{
-			return Task.Factory.StartNew(() =>
+			try
 			{
-				cancellationToken.ThrowIfCancellationRequested();
-				return ExecResult();
-			}, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+				if (!process.HasExited)
+					process.Kill(entireProcessTree: true);
+			}
+			catch
+			{
+			}
 		}
 		/// <summary>
 		/// Execute a command, optionally waiting for it to exit.

@@ -69,6 +69,43 @@ namespace OsLib
 			return rs.ExecAsync(cancellationToken);
 		}
 
+		public virtual RaiSystemResult Run(IEnumerable<string> arguments)
+		{
+			return RunAsync(arguments).GetAwaiter().GetResult();
+		}
+
+		public virtual Task<RaiSystemResult> RunAsync(
+			IEnumerable<string> arguments,
+			CancellationToken cancellationToken = default)
+		{
+			var rs = new RaiSystem(ResolveExecutable(), arguments ?? Enumerable.Empty<string>());
+			return rs.ExecAsync(cancellationToken);
+		}
+
+		public virtual RaiSystemResult Run(IEnumerable<string> arguments, int timeoutMilliseconds)
+		{
+			var rs = new RaiSystem(ResolveExecutable(), arguments ?? Enumerable.Empty<string>());
+			return rs.ExecResult(timeoutMilliseconds);
+		}
+
+		public virtual Task<RaiSystemResult> RunAsync(
+			IEnumerable<string> arguments,
+			int timeoutMilliseconds,
+			CancellationToken cancellationToken = default)
+		{
+			var rs = new RaiSystem(ResolveExecutable(), arguments ?? Enumerable.Empty<string>());
+			return rs.ExecAsync(timeoutMilliseconds, cancellationToken);
+		}
+
+		public string BuildPosixShellCommand(IEnumerable<string> arguments)
+		{
+			return string.Join(
+				" ",
+				new[] { ExecutableName }
+					.Concat(arguments ?? Enumerable.Empty<string>())
+					.Select(QuotePosixShellToken));
+		}
+
 		public virtual string GetInstallCommand()
 		{
 			var package = GetPackageReferenceForCurrentOs();
@@ -153,6 +190,15 @@ namespace OsLib
 				return File.Exists(candidate) ? candidate : null;
 
 			return FindExecutableOnPath(candidate);
+		}
+
+		private static string QuotePosixShellToken(string value)
+		{
+			value ??= string.Empty;
+			if (value.Length > 0 && value.All(ch =>
+				char.IsLetterOrDigit(ch) || ch is '_' or '-' or '.' or '/' or ':' or '@' or '%'))
+				return value;
+			return "'" + value.Replace("'", "'\"'\"'", StringComparison.Ordinal) + "'";
 		}
 	}
 

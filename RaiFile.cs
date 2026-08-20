@@ -330,8 +330,20 @@ namespace OsLib
 				await target.WriteAsync(chunk, ct).ConfigureAwait(false);
 			}
 		}
-		public Task<byte[]> ReadAllBytesAsync(CancellationToken ct = default)
-			=> File.ReadAllBytesAsync(FullName, ct);
+		public async Task<byte[]> ReadAllBytesAsync(CancellationToken ct = default)
+		{
+			try
+			{
+				return await File.ReadAllBytesAsync(FullName, ct).ConfigureAwait(false);
+			}
+			catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+			{
+				throw new RaiFileIOException(
+					$"Unable to read all bytes from '{FullName}'.",
+					FullName,
+					exception);
+			}
+		}
 		public RaiFile Zip()
 		{
 			var zipFile = new RaiFile(FullName);
