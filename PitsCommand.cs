@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -104,6 +105,19 @@ namespace OsLib
 		public PitsCommandOptions Options { get; init; }
 	}
 
+	public sealed record PitsDeletePropertyRequest(
+		string PitName,
+		string ItemId,
+		string PropertyPath)
+	{
+		public PitsCommandOptions Options { get; init; }
+	}
+
+	public sealed record PitsDeleteItemRequest(string PitName, string ItemId)
+	{
+		public PitsCommandOptions Options { get; init; }
+	}
+
 	public sealed class PitsCommand : CliCommand
 	{
 		private readonly RaiPath commandPath;
@@ -198,6 +212,34 @@ namespace OsLib
 			return arguments;
 		}
 
+		public IReadOnlyList<string> BuildDeletePropertyArguments(PitsDeletePropertyRequest request)
+		{
+			if (request == null)
+				throw new ArgumentNullException(nameof(request));
+			RequireValue(request.PitName, nameof(request.PitName));
+			RequireValue(request.ItemId, nameof(request.ItemId));
+			RequirePropertyPath(request.PropertyPath);
+
+			var arguments = new List<string>
+			{
+				"delete-property", request.PitName, request.ItemId, request.PropertyPath
+			};
+			AppendOptions(arguments, request.Options);
+			return arguments;
+		}
+
+		public IReadOnlyList<string> BuildDeleteItemArguments(PitsDeleteItemRequest request)
+		{
+			if (request == null)
+				throw new ArgumentNullException(nameof(request));
+			RequireValue(request.PitName, nameof(request.PitName));
+			RequireValue(request.ItemId, nameof(request.ItemId));
+
+			var arguments = new List<string> { "delete-item", request.PitName, request.ItemId };
+			AppendOptions(arguments, request.Options);
+			return arguments;
+		}
+
 		public RaiSystemResult Seed(PitsSeedRequest request) => Run(BuildSeedArguments(request));
 		public Task<RaiSystemResult> SeedAsync(PitsSeedRequest request, CancellationToken cancellationToken = default)
 			=> RunAsync(BuildSeedArguments(request), cancellationToken);
@@ -209,6 +251,20 @@ namespace OsLib
 		public RaiSystemResult Audit(PitsAuditRequest request) => Run(BuildAuditArguments(request));
 		public Task<RaiSystemResult> AuditAsync(PitsAuditRequest request, CancellationToken cancellationToken = default)
 			=> RunAsync(BuildAuditArguments(request), cancellationToken);
+
+		public RaiSystemResult DeleteProperty(PitsDeletePropertyRequest request)
+			=> Run(BuildDeletePropertyArguments(request));
+		public Task<RaiSystemResult> DeletePropertyAsync(
+			PitsDeletePropertyRequest request,
+			CancellationToken cancellationToken = default)
+			=> RunAsync(BuildDeletePropertyArguments(request), cancellationToken);
+
+		public RaiSystemResult DeleteItem(PitsDeleteItemRequest request)
+			=> Run(BuildDeleteItemArguments(request));
+		public Task<RaiSystemResult> DeleteItemAsync(
+			PitsDeleteItemRequest request,
+			CancellationToken cancellationToken = default)
+			=> RunAsync(BuildDeleteItemArguments(request), cancellationToken);
 
 		public override RaiSystemResult Run(IEnumerable<string> arguments)
 			=> base.RunAsync(WithManagedAssembly(arguments)).GetAwaiter().GetResult();
@@ -278,6 +334,15 @@ namespace OsLib
 				throw new ArgumentException($"A value is required for {parameterName}.", parameterName);
 			if (value.StartsWith("-", StringComparison.Ordinal))
 				throw new ArgumentException($"The value for {parameterName} cannot be parsed as an option.", parameterName);
+		}
+
+		private static void RequirePropertyPath(string propertyPath)
+		{
+			RequireValue(propertyPath, nameof(propertyPath));
+			if (propertyPath.Split('.', StringSplitOptions.None).Any(string.IsNullOrWhiteSpace))
+				throw new ArgumentException(
+					"A property path must contain non-empty dot-delimited property names.",
+					nameof(propertyPath));
 		}
 	}
 }

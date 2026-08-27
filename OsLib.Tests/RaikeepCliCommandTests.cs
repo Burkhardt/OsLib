@@ -76,6 +76,68 @@ namespace OsLib.Tests
 		}
 
 		[Fact]
+		public void PitsCommand_BuildsTypedDeleteForms_WithExactTokenizedArguments()
+		{
+			var command = new PitsCommand();
+			var options = new PitsCommandOptions
+			{
+				PitRoot = root / "tenant root",
+				CloudProvider = "One Drive",
+				NoLogo = true
+			};
+
+			Assert.Equal(
+				new[]
+				{
+					"delete-property", "Activity", "UC16 Save", "What.Chat",
+					"--pitroot", options.PitRoot.FullPath, "--cloud", "One Drive", "--nologo"
+				},
+				command.BuildDeletePropertyArguments(new PitsDeletePropertyRequest(
+					"Activity", "UC16 Save", "What.Chat") { Options = options }));
+			Assert.Equal(
+				new[] { "delete-item", "Object", "Legacy Record", "--nologo" },
+				command.BuildDeleteItemArguments(new PitsDeleteItemRequest(
+					"Object", "Legacy Record")
+				{
+					Options = new PitsCommandOptions { NoLogo = true }
+				}));
+		}
+
+		[Fact]
+		public async Task PitsCommand_DeletePropertyAsync_PassesExactTokensToExecutable()
+		{
+			var command = CreatePitsCaptureCommand(exitCode: 0);
+			var request = new PitsDeletePropertyRequest("Activity", "UC16", "What.Chat")
+			{
+				Options = new PitsCommandOptions { PitRoot = root, NoLogo = true }
+			};
+
+			var result = await command.DeletePropertyAsync(
+				request,
+				TestContext.Current.CancellationToken);
+
+			Assert.Equal(
+				new[]
+				{
+					"delete-property", "Activity", "UC16", "What.Chat",
+					"--pitroot", root.FullPath, "--nologo"
+				},
+				CapturedArguments(result));
+		}
+
+		[Theory]
+		[InlineData("")]
+		[InlineData("What..Chat")]
+		[InlineData(".What")]
+		[InlineData("What.")]
+		public void PitsCommand_DeleteProperty_RejectsMalformedPathBeforeExecution(string path)
+		{
+			var command = new PitsCommand();
+			Assert.Throws<ArgumentException>(() => command.BuildDeletePropertyArguments(
+				new PitsDeletePropertyRequest("Activity", "UC16", path)));
+		}
+
+		[Fact]
 		public void PitsCommand_RejectsMissingMandatoryAndBlankOptionalValuesBeforeExecution()
 		{
 			var command = new PitsCommand();

@@ -6,9 +6,10 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
-## 4.2.2
+## 4.2.3
 
-- Current prepared release line for `OsLibCore` is `4.2.2`.
+- Current prepared release line for `OsLibCore` is `4.2.3`.
+- CR015 adds typed `PitsDeletePropertyRequest` and `PitsDeleteItemRequest` forms, exact token builders, and sync/async execution through `PitsCommand`.
 - This coordinated release preserves the CR008 runtime behavior introduced in 4.1.0 and supplies the remaining asynchronous file-read exception boundary requested by AIA.
 - `Os.TempDir` remains sourced from immutable runtime configuration and is now validated once at first Os initialization with an OsLib `TmpFile` write/remove probe.
 - Startup fails fast when the configured temp directory is not writable; `Os.Config` is neither mutated nor bypassed with a fallback.
@@ -19,7 +20,7 @@ _formerly_ __OsLibCore__
 - `TextFile.SaveInPlace()` writes a small coordination file without a preceding delete or rename, while retaining cloud materialization checks.
 - Configured cloud-path classification recognizes `Dropbox`, `OneDrive`, `GoogleDrive`, and `ICloudDrive` roots.
 - The `RaiFile.mkdir()` virtual dispatch, UTC timestamp handling, and async `RaiFile` APIs remain current.
-- See [OsLib_RELEASE_NOTES_4.2.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.2.md) for details.
+- See [OsLib_RELEASE_NOTES_4.2.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.3.md) for details.
 
 ## namespace
 
@@ -80,7 +81,7 @@ OsLib
 - SshSystem: `ExecuteRemoteCommand`, `ExecuteScript`, `ReadRemoteConfigJson5`
 - CliCommand: `IsAvailable`, `TryResolveExecutable`, tokenized/string `Run` and `RunAsync`, timeout-aware token execution, `BuildPosixShellCommand`, `GetInstallCommand`, `GetUpdateCommand`
 - RaiSystemResult: exact `ArgumentList`, `StandardOutput`, `StandardError`, `ExitCode`, `Succeeded`, and `TimedOut` process metadata
-- PitsCommand: `BuildSeedArguments`, `BuildExportArguments`, `BuildAuditArguments`, `Seed`, `Export`, `Audit`, async counterparts, and `ForManagedAssembly`
+- PitsCommand: `BuildSeedArguments`, `BuildExportArguments`, `BuildAuditArguments`, `BuildDeletePropertyArguments`, `BuildDeleteItemArguments`, typed sync/async command methods, and `ForManagedAssembly`
 - IorgCommand: `BuildOrganizeArguments`, `BuildCleanArguments`, `Organize`, `Clean`, async counterparts, and `ForManagedAssembly`
 - Built-in wrappers: `CurlCommand`, `ZipCommand`, `SevenZipCommand`, `RCloneCommand`, `PitsCommand`, `IorgCommand`
 
@@ -113,7 +114,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [OsLib_RELEASE_NOTES_4.2.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.2.md)
+- Current release notes: [OsLib_RELEASE_NOTES_4.2.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.3.md)
 
 ## nuget publish automation
 
@@ -122,4 +123,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.2` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.3` command after RAI approval.
