@@ -6,9 +6,16 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
+## 4.2.4
+
+- Aligns OsLibCore with the coordinated seven-package RAIkeep 4.2.4 release implementing accepted CR016.
+- RaiImage performs normalization-resilient traversal exclusively through the existing `RaiPath.EnumerateDirectories(...)` and `RaiPath.EnumerateFiles(...)` boundary.
+- No new direct filesystem surface or OsLib runtime behavior is introduced.
+- Current release notes: [OsLib_RELEASE_NOTES_4.2.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.4.md)
+
 ## 4.2.3
 
-- Current prepared release line for `OsLibCore` is `4.2.3`.
+- The `4.2.3` release added the accepted CR015 typed delete requests.
 - CR015 adds typed `PitsDeletePropertyRequest` and `PitsDeleteItemRequest` forms, exact token builders, and sync/async execution through `PitsCommand`.
 - This coordinated release preserves the CR008 runtime behavior introduced in 4.1.0 and supplies the remaining asynchronous file-read exception boundary requested by AIA.
 - `Os.TempDir` remains sourced from immutable runtime configuration and is now validated once at first Os initialization with an OsLib `TmpFile` write/remove probe.
@@ -114,7 +121,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [OsLib_RELEASE_NOTES_4.2.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.3.md)
+- Current release notes: [OsLib_RELEASE_NOTES_4.2.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.4.md)
 
 ## nuget publish automation
 
@@ -123,4 +130,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.3` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.4` command after RAI approval.

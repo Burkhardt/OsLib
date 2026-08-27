@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.2.3` API surface.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.2.4` API surface.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
