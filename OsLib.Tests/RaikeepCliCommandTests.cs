@@ -58,6 +58,7 @@ namespace OsLib.Tests
 		{
 			var command = new PitsCommand();
 			var output = root / "export output";
+			var at = new DateTimeOffset(2026, 8, 27, 14, 0, 0, TimeSpan.FromHours(2));
 
 			Assert.Equal(
 				new[] { "export", "--wwwa", "--out-dir", output.FullPath },
@@ -66,6 +67,14 @@ namespace OsLib.Tests
 				new[] { "export", "Activity", "--json" },
 				command.BuildExportArguments(PitsExportRequest.ToJson(PitsTarget.Pit("Activity"))));
 			Assert.Equal(
+				new[]
+				{
+					"export", "--wwwa", "--json", "--at",
+					"2026-08-27T12:00:00.0000000Z"
+				},
+				command.BuildExportArguments(
+					PitsExportRequest.ToJson(PitsTarget.Wwwa()) with { At = at }));
+			Assert.Equal(
 				new[] { "audit", "Activity", "--machine", "local", "--level", "Warning", "--json" },
 				command.BuildAuditArguments(new PitsAuditRequest(PitsTarget.Pit("Activity"))
 				{
@@ -73,6 +82,33 @@ namespace OsLib.Tests
 					MinimumLevel = "Warning",
 					Json = true
 				}));
+		}
+
+		[Fact]
+		public async Task PitsCommand_ExportAtAsync_PassesExactTokenizedArguments()
+		{
+			var command = CreatePitsCaptureCommand(exitCode: 0);
+			var request = PitsExportRequest.ToDirectory(PitsTarget.Pit("Activity Schedule"), root / "exports") with
+			{
+				At = new DateTimeOffset(2026, 8, 27, 12, 0, 0, TimeSpan.Zero),
+				Options = new PitsCommandOptions
+				{
+					PitRoot = root / "pit root",
+					NoLogo = true
+				}
+			};
+
+			var result = await command.ExportAsync(request, TestContext.Current.CancellationToken);
+
+			Assert.Equal(0, result.ExitCode);
+			Assert.Equal(
+				new[]
+				{
+					"export", "Activity Schedule", "--out-dir", request.OutputDirectory.FullPath,
+					"--at", "2026-08-27T12:00:00.0000000Z",
+					"--pitroot", request.Options.PitRoot.FullPath, "--nologo"
+				},
+				CapturedArguments(result));
 		}
 
 		[Fact]

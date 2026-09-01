@@ -6,12 +6,19 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
+## 4.2.5
+
+- Implements the accepted CR017 typed boundary by adding optional `PitsExportRequest.At`.
+- `PitsCommand` emits `--at` and a canonical UTC timestamp as separate argument tokens for both sync and async execution.
+- Requests without `At` preserve their exact established argument list.
+- Current release notes: [OsLib_RELEASE_NOTES_4.2.5.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.5.md)
+
 ## 4.2.4
 
 - Aligns OsLibCore with the coordinated seven-package RAIkeep 4.2.4 release implementing accepted CR016.
 - RaiImage performs normalization-resilient traversal exclusively through the existing `RaiPath.EnumerateDirectories(...)` and `RaiPath.EnumerateFiles(...)` boundary.
 - No new direct filesystem surface or OsLib runtime behavior is introduced.
-- Current release notes: [OsLib_RELEASE_NOTES_4.2.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.4.md)
+- Current release notes: [OsLib_RELEASE_NOTES_4.2.5.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.5.md)
 
 ## 4.2.3
 
@@ -121,7 +128,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Current release notes: [OsLib_RELEASE_NOTES_4.2.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.4.md)
+- 4.2.4 release notes: [OsLib_RELEASE_NOTES_4.2.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.4.md)
 
 ## nuget publish automation
 
@@ -130,4 +137,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.4` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.5` command after RAI approval.

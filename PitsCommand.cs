@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -82,6 +83,11 @@ namespace OsLib
 		public PitsTarget Target { get; }
 		public RaiPath OutputDirectory { get; }
 		public bool Json { get; }
+		/// <summary>
+		/// Optional historical projection cutoff. When supplied, <c>pits</c> emits
+		/// the CR017 point-in-time provenance envelope.
+		/// </summary>
+		public DateTimeOffset? At { get; init; }
 		public PitsCommandOptions Options { get; init; }
 
 		public static PitsExportRequest ToDirectory(PitsTarget target, RaiPath outputDirectory)
@@ -191,6 +197,11 @@ namespace OsLib
 				RequireValue(request.OutputDirectory.FullPath, "outputDirectory");
 				arguments.Add("--out-dir");
 				arguments.Add(request.OutputDirectory.FullPath);
+			}
+			if (request.At is { } at)
+			{
+				arguments.Add("--at");
+				arguments.Add(at.UtcDateTime.ToString("O", CultureInfo.InvariantCulture));
 			}
 			AppendOptions(arguments, request.Options);
 			return arguments;

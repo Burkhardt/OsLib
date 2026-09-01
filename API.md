@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.2.4` API surface.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.2.5` API surface.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -298,6 +298,7 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 
 		- `PitsTarget.Pit(...)` and `PitsTarget.Wwwa()` make the target mode explicit.
 		- `PitsSeedRequest`, `PitsExportRequest`, `PitsAuditRequest`, `PitsDeletePropertyRequest`, `PitsDeleteItemRequest`, and `PitsCommandOptions` model the preferred 4.x commands and global options.
+		- `PitsExportRequest.At` optionally requests CR017 point-in-time projection. The value is emitted as a canonical UTC timestamp in a separate `--at` argument token; omitting it preserves the established export argument vector.
 		- `BuildSeedArguments`, `BuildExportArguments`, `BuildAuditArguments`, `BuildDeletePropertyArguments`, and `BuildDeleteItemArguments` validate required and mutually exclusive values before process start.
 		- `DeleteProperty` uses an explicit dot-delimited `PropertyPath`; malformed paths are rejected before process execution.
 		- `Seed`, `Export`, `Audit`, `DeleteProperty`, and `DeleteItem`, with async counterparts, return `RaiSystemResult` containing success/timeout state, original argument tokens, exit code, and separated standard output/error.
