@@ -22,10 +22,28 @@ namespace OsLib
 		public IorgCommandOptions Options { get; init; }
 	}
 
-	public sealed record IorgCleanRequest(string ShortName, RaiPath Root)
+	public sealed record IorgCleanRequest(string ItemId, RaiPath Root)
 	{
 		public bool Cache { get; init; }
 		public bool Force { get; init; }
+		public IorgCommandOptions Options { get; init; }
+	}
+
+	public sealed record IorgListRequest(string FileNamePattern, RaiPath Root)
+	{
+		public bool Json { get; init; }
+		public bool Quiet { get; init; }
+		public IorgCommandOptions Options { get; init; }
+	}
+
+	public sealed record IorgMoveRequest(
+		string SourceItemId,
+		string TargetItemId,
+		RaiPath Root,
+		PathConventionType PathConvention = PathConventionType.ItemIdTree8x2)
+	{
+		public bool Json { get; init; }
+		public bool Quiet { get; init; }
 		public IorgCommandOptions Options { get; init; }
 	}
 
@@ -74,8 +92,8 @@ namespace OsLib
 				throw new ArgumentNullException(nameof(request));
 			RequirePath(request.Source, nameof(request.Source));
 			RequirePath(request.Root, nameof(request.Root));
-			RequireConvention(request.PathConvention, nameof(request.PathConvention));
-			RequireConvention(request.NamingConvention, nameof(request.NamingConvention));
+			RequireConvention(request.PathConvention, nameof(request.PathConvention), 4);
+			RequireConvention(request.NamingConvention, nameof(request.NamingConvention), 3);
 
 			var arguments = new List<string>
 			{
@@ -93,19 +111,72 @@ namespace OsLib
 		{
 			if (request == null)
 				throw new ArgumentNullException(nameof(request));
-			RequireValue(request.ShortName, nameof(request.ShortName));
-			if (request.ShortName.Contains('/') || request.ShortName.Contains('\\'))
-				throw new ArgumentException("ShortName must be an item name, not a path.", nameof(request.ShortName));
 			RequirePath(request.Root, nameof(request.Root));
-
-			var arguments = new List<string>
+			if (request.Cache)
 			{
-				"clean", request.ShortName,
-				"--root", request.Root.FullPath
-			};
+				if (!string.IsNullOrWhiteSpace(request.ItemId))
+					throw new ArgumentException("Cache cleanup does not accept an ItemId.", nameof(request.ItemId));
+				if (request.Force)
+					throw new ArgumentException("Cache cleanup is already explicit and does not accept Force.", nameof(request.Force));
+			}
+			else
+			{
+				RequireItemId(request.ItemId, nameof(request.ItemId));
+			}
+
+			var arguments = new List<string> { "clean" };
+			if (!request.Cache)
+				arguments.Add(request.ItemId);
+			arguments.AddRange(["--root", request.Root.FullPath]);
 			AppendOptions(arguments, request.Options);
 			if (request.Cache) arguments.Add("--cache");
 			if (request.Force) arguments.Add("--force");
+			return arguments;
+		}
+
+		public IReadOnlyList<string> BuildListArguments(IorgListRequest request)
+		{
+			if (request == null)
+				throw new ArgumentNullException(nameof(request));
+			RequireValue(request.FileNamePattern, nameof(request.FileNamePattern));
+			if (request.FileNamePattern.Contains('/') || request.FileNamePattern.Contains('\\'))
+				throw new ArgumentException("FileNamePattern must be a filename pattern, not a path.", nameof(request.FileNamePattern));
+			RequirePath(request.Root, nameof(request.Root));
+			RequireOutputMode(request.Json, request.Quiet);
+
+			var arguments = new List<string>
+			{
+				"list", request.FileNamePattern,
+				"--root", request.Root.FullPath
+			};
+			AppendOptions(arguments, request.Options);
+			if (request.Json) arguments.Add("--json");
+			if (request.Quiet) arguments.Add("--quiet");
+			return arguments;
+		}
+
+		public IReadOnlyList<string> BuildMoveArguments(IorgMoveRequest request)
+		{
+			if (request == null)
+				throw new ArgumentNullException(nameof(request));
+			RequireItemId(request.SourceItemId, nameof(request.SourceItemId));
+			if (request.TargetItemId != null)
+				RequireItemId(request.TargetItemId, nameof(request.TargetItemId));
+			RequirePath(request.Root, nameof(request.Root));
+			if (!Enum.IsDefined(request.PathConvention))
+				throw new ArgumentOutOfRangeException(nameof(request.PathConvention), request.PathConvention, "Unknown path convention.");
+			RequireOutputMode(request.Json, request.Quiet);
+
+			var arguments = new List<string>
+			{
+				"move", request.SourceItemId
+			};
+			if (!string.IsNullOrWhiteSpace(request.TargetItemId))
+				arguments.Add(request.TargetItemId);
+			arguments.AddRange(["--root", request.Root.FullPath, "--pathconv", request.PathConvention.ToString()]);
+			AppendOptions(arguments, request.Options);
+			if (request.Json) arguments.Add("--json");
+			if (request.Quiet) arguments.Add("--quiet");
 			return arguments;
 		}
 
@@ -120,6 +191,18 @@ namespace OsLib
 			IorgCleanRequest request,
 			CancellationToken cancellationToken = default)
 			=> RunAsync(BuildCleanArguments(request), cancellationToken);
+
+		public RaiSystemResult List(IorgListRequest request) => Run(BuildListArguments(request));
+		public Task<RaiSystemResult> ListAsync(
+			IorgListRequest request,
+			CancellationToken cancellationToken = default)
+			=> RunAsync(BuildListArguments(request), cancellationToken);
+
+		public RaiSystemResult Move(IorgMoveRequest request) => Run(BuildMoveArguments(request));
+		public Task<RaiSystemResult> MoveAsync(
+			IorgMoveRequest request,
+			CancellationToken cancellationToken = default)
+			=> RunAsync(BuildMoveArguments(request), cancellationToken);
 
 		public override RaiSystemResult Run(IEnumerable<string> arguments)
 			=> base.RunAsync(WithManagedAssembly(arguments)).GetAwaiter().GetResult();
@@ -177,10 +260,10 @@ namespace OsLib
 				throw new ArgumentException($"A path is required for {parameterName}.", parameterName);
 		}
 
-		private static void RequireConvention(int value, string parameterName)
+		private static void RequireConvention(int value, string parameterName, int maximum)
 		{
-			if (value is < 1 or > 3)
-				throw new ArgumentOutOfRangeException(parameterName, value, "Convention must be between 1 and 3.");
+			if (value < 1 || value > maximum)
+				throw new ArgumentOutOfRangeException(parameterName, value, $"Convention must be between 1 and {maximum}.");
 		}
 
 		private static void RequireValue(string value, string parameterName)
@@ -189,6 +272,19 @@ namespace OsLib
 				throw new ArgumentException($"A value is required for {parameterName}.", parameterName);
 			if (value.StartsWith("-", StringComparison.Ordinal))
 				throw new ArgumentException($"The value for {parameterName} cannot be parsed as an option.", parameterName);
+		}
+
+		private static void RequireItemId(string value, string parameterName)
+		{
+			RequireValue(value, parameterName);
+			if (value.Contains('/') || value.Contains('\\'))
+				throw new ArgumentException("ItemId must be a plain item identifier, not a path.", parameterName);
+		}
+
+		private static void RequireOutputMode(bool json, bool quiet)
+		{
+			if (json && quiet)
+				throw new ArgumentException("Use only one of Json or Quiet output mode.");
 		}
 	}
 }

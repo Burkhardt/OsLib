@@ -231,6 +231,14 @@ namespace OsLib
 				yield return new RaiFile(file);
 			}
 		}
+		/// <summary>
+		/// Enumerate files through the RaiPath boundary without requiring callers to
+		/// reference the underlying System.IO traversal enum.
+		/// </summary>
+		public IEnumerable<RaiFile> EnumerateFiles(string searchPattern, bool recursive)
+			=> EnumerateFiles(
+				searchPattern,
+				recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
 		public IEnumerable<RaiPath> EnumerateDirectories(string searchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly)
 		{
 			foreach (var dir in Directory.EnumerateDirectories(Path, searchPattern, searchOption))
@@ -358,7 +366,7 @@ namespace OsLib
 		/// <summary>
 		/// Copy a directory tree from the location given by <paramref name="from"/> to
 		/// the location of the current RaiPath instance, including all files and
-		/// subdirectories. Implemented in terms of <see cref="RaiPath.EnumerateFiles"/>,
+		/// subdirectories. Implemented in terms of <see cref="RaiPath.EnumerateFiles(string, System.IO.SearchOption)"/>,
 		/// <see cref="RaiPath.EnumerateDirectories"/>, <see cref="RaiPath.mkdir()"/> and
 		/// <see cref="RaiFile.cp"/> — no direct System.IO calls for traversal.
 		/// If the current RaiPath already exists, behavior depends on

@@ -224,7 +224,7 @@ namespace OsLib.Tests
 		public void IorgCommand_BuildCleanArguments_IncludesOnlyRequestedOptions()
 		{
 			var command = new IorgCommand();
-			var request = new IorgCleanRequest("ScheduleRehearsal_1", root)
+			var request = new IorgCleanRequest(null, root)
 			{
 				Cache = true,
 				Force = false,
@@ -234,15 +234,102 @@ namespace OsLib.Tests
 			Assert.Equal(
 				new[]
 				{
-					"clean", "ScheduleRehearsal_1", "--root", root.FullPath,
+					"clean", "--root", root.FullPath,
 					"--subscriber", "AIA", "--cache"
 				},
 				command.BuildCleanArguments(request));
 		}
 
+		[Fact]
+		public void IorgCommand_BuildsListAndMoveArguments_WithExactTokens()
+		{
+			var command = new IorgCommand();
+			var options = new IorgCommandOptions
+			{
+				Subscriber = "Nomsa",
+				CloudProvider = "OneDrive",
+				NoLogo = true
+			};
+
+			Assert.Equal(
+				new[]
+				{
+					"list", "WorkInPro*", "--root", root.FullPath,
+					"--subscriber", "Nomsa", "--cloud", "OneDrive", "--nologo", "--json"
+				},
+				command.BuildListArguments(new IorgListRequest("WorkInPro*", root)
+				{
+					Options = options,
+					Json = true
+				}));
+
+			Assert.Equal(
+				new[]
+				{
+					"move", "AfricanBrisket", "AfricanDinner",
+					"--root", root.FullPath, "--pathconv", "Flat",
+					"--subscriber", "Nomsa", "--cloud", "OneDrive", "--nologo", "--quiet"
+				},
+				command.BuildMoveArguments(new IorgMoveRequest(
+					"AfricanBrisket",
+					"AfricanDinner",
+					root,
+					PathConventionType.Flat)
+				{
+					Options = options,
+					Quiet = true
+				}));
+		}
+
+		[Fact]
+		public async Task IorgCommand_MoveAsync_PassesExactTokensToExecutable()
+		{
+			var command = CreateIorgCaptureCommand(exitCode: 0);
+			var request = new IorgMoveRequest(
+				"AfricanBrisket",
+				TargetItemId: null,
+				root,
+				PathConventionType.ItemIdTree3x3)
+			{
+				Options = new IorgCommandOptions { Subscriber = "Nomsa" }
+			};
+
+			var result = await command.MoveAsync(request, TestContext.Current.CancellationToken);
+
+			Assert.Equal(
+				new[]
+				{
+					"move", "AfricanBrisket", "--root", root.FullPath,
+					"--pathconv", "ItemIdTree3x3", "--subscriber", "Nomsa"
+				},
+				CapturedArguments(result));
+		}
+
+		[Theory]
+		[InlineData("folder/item")]
+		[InlineData("folder\\item")]
+		public void IorgCommand_ListAndMoveRejectPathInjection(string value)
+		{
+			var command = new IorgCommand();
+			Assert.Throws<ArgumentException>(() =>
+				command.BuildListArguments(new IorgListRequest(value, root)));
+			Assert.Throws<ArgumentException>(() =>
+				command.BuildMoveArguments(new IorgMoveRequest(value, null, root)));
+		}
+
+		[Fact]
+		public void IorgCommand_ListAndMoveRejectConflictingMachineOutputModes()
+		{
+			var command = new IorgCommand();
+			Assert.Throws<ArgumentException>(() => command.BuildListArguments(
+				new IorgListRequest("*", root) { Json = true, Quiet = true }));
+			Assert.Throws<ArgumentException>(() => command.BuildMoveArguments(
+				new IorgMoveRequest("AfricanBrisket", null, root) { Json = true, Quiet = true }));
+		}
+
 		[Theory]
 		[InlineData(0)]
-		[InlineData(4)]
+		[InlineData(5)]
 		public void IorgCommand_RejectsInvalidConventionBeforeExecution(int convention)
 		{
 			var command = new IorgCommand();
@@ -251,7 +338,7 @@ namespace OsLib.Tests
 		}
 
 		[Fact]
-		public void IorgCommand_RejectsPathLikeShortNameBeforeExecution()
+		public void IorgCommand_RejectsPathLikeItemIdBeforeExecution()
 		{
 			var command = new IorgCommand();
 			Assert.Throws<ArgumentException>(() => command.BuildCleanArguments(

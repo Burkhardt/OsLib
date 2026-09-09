@@ -6,6 +6,12 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
+## 4.2.7
+
+- Implements accepted CR020 with typed `IorgListRequest` and `IorgMoveRequest` execution through `IorgCommand`.
+- Adds the compatibility-safe fourth `PathConventionType` value, `Flat`; existing numeric values remain unchanged.
+- Current release notes: [OsLib_RELEASE_NOTES_4.2.7.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.7.md)
+
 ## 4.2.6
 
 - Aligns OsLibCore with the coordinated seven-package RAIkeep 4.2.6 release implementing accepted CR019.
@@ -134,7 +140,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Latest release notes: [OsLib_RELEASE_NOTES_4.2.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.6.md)
+- Latest release notes: [OsLib_RELEASE_NOTES_4.2.7.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.7.md)
 
 ## nuget publish automation
 
@@ -143,4 +149,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.6` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.7` command after RAI approval.

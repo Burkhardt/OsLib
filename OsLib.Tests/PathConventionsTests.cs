@@ -97,6 +97,25 @@ public class PathConventionsTests
 		Assert.Equal("/Users/RSB/Projects/PitSeeder/pits/sample/", file.Path.Path);
 		Assert.Equal("Person.json5", file.NameWithExtension);
 	}
+
+	[Fact]
+	public void RaiPath_EnumerateFilesRecursiveOverload_StaysInsideTypedBoundary()
+	{
+		var root = NewTestRoot();
+		try
+		{
+			var nested = (root / "one" / "two").mkdir();
+			new TextFile(root, "top.txt").Append("top").Save();
+			new TextFile(nested, "nested.txt").Append("nested").Save();
+
+			Assert.Equal(2, root.EnumerateFiles("*.txt", recursive: true).Count());
+			Assert.Single(root.EnumerateFiles("*.txt", recursive: false));
+		}
+		finally
+		{
+			CleanupDir(root);
+		}
+	}
 	[Fact]
 	public void RaiPath_CreateFromFullName()
 	{
@@ -405,6 +424,7 @@ public class PathConventionsTests
 		Assert.Contains(PathConventionType.CanonicalByName, Enum.GetValues<PathConventionType>());
 		Assert.Contains(PathConventionType.ItemIdTree3x3, Enum.GetValues<PathConventionType>());
 		Assert.Contains(PathConventionType.ItemIdTree8x2, Enum.GetValues<PathConventionType>());
+		Assert.Contains(PathConventionType.Flat, Enum.GetValues<PathConventionType>());
 	}
 
 	[Fact]

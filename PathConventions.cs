@@ -7,7 +7,8 @@ namespace OsLib
 	{
 		CanonicalByName,
 		ItemIdTree3x3,
-		ItemIdTree8x2
+		ItemIdTree8x2,
+		Flat
 	}
 
 	public interface IPathConvention

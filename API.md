@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.2.6` API surface. CR019 does not change OsLib runtime or public API behavior.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.2.7` API surface, including the accepted CR020 `iorg` command boundary.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -192,6 +192,29 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 	</details>
 
 ## process and shell
+
+- <details>
+	<summary>IorgCommand: typed ImgSeeder/iorg process boundary.</summary>
+
+	- `IorgListRequest(FileNamePattern, Root)` carries a filename pattern plus optional subscriber, cloud, JSON, quiet, debug, and no-logo settings.
+	- `IorgMoveRequest(SourceItemId, TargetItemId, Root, PathConvention)` carries exact ItemId relocation or rename intent; `TargetItemId` may be omitted.
+	- `BuildListArguments(...)` and `BuildMoveArguments(...)` expose deterministic argument arrays for verification.
+	- `List` / `ListAsync` and `Move` / `MoveAsync` execute through `CliCommand` and `RaiSystem`; no shell interpolation is used.
+	- `IorgCleanRequest` distinguishes exact-ItemId cleanup from explicit subscriber-wide cache cleanup.
+	</details>
+
+- <details>
+	<summary>PathConventionType: compatible item-tree layout selection.</summary>
+
+	- Values remain compatibility-safe: `CanonicalByName`, `ItemIdTree3x3`, `ItemIdTree8x2`, then `Flat`.
+	- CLI numbers are one-based in that same order, making `ItemIdTree8x2` option 3 and `Flat` option 4.
+	</details>
+
+- <details>
+	<summary>RaiPath recursive enumeration boundary.</summary>
+
+	- `EnumerateFiles(searchPattern, recursive)` keeps consumer packages on `RaiPath`/`RaiFile` while OsLib alone owns the underlying platform traversal choice.
+	</details>
 
 - <details>
 	<summary>ShellHelper: shell command convenience helpers.</summary>
