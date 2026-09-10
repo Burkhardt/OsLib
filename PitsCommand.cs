@@ -137,6 +137,8 @@ namespace OsLib
 		public bool PruneProcessFlags { get; init; }
 		public TimeSpan? OlderThan { get; init; }
 		public bool RepairLegacyExtensions { get; init; }
+		/// <summary>Preview or apply immutable compaction of loose recovery events.</summary>
+		public bool ArchiveEvents { get; init; }
 		public PitsCommandOptions Options { get; init; }
 	}
 
@@ -319,6 +321,7 @@ namespace OsLib
 				arguments.Add(request.OlderThan.Value.ToString("c", CultureInfo.InvariantCulture));
 			}
 			if (request.RepairLegacyExtensions) arguments.Add("--repair-legacy-extensions");
+			if (request.ArchiveEvents) arguments.Add("--archive-events");
 			if (request.Json) arguments.Add("--json");
 			AppendOptions(arguments, request.Options);
 			return arguments;

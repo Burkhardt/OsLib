@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.2.9` API surface, including accepted CR022 cloud-safe file and directory behavior.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.2.10` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -43,6 +43,24 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		- Normalize separators and apply the selected escaping mode.
 		- Supports `noEsc`, `blankEsc`, `paramEsc`, and `backslashed` escape modes.
 		</details>
+	</details>
+
+- <details>
+	<summary>RaiZipFile / RaiZipEntry: immutable collection ZIP boundary.</summary>
+
+	- `RaiZipFile.CreateImmutable(entries)` creates directly at the requested final pathname and requires its parent directory to exist.
+	- A same-name archive is never overwritten or deleted/recreated. Complete filename-and-byte equality yields `ExistingIdentical`; differing or invalid content is preserved and reported through `RaiZipWriteResult`.
+	- `TryReadEntries(...)` reads safe leaf entries into memory without filesystem extraction.
+	- `RaiZipEntry.FromFile(...)` and `FromText(...)` construct exact byte payloads for a collection archive.
+	- No operation stages content in `Os.TempDir` or moves a directory into a CloudDrive.
+	</details>
+
+- <details>
+	<summary>EventDirectory.Inspect(root): combined loose/archive event inspection.</summary>
+
+	- Freshly reads loose `.event` files and immutable `Events_*.zip` archives without extraction.
+	- Returns logical events, valid loose events, discovered archives, and non-destructive diagnostics through `EventDirectorySnapshot`.
+	- Duplicate filename/byte copies are returned once; invalid or conflicting evidence is reported and retained.
 	</details>
 
 - <details>
@@ -348,7 +366,7 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 
 		- `PitsTarget.Pit(...)` and `PitsTarget.Wwwa()` make the target mode explicit.
 		- `PitsSeedRequest`, `PitsExportRequest`, `PitsAuditRequest`, `PitsDeletePropertyRequest`, `PitsDeleteItemRequest`, `PitsMaintainRequest`, and `PitsCommandOptions` model the preferred 4.x commands and global options.
-		- `BuildMaintainArguments(...)`, `Maintain(...)`, and `MaintainAsync(...)` expose report/apply maintenance, explicit process-flag pruning with an age, and explicit legacy-extension repair.
+		- `BuildMaintainArguments(...)`, `Maintain(...)`, and `MaintainAsync(...)` expose report/apply maintenance, explicit process-flag pruning with an age, explicit legacy-extension repair, and `PitsMaintainRequest.ArchiveEvents`.
 		- All typed calls targeting the same provider/root/pit are serialized across every `PitsCommand` instance in the current process. WWWA takes the fixed `Person`, `Object`, `Place`, `Activity` gate order; unrelated pits may run concurrently and queued cancellation launches no child.
 		- `PitsExportRequest.At` optionally requests CR017 point-in-time projection. The value is emitted as a canonical UTC timestamp in a separate `--at` argument token; omitting it preserves the established export argument vector.
 		- `BuildSeedArguments`, `BuildExportArguments`, `BuildAuditArguments`, `BuildDeletePropertyArguments`, and `BuildDeleteItemArguments` validate required and mutually exclusive values before process start.
@@ -359,7 +377,8 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 	- <details>
 		<summary>IorgCommand: typed invocation of the installed `iorg` CLI.</summary>
 
-		- `IorgOrganizeRequest`, `IorgCleanRequest`, and `IorgCommandOptions` model the preferred 4.x `organize` and `clean` commands.
+		- `IorgOrganizeRequest`, `IorgCleanRequest`, `IorgListRequest`, `IorgMoveRequest`, and `IorgCommandOptions` model the preferred 4.x commands.
+		- `IorgCommandOptions.Tenant` emits `--tenant`; `Subscriber` remains a compatibility alias. `RootIsApplicationRoot` emits `--app`, allowing iorg to append its conventional `Image` segment.
 		- Required source/root/short-name values and numbered path/naming conventions are validated before process start.
 		- `BuildOrganizeArguments`, `BuildCleanArguments`, `Organize`, and `Clean` expose deterministic sync/async calls.
 		- `ForManagedAssembly(...)` supports package-owned entry-point testing through `dotnet ImgSeeder.dll`.

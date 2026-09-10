@@ -147,28 +147,104 @@ namespace OsLib
 		/// </para>
 		/// </summary>
 		public static Dictionary<string, JObject> Events(RaiPath rootPath)
+			=> new(Inspect(rootPath).Events, StringComparer.Ordinal);
+
+		/// <summary>
+		/// Reads loose events and immutable <c>Events_*.zip</c> archives without extracting
+		/// files. Duplicate loose/archive copies are returned once; invalid archives,
+		/// invalid event entries, and content conflicts are reported in <see cref="EventDirectorySnapshot.Issues"/>.
+		/// </summary>
+		public static EventDirectorySnapshot Inspect(RaiPath rootPath)
 		{
 			if (rootPath is null) throw new ArgumentNullException(nameof(rootPath));
-			var result = new Dictionary<string, JObject>(StringComparer.Ordinal);
+			var result = new SortedDictionary<string, JObject>(StringComparer.Ordinal);
+			var raw = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+			var loose = new SortedDictionary<string, JObject>(StringComparer.Ordinal);
+			var issues = new List<string>();
 			var eventsPath = rootPath / Name;
-			if (!eventsPath.Exists()) return result;
-			foreach (var file in eventsPath.EnumerateFiles($"*.{EventFile.Extension}"))
+			if (!eventsPath.Exists()) return new EventDirectorySnapshot(result, loose, [], issues);
+			foreach (var file in eventsPath.EnumerateFiles($"*.{EventFile.Extension}")
+				.OrderBy(file => file.NameWithExtension, StringComparer.Ordinal))
 			{
-				try
+				RaiZipEntry entry;
+				try { entry = RaiZipEntry.FromFile(file); }
+				catch (Exception exception)
 				{
-					var text = File.ReadAllText(file.FullName, new UTF8Encoding(false));
-					if (!IsHashValid(file.Name, text)) continue;
-					var trimmed = text.Trim();
-					if (trimmed.Length < 2 || trimmed[0] != '{' || trimmed[^1] != '}') continue;
-					var parsed = JObject.Parse(trimmed);
-					result[file.NameWithExtension] = parsed;
+					issues.Add($"Unreadable loose event '{file.NameWithExtension}': {exception.Message}");
+					continue;
 				}
-				catch (Exception)
+				if (!TryReadEvent(entry, out var parsed, out var problem))
 				{
-					// Individually omitted: incomplete/unreadable/unparseable right now.
+					issues.Add($"Invalid loose event '{file.NameWithExtension}': {problem}");
+					continue;
+				}
+				loose[file.NameWithExtension] = parsed;
+				result[file.NameWithExtension] = parsed;
+				raw[file.NameWithExtension] = entry.Content;
+			}
+
+			var archives = eventsPath.EnumerateFiles("Events_*.zip")
+				.OrderBy(file => file.NameWithExtension, StringComparer.Ordinal)
+				.Select(file => new RaiZipFile(file.FullName))
+				.ToList();
+			foreach (var archive in archives)
+			{
+				if (!archive.TryReadEntries(out var entries, out var archiveProblem))
+				{
+					issues.Add($"Invalid event archive '{archive.NameWithExtension}': {archiveProblem}");
+					continue;
+				}
+				foreach (var entry in entries.Values
+					.Where(entry => entry.Name.EndsWith($".{EventFile.Extension}", StringComparison.OrdinalIgnoreCase))
+					.OrderBy(entry => entry.Name, StringComparer.Ordinal))
+				{
+					if (!TryReadEvent(entry, out var parsed, out var entryProblem))
+					{
+						issues.Add($"Invalid event '{entry.Name}' in '{archive.NameWithExtension}': {entryProblem}");
+						continue;
+					}
+					if (raw.TryGetValue(entry.Name, out var existingBytes))
+					{
+						if (!existingBytes.SequenceEqual(entry.Content))
+							issues.Add($"Conflicting event content for '{entry.Name}' in '{archive.NameWithExtension}'.");
+						continue;
+					}
+					result[entry.Name] = parsed;
+					raw[entry.Name] = entry.Content;
 				}
 			}
-			return result;
+			return new EventDirectorySnapshot(result, loose, archives, issues);
+		}
+
+		private static bool TryReadEvent(RaiZipEntry entry, out JObject parsed, out string problem)
+		{
+			parsed = null;
+			try
+			{
+				var text = new UTF8Encoding(false, true).GetString(entry.Content);
+				var stem = entry.Name.EndsWith($".{EventFile.Extension}", StringComparison.OrdinalIgnoreCase)
+					? entry.Name[..^(EventFile.Extension.Length + 1)]
+					: entry.Name;
+				if (!IsHashValid(stem, text))
+				{
+					problem = "filename/content hash mismatch";
+					return false;
+				}
+				var trimmed = text.Trim();
+				if (trimmed.Length < 2 || trimmed[0] != '{' || trimmed[^1] != '}')
+				{
+					problem = "content is not one JSON object";
+					return false;
+				}
+				parsed = JObject.Parse(trimmed);
+				problem = string.Empty;
+				return true;
+			}
+			catch (Exception exception)
+			{
+				problem = exception.Message;
+				return false;
+			}
 		}
 
 		/// <summary>
@@ -186,5 +262,26 @@ namespace OsLib
 			if (hashSegment.Length != 64 || !hashSegment.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f')) return false;
 			return CanonicalJson.Sha256Hex(content) == hashSegment;
 		}
+	}
+
+	/// <summary>Fresh physical/logical view of one root's Events directory.</summary>
+	public sealed class EventDirectorySnapshot
+	{
+		internal EventDirectorySnapshot(
+			IReadOnlyDictionary<string, JObject> events,
+			IReadOnlyDictionary<string, JObject> looseEvents,
+			IReadOnlyList<RaiZipFile> archives,
+			IReadOnlyList<string> issues)
+		{
+			Events = events;
+			LooseEvents = looseEvents;
+			Archives = archives;
+			Issues = issues;
+		}
+
+		public IReadOnlyDictionary<string, JObject> Events { get; }
+		public IReadOnlyDictionary<string, JObject> LooseEvents { get; }
+		public IReadOnlyList<RaiZipFile> Archives { get; }
+		public IReadOnlyList<string> Issues { get; }
 	}
 }

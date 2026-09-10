@@ -156,6 +156,7 @@ namespace OsLib.Tests
 				PruneProcessFlags = true,
 				OlderThan = TimeSpan.FromDays(7),
 				RepairLegacyExtensions = true,
+				ArchiveEvents = true,
 				Options = options
 			};
 
@@ -163,7 +164,7 @@ namespace OsLib.Tests
 				new[]
 				{
 					"maintain", "Activity", "--apply", "--prune-process-flags",
-					"--older-than", "7.00:00:00", "--repair-legacy-extensions", "--json",
+					"--older-than", "7.00:00:00", "--repair-legacy-extensions", "--archive-events", "--json",
 					"--pitroot", options.PitRoot.FullPath, "--cloud", "One Drive", "--nologo"
 				},
 				command.BuildMaintainArguments(request));
@@ -266,7 +267,7 @@ namespace OsLib.Tests
 				new[]
 				{
 					"organize", "--source", source.FullPath, "--root", destination.FullPath,
-					"--pathconv", "3", "--nameconv", "2", "--subscriber", "AIA Tenant",
+					"--pathconv", "3", "--nameconv", "2", "--tenant", "AIA Tenant",
 					"--cloud", "Google Drive", "--debug", "--nologo"
 				},
 				CapturedArguments(result));
@@ -280,16 +281,26 @@ namespace OsLib.Tests
 			{
 				Cache = true,
 				Force = false,
-				Options = new IorgCommandOptions { Subscriber = "AIA" }
+				Options = new IorgCommandOptions
+				{
+					Tenant = "AIA",
+					RootIsApplicationRoot = true
+				}
 			};
 
 			Assert.Equal(
 				new[]
 				{
-					"clean", "--root", root.FullPath,
-					"--subscriber", "AIA", "--cache"
+					"clean", "--app", root.FullPath,
+					"--tenant", "AIA", "--cache"
 				},
 				command.BuildCleanArguments(request));
+
+			Assert.Throws<ArgumentException>(() => command.BuildCleanArguments(
+				new IorgCleanRequest("Item", root)
+				{
+					Options = new IorgCommandOptions { RootIsApplicationRoot = true }
+				}));
 		}
 
 		[Fact]
@@ -298,7 +309,7 @@ namespace OsLib.Tests
 			var command = new IorgCommand();
 			var options = new IorgCommandOptions
 			{
-				Subscriber = "Nomsa",
+				Tenant = "Nomsa",
 				CloudProvider = "OneDrive",
 				NoLogo = true
 			};
@@ -307,7 +318,7 @@ namespace OsLib.Tests
 				new[]
 				{
 					"list", "WorkInPro*", "--root", root.FullPath,
-					"--subscriber", "Nomsa", "--cloud", "OneDrive", "--nologo", "--json"
+					"--tenant", "Nomsa", "--cloud", "OneDrive", "--nologo", "--json"
 				},
 				command.BuildListArguments(new IorgListRequest("WorkInPro*", root)
 				{
@@ -320,7 +331,7 @@ namespace OsLib.Tests
 				{
 					"move", "AfricanBrisket", "AfricanDinner",
 					"--root", root.FullPath, "--pathconv", "Flat",
-					"--subscriber", "Nomsa", "--cloud", "OneDrive", "--nologo", "--quiet"
+					"--tenant", "Nomsa", "--cloud", "OneDrive", "--nologo", "--quiet"
 				},
 				command.BuildMoveArguments(new IorgMoveRequest(
 					"AfricanBrisket",
@@ -352,7 +363,7 @@ namespace OsLib.Tests
 				new[]
 				{
 					"move", "AfricanBrisket", "--root", root.FullPath,
-					"--pathconv", "ItemIdTree3x3", "--subscriber", "Nomsa"
+					"--pathconv", "ItemIdTree3x3", "--tenant", "Nomsa"
 				},
 				CapturedArguments(result));
 		}

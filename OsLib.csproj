@@ -3,21 +3,21 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-				<Version>4.2.9</Version>
+				<Version>4.2.10</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
 		<TargetFramework>net10.0</TargetFramework>
 		<NoWarn>$(NoWarn);CS1591</NoWarn>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageTags>RaiSystem, CliCommand, PitsCommand, IorgCommand, RaiNetDrive, EscapeMode, OsType, Os, RaiFile, TextFile, CsvFile, TmpFile</PackageTags>
+		<PackageTags>RaiSystem, CliCommand, PitsCommand, IorgCommand, RaiNetDrive, EscapeMode, OsType, Os, RaiFile, RaiZipFile, TextFile, CsvFile, TmpFile</PackageTags>
 		<IsPackable>true</IsPackable>
 		<ProjectURL>https://github.com/Burkhardt/OsLib</ProjectURL>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<Copyright>© Rainer Burkhardt</Copyright>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-				<PackageReleaseNotes>4.2.9 implements CR022 cloud-safe in-place copy, move guards, directory replacement protection, and typed failures.</PackageReleaseNotes>
+				<PackageReleaseNotes>4.2.10 adds immutable same-directory collection ZIP support and the typed pits archive-events / iorg app-root and tenant boundaries.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 

@@ -7,7 +7,17 @@ namespace OsLib
 {
 	public sealed record IorgCommandOptions
 	{
-		public string Subscriber { get; init; }
+		private string tenant;
+
+		/// <summary>Subscriber/tenant below the selected ImageTree root.</summary>
+		public string Tenant { get => tenant; init => tenant = value; }
+		/// <summary>Compatibility alias for <see cref="Tenant"/>.</summary>
+		public string Subscriber { get => tenant; init => tenant = value; }
+		/// <summary>
+		/// Treat the request's Root as an application root and emit <c>--app</c>;
+		/// iorg appends its conventional <c>Image</c> segment.
+		/// </summary>
+		public bool RootIsApplicationRoot { get; init; }
 		public string CloudProvider { get; init; }
 		public bool Debug { get; init; }
 		public bool NoLogo { get; init; }
@@ -99,7 +109,7 @@ namespace OsLib
 			{
 				"organize",
 				"--source", request.Source.FullPath,
-				"--root", request.Root.FullPath,
+				RootOption(request.Options), request.Root.FullPath,
 				"--pathconv", request.PathConvention.ToString(),
 				"--nameconv", request.NamingConvention.ToString()
 			};
@@ -127,7 +137,7 @@ namespace OsLib
 			var arguments = new List<string> { "clean" };
 			if (!request.Cache)
 				arguments.Add(request.ItemId);
-			arguments.AddRange(["--root", request.Root.FullPath]);
+			arguments.AddRange([RootOption(request.Options), request.Root.FullPath]);
 			AppendOptions(arguments, request.Options);
 			if (request.Cache) arguments.Add("--cache");
 			if (request.Force) arguments.Add("--force");
@@ -147,7 +157,7 @@ namespace OsLib
 			var arguments = new List<string>
 			{
 				"list", request.FileNamePattern,
-				"--root", request.Root.FullPath
+				RootOption(request.Options), request.Root.FullPath
 			};
 			AppendOptions(arguments, request.Options);
 			if (request.Json) arguments.Add("--json");
@@ -173,7 +183,7 @@ namespace OsLib
 			};
 			if (!string.IsNullOrWhiteSpace(request.TargetItemId))
 				arguments.Add(request.TargetItemId);
-			arguments.AddRange(["--root", request.Root.FullPath, "--pathconv", request.PathConvention.ToString()]);
+			arguments.AddRange([RootOption(request.Options), request.Root.FullPath, "--pathconv", request.PathConvention.ToString()]);
 			AppendOptions(arguments, request.Options);
 			if (request.Json) arguments.Add("--json");
 			if (request.Quiet) arguments.Add("--quiet");
@@ -235,10 +245,20 @@ namespace OsLib
 		{
 			if (options == null)
 				return;
-			AppendOptionalValue(arguments, "--subscriber", options.Subscriber, nameof(options.Subscriber));
+			AppendOptionalValue(arguments, "--tenant", options.Tenant, nameof(options.Tenant));
 			AppendOptionalValue(arguments, "--cloud", options.CloudProvider, nameof(options.CloudProvider));
 			if (options.Debug) arguments.Add("--debug");
 			if (options.NoLogo) arguments.Add("--nologo");
+		}
+
+		private static string RootOption(IorgCommandOptions options)
+		{
+			if (options?.RootIsApplicationRoot != true) return "--root";
+			if (string.IsNullOrWhiteSpace(options.Tenant))
+				throw new ArgumentException(
+					"Application-root addressing requires Tenant.",
+					nameof(options.Tenant));
+			return "--app";
 		}
 
 		private static void AppendOptionalValue(
