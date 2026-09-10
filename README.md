@@ -6,6 +6,13 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
+## 4.2.8
+
+- Implements accepted CR021 with dotted logical-stem preservation for explicit `TextFile` extensions.
+- Adds `PitsMaintainRequest` plus typed sync/async maintenance execution.
+- Serializes same-target typed `PitsCommand` calls process-locally while allowing unrelated pits to proceed concurrently; queued cancellation starts no child process.
+- Current release notes: [OsLib_RELEASE_NOTES_4.2.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.8.md)
+
 ## 4.2.7
 
 - Implements accepted CR020 with typed `IorgListRequest` and `IorgMoveRequest` execution through `IorgCommand`.
@@ -140,7 +147,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Latest release notes: [OsLib_RELEASE_NOTES_4.2.7.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.7.md)
+- Latest release notes: [OsLib_RELEASE_NOTES_4.2.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.8.md)
 
 ## nuget publish automation
 
@@ -149,4 +156,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.7` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.8` command after RAI approval.

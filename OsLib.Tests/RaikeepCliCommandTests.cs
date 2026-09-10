@@ -140,6 +140,58 @@ namespace OsLib.Tests
 		}
 
 		[Fact]
+		public void PitsCommand_BuildsTypedMaintainForms_AndValidatesDestructiveOptions()
+		{
+			var command = new PitsCommand();
+			var options = new PitsCommandOptions
+			{
+				PitRoot = root / "tenant root",
+				CloudProvider = "One Drive",
+				NoLogo = true
+			};
+			var request = new PitsMaintainRequest(PitsTarget.Pit("Activity"))
+			{
+				Apply = true,
+				Json = true,
+				PruneProcessFlags = true,
+				OlderThan = TimeSpan.FromDays(7),
+				RepairLegacyExtensions = true,
+				Options = options
+			};
+
+			Assert.Equal(
+				new[]
+				{
+					"maintain", "Activity", "--apply", "--prune-process-flags",
+					"--older-than", "7.00:00:00", "--repair-legacy-extensions", "--json",
+					"--pitroot", options.PitRoot.FullPath, "--cloud", "One Drive", "--nologo"
+				},
+				command.BuildMaintainArguments(request));
+
+			Assert.Equal(
+				new[] { "maintain", "--wwwa" },
+				command.BuildMaintainArguments(new PitsMaintainRequest(PitsTarget.Wwwa())));
+
+			Assert.Throws<ArgumentException>(() => command.BuildMaintainArguments(
+				new PitsMaintainRequest(PitsTarget.Pit("Activity"))
+				{
+					PruneProcessFlags = true,
+					OlderThan = TimeSpan.FromDays(1)
+				}));
+			Assert.Throws<ArgumentException>(() => command.BuildMaintainArguments(
+				new PitsMaintainRequest(PitsTarget.Pit("Activity"))
+				{
+					Apply = true,
+					OlderThan = TimeSpan.FromDays(1)
+				}));
+			Assert.Throws<ArgumentException>(() => command.BuildMaintainArguments(
+				new PitsMaintainRequest(PitsTarget.Pit("Activity"))
+				{
+					RepairLegacyExtensions = true
+				}));
+		}
+
+		[Fact]
 		public async Task PitsCommand_DeletePropertyAsync_PassesExactTokensToExecutable()
 		{
 			var command = CreatePitsCaptureCommand(exitCode: 0);
@@ -489,6 +541,69 @@ namespace OsLib.Tests
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => command.AuditAsync(
 				new PitsAuditRequest(PitsTarget.Pit("Activity")),
 				cancellation.Token));
+		}
+
+		[Fact]
+		public async Task PitsCommand_SameTargetTypedCallsSerializeAcrossWrapperInstances()
+		{
+			if (OperatingSystem.IsWindows()) return;
+			var lockPath = new RaiPath(root / "same-target-lock").FullPath.TrimEnd('/', '\\');
+			var overlap = new RaiFile(root, "same-target-overlap", "txt");
+			var script = CreateOutputScript("same-target-gate",
+				$"#!/bin/sh\nif ! mkdir '{lockPath}' 2>/dev/null; then printf overlap > '{overlap.FullName}'; fi\nsleep 0.35\nrmdir '{lockPath}' 2>/dev/null\nexit 0\n");
+			var first = new PitsCommand(script.ScriptFile.Path, script.ScriptFile.NameWithExtension);
+			var second = new PitsCommand(script.ScriptFile.Path, script.ScriptFile.NameWithExtension);
+			var request = PitsExportRequest.ToJson(PitsTarget.Pit("Activity")) with
+			{
+				Options = new PitsCommandOptions { PitRoot = root }
+			};
+
+			await Task.WhenAll(
+				first.ExportAsync(request, TestContext.Current.CancellationToken),
+				second.ExportAsync(request, TestContext.Current.CancellationToken));
+
+			Assert.False(overlap.Exists());
+		}
+
+		[Fact]
+		public async Task PitsCommand_DifferentTargetsMayRunConcurrently()
+		{
+			if (OperatingSystem.IsWindows()) return;
+			var lockPath = new RaiPath(root / "different-target-lock").FullPath.TrimEnd('/', '\\');
+			var overlap = new RaiFile(root, "different-target-overlap", "txt");
+			var script = CreateOutputScript("different-target-gate",
+				$"#!/bin/sh\nif ! mkdir '{lockPath}' 2>/dev/null; then printf overlap > '{overlap.FullName}'; fi\nsleep 0.5\nrmdir '{lockPath}' 2>/dev/null\nexit 0\n");
+			var command = new PitsCommand(script.ScriptFile.Path, script.ScriptFile.NameWithExtension);
+			var options = new PitsCommandOptions { PitRoot = root };
+
+			await Task.WhenAll(
+				command.ExportAsync(PitsExportRequest.ToJson(PitsTarget.Pit("Activity")) with { Options = options }, TestContext.Current.CancellationToken),
+				command.ExportAsync(PitsExportRequest.ToJson(PitsTarget.Pit("Person")) with { Options = options }, TestContext.Current.CancellationToken));
+
+			Assert.True(overlap.Exists());
+		}
+
+		[Fact]
+		public async Task PitsCommand_CancellationWhileQueued_DoesNotLaunchASecondChild()
+		{
+			if (OperatingSystem.IsWindows()) return;
+			var invocations = new RaiFile(root, "queued-invocations", "txt");
+			var script = CreateOutputScript("queued-gate",
+				$"#!/bin/sh\nprintf 'run\\n' >> '{invocations.FullName}'\nsleep 0.5\nexit 0\n");
+			var command = new PitsCommand(script.ScriptFile.Path, script.ScriptFile.NameWithExtension);
+			var request = new PitsMaintainRequest(PitsTarget.Pit("Activity"))
+			{
+				Options = new PitsCommandOptions { PitRoot = root }
+			};
+			var first = command.MaintainAsync(request, TestContext.Current.CancellationToken);
+			await Task.Delay(80, TestContext.Current.CancellationToken);
+			using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+				command.MaintainAsync(request, cancellation.Token));
+			await first;
+
+			Assert.Single(new TextFile(invocations.FullName).Read());
 		}
 
 		[Fact]

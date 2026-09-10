@@ -25,6 +25,22 @@ public sealed class EventFileTests : IDisposable
 		}
 	}
 
+	[Fact]
+	public void EventFile_DottedLogicalStem_RetainsEventExtensionAndIsEnumerated()
+	{
+		var root = NewCloudRoot("dotted-stem");
+		var stem = $"639245160038875300_Nkosikazi-AIA.Api-93455_{Guid.NewGuid():N}";
+		var content = new JObject { ["Stage"] = "CleanupPending" };
+
+		var file = new EventFile(root, stem, content);
+		var events = EventDirectory.Events(root);
+
+		Assert.Equal("event", file.Ext);
+		Assert.StartsWith(stem + "_", file.Name, StringComparison.Ordinal);
+		Assert.EndsWith(".event", file.NameWithExtension, StringComparison.Ordinal);
+		Assert.Contains(file.NameWithExtension, events.Keys);
+	}
+
 	private RaiPath NewCloudRoot(string label)
 	{
 		var root = ConfiguredCloud.RequireRoot("events", $"{label}-{Guid.NewGuid():N}");

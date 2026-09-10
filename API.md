@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.2.7` API surface, including the accepted CR020 `iorg` command boundary.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.2.8` API surface, including the accepted CR021 typed `pits` maintenance boundary.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -158,6 +158,13 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		<summary>Append(), Insert(), Delete(), Sort(): editing helpers.</summary>
 
 		- Mutation operations mark file state as changed.
+		</details>
+	- <details>
+		<summary>Explicit-extension construction with dotted logical names.</summary>
+
+		- A non-default explicit extension preserves the complete logical stem, so `new TextFile(path, "Nkosikazi-AIA.Api-93455", "flag")` resolves to `Nkosikazi-AIA.Api-93455.flag`.
+		- The tuple constructor `(Name, Ext)` is unambiguous even for a dotted stem whose explicit extension is `txt`.
+		- Existing implicit filename parsing such as `new TextFile(path, "settings.json")` remains unchanged.
 		</details>
 	</details>
 
@@ -320,7 +327,9 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		<summary>PitsCommand: typed invocation of the installed `pits` CLI.</summary>
 
 		- `PitsTarget.Pit(...)` and `PitsTarget.Wwwa()` make the target mode explicit.
-		- `PitsSeedRequest`, `PitsExportRequest`, `PitsAuditRequest`, `PitsDeletePropertyRequest`, `PitsDeleteItemRequest`, and `PitsCommandOptions` model the preferred 4.x commands and global options.
+		- `PitsSeedRequest`, `PitsExportRequest`, `PitsAuditRequest`, `PitsDeletePropertyRequest`, `PitsDeleteItemRequest`, `PitsMaintainRequest`, and `PitsCommandOptions` model the preferred 4.x commands and global options.
+		- `BuildMaintainArguments(...)`, `Maintain(...)`, and `MaintainAsync(...)` expose report/apply maintenance, explicit process-flag pruning with an age, and explicit legacy-extension repair.
+		- All typed calls targeting the same provider/root/pit are serialized across every `PitsCommand` instance in the current process. WWWA takes the fixed `Person`, `Object`, `Place`, `Activity` gate order; unrelated pits may run concurrently and queued cancellation launches no child.
 		- `PitsExportRequest.At` optionally requests CR017 point-in-time projection. The value is emitted as a canonical UTC timestamp in a separate `--at` argument token; omitting it preserves the established export argument vector.
 		- `BuildSeedArguments`, `BuildExportArguments`, `BuildAuditArguments`, `BuildDeletePropertyArguments`, and `BuildDeleteItemArguments` validate required and mutually exclusive values before process start.
 		- `DeleteProperty` uses an explicit dot-delimited `PropertyPath`; malformed paths are rejected before process execution.

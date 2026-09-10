@@ -46,5 +46,31 @@ namespace OsLib.Tests
 			Assert.Equal("json", file.Ext);
 			Assert.Equal("config.test.json", file.NameWithExtension);
 		}
+
+		[Fact]
+		public void TextFile_ExplicitExtension_PreservesDottedLogicalStem()
+		{
+			var root = Os.TempDir / "RAIkeep" / "oslib-tests" / "dotted-text-name";
+
+			var flag = new TextFile(root, "Nkosikazi-AIA.Api-93455", "flag");
+			var json = new TextFile(root, "otw.software", "json");
+			var text = new TextFile(root, ("otw.software", "txt"));
+
+			Assert.Equal("Nkosikazi-AIA.Api-93455.flag", flag.NameWithExtension);
+			Assert.Equal("otw.software.json", json.NameWithExtension);
+			Assert.Equal("otw.software.txt", text.NameWithExtension);
+		}
+
+		[Fact]
+		public void TextFile_ImplicitExtension_StillParsesCompleteFilename()
+		{
+			var root = Os.TempDir / "RAIkeep" / "oslib-tests" / "implicit-text-name";
+
+			var file = new TextFile(root, "settings.json");
+
+			Assert.Equal("settings", file.Name);
+			Assert.Equal("json", file.Ext);
+			Assert.Equal("settings.json", file.NameWithExtension);
+		}
 	}
 }

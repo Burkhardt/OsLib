@@ -124,8 +124,50 @@ namespace OsLib
 		public PitsCommandOptions Options { get; init; }
 	}
 
+	public sealed record PitsMaintainRequest
+	{
+		public PitsMaintainRequest(PitsTarget target)
+		{
+			Target = target;
+		}
+
+		public PitsTarget Target { get; }
+		public bool Apply { get; init; }
+		public bool Json { get; init; }
+		public bool PruneProcessFlags { get; init; }
+		public TimeSpan? OlderThan { get; init; }
+		public bool RepairLegacyExtensions { get; init; }
+		public PitsCommandOptions Options { get; init; }
+	}
+
 	public sealed class PitsCommand : CliCommand
 	{
+		private sealed class GateEntry
+		{
+			public readonly SemaphoreSlim Semaphore = new(1, 1);
+			public int Users;
+		}
+
+		private sealed class GateLease : IDisposable
+		{
+			private List<(string Key, GateEntry Entry)> acquired;
+
+			public GateLease(List<(string Key, GateEntry Entry)> acquired)
+			{
+				this.acquired = acquired;
+			}
+
+			public void Dispose()
+			{
+				var entries = Interlocked.Exchange(ref acquired, null);
+				if (entries == null) return;
+				for (var i = entries.Count - 1; i >= 0; i--)
+					ReleaseGate(entries[i].Key, entries[i].Entry, acquired: true);
+			}
+		}
+
+		private static readonly object GateRegistryLock = new();
+		private static readonly Dictionary<string, GateEntry> GateRegistry = new(StringComparer.Ordinal);
 		private readonly RaiPath commandPath;
 		private readonly string commandName;
 		private readonly RaiFile managedAssembly;
@@ -251,31 +293,111 @@ namespace OsLib
 			return arguments;
 		}
 
-		public RaiSystemResult Seed(PitsSeedRequest request) => Run(BuildSeedArguments(request));
+		public IReadOnlyList<string> BuildMaintainArguments(PitsMaintainRequest request)
+		{
+			if (request == null)
+				throw new ArgumentNullException(nameof(request));
+			RequireTarget(request.Target);
+			if (request.PruneProcessFlags && !request.Apply)
+				throw new ArgumentException("Process-flag pruning requires Apply.", nameof(request));
+			if (request.PruneProcessFlags && request.OlderThan is null)
+				throw new ArgumentException("Process-flag pruning requires OlderThan.", nameof(request));
+			if (!request.PruneProcessFlags && request.OlderThan is not null)
+				throw new ArgumentException("OlderThan applies only to process-flag pruning.", nameof(request));
+			if (request.OlderThan is { } olderThan && olderThan <= TimeSpan.Zero)
+				throw new ArgumentOutOfRangeException(nameof(request), "OlderThan must be positive.");
+			if (request.RepairLegacyExtensions && !request.Apply)
+				throw new ArgumentException("Legacy-extension repair requires Apply.", nameof(request));
+
+			var arguments = new List<string> { "maintain" };
+			request.Target.AppendTo(arguments);
+			if (request.Apply) arguments.Add("--apply");
+			if (request.PruneProcessFlags)
+			{
+				arguments.Add("--prune-process-flags");
+				arguments.Add("--older-than");
+				arguments.Add(request.OlderThan.Value.ToString("c", CultureInfo.InvariantCulture));
+			}
+			if (request.RepairLegacyExtensions) arguments.Add("--repair-legacy-extensions");
+			if (request.Json) arguments.Add("--json");
+			AppendOptions(arguments, request.Options);
+			return arguments;
+		}
+
+		public RaiSystemResult Seed(PitsSeedRequest request)
+		{
+			var arguments = BuildSeedArguments(request);
+			return RunCoordinated(request.Target, request.Options, arguments);
+		}
 		public Task<RaiSystemResult> SeedAsync(PitsSeedRequest request, CancellationToken cancellationToken = default)
-			=> RunAsync(BuildSeedArguments(request), cancellationToken);
+		{
+			var arguments = BuildSeedArguments(request);
+			return RunCoordinatedAsync(request.Target, request.Options, arguments, cancellationToken);
+		}
 
-		public RaiSystemResult Export(PitsExportRequest request) => Run(BuildExportArguments(request));
+		public RaiSystemResult Export(PitsExportRequest request)
+		{
+			var arguments = BuildExportArguments(request);
+			return RunCoordinated(request.Target, request.Options, arguments);
+		}
 		public Task<RaiSystemResult> ExportAsync(PitsExportRequest request, CancellationToken cancellationToken = default)
-			=> RunAsync(BuildExportArguments(request), cancellationToken);
+		{
+			var arguments = BuildExportArguments(request);
+			return RunCoordinatedAsync(request.Target, request.Options, arguments, cancellationToken);
+		}
 
-		public RaiSystemResult Audit(PitsAuditRequest request) => Run(BuildAuditArguments(request));
+		public RaiSystemResult Audit(PitsAuditRequest request)
+		{
+			var arguments = BuildAuditArguments(request);
+			return RunCoordinated(request.Target, request.Options, arguments);
+		}
 		public Task<RaiSystemResult> AuditAsync(PitsAuditRequest request, CancellationToken cancellationToken = default)
-			=> RunAsync(BuildAuditArguments(request), cancellationToken);
+		{
+			var arguments = BuildAuditArguments(request);
+			return RunCoordinatedAsync(request.Target, request.Options, arguments, cancellationToken);
+		}
 
 		public RaiSystemResult DeleteProperty(PitsDeletePropertyRequest request)
-			=> Run(BuildDeletePropertyArguments(request));
+		{
+			var arguments = BuildDeletePropertyArguments(request);
+			return RunCoordinated(PitsTarget.Pit(request.PitName), request.Options, arguments);
+		}
 		public Task<RaiSystemResult> DeletePropertyAsync(
 			PitsDeletePropertyRequest request,
 			CancellationToken cancellationToken = default)
-			=> RunAsync(BuildDeletePropertyArguments(request), cancellationToken);
+		{
+			var arguments = BuildDeletePropertyArguments(request);
+			return RunCoordinatedAsync(PitsTarget.Pit(request.PitName), request.Options,
+				arguments, cancellationToken);
+		}
 
 		public RaiSystemResult DeleteItem(PitsDeleteItemRequest request)
-			=> Run(BuildDeleteItemArguments(request));
+		{
+			var arguments = BuildDeleteItemArguments(request);
+			return RunCoordinated(PitsTarget.Pit(request.PitName), request.Options, arguments);
+		}
 		public Task<RaiSystemResult> DeleteItemAsync(
 			PitsDeleteItemRequest request,
 			CancellationToken cancellationToken = default)
-			=> RunAsync(BuildDeleteItemArguments(request), cancellationToken);
+		{
+			var arguments = BuildDeleteItemArguments(request);
+			return RunCoordinatedAsync(PitsTarget.Pit(request.PitName), request.Options,
+				arguments, cancellationToken);
+		}
+
+		public RaiSystemResult Maintain(PitsMaintainRequest request)
+		{
+			var arguments = BuildMaintainArguments(request);
+			return RunCoordinated(request.Target, request.Options, arguments);
+		}
+		public Task<RaiSystemResult> MaintainAsync(
+			PitsMaintainRequest request,
+			CancellationToken cancellationToken = default)
+		{
+			var arguments = BuildMaintainArguments(request);
+			return RunCoordinatedAsync(request.Target, request.Options,
+				arguments, cancellationToken);
+		}
 
 		public override RaiSystemResult Run(IEnumerable<string> arguments)
 			=> base.RunAsync(WithManagedAssembly(arguments)).GetAwaiter().GetResult();
@@ -302,6 +424,95 @@ namespace OsLib
 				yield break;
 			foreach (var argument in arguments)
 				yield return argument;
+		}
+
+		private RaiSystemResult RunCoordinated(
+			PitsTarget target,
+			PitsCommandOptions options,
+			IEnumerable<string> arguments)
+			=> RunCoordinatedAsync(target, options, arguments).GetAwaiter().GetResult();
+
+		private async Task<RaiSystemResult> RunCoordinatedAsync(
+			PitsTarget target,
+			PitsCommandOptions options,
+			IEnumerable<string> arguments,
+			CancellationToken cancellationToken = default)
+		{
+			using var gate = await AcquireGatesAsync(target, options, cancellationToken).ConfigureAwait(false);
+			return await RunAsync(arguments, cancellationToken).ConfigureAwait(false);
+		}
+
+		private static async Task<GateLease> AcquireGatesAsync(
+			PitsTarget target,
+			PitsCommandOptions options,
+			CancellationToken cancellationToken)
+		{
+			RequireTarget(target);
+			var acquired = new List<(string Key, GateEntry Entry)>();
+			try
+			{
+				foreach (var key in GateKeys(target, options))
+				{
+					var entry = RegisterGate(key);
+					try
+					{
+						await entry.Semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+						acquired.Add((key, entry));
+					}
+					catch
+					{
+						ReleaseGate(key, entry, acquired: false);
+						throw;
+					}
+				}
+				return new GateLease(acquired);
+			}
+			catch
+			{
+				for (var i = acquired.Count - 1; i >= 0; i--)
+					ReleaseGate(acquired[i].Key, acquired[i].Entry, acquired: true);
+				throw;
+			}
+		}
+
+		private static IReadOnlyList<string> GateKeys(PitsTarget target, PitsCommandOptions options)
+		{
+			var provider = options?.CloudProvider?.Trim().ToUpperInvariant() ?? string.Empty;
+			var root = options?.PitRoot?.FullPath?.TrimEnd('/', '\\') ?? string.Empty;
+			var route = $"{provider}\u001f{root}".ToUpperInvariant();
+			var pits = target.IsWwwa
+				? new[] { "Person", "Object", "Place", "Activity" }
+				: new[] { target.PitName };
+			return pits.Select(name => $"{route}\u001f{name.ToUpperInvariant()}").ToArray();
+		}
+
+		private static GateEntry RegisterGate(string key)
+		{
+			lock (GateRegistryLock)
+			{
+				if (!GateRegistry.TryGetValue(key, out var entry))
+				{
+					entry = new GateEntry();
+					GateRegistry.Add(key, entry);
+				}
+				entry.Users++;
+				return entry;
+			}
+		}
+
+		private static void ReleaseGate(string key, GateEntry entry, bool acquired)
+		{
+			if (acquired) entry.Semaphore.Release();
+			lock (GateRegistryLock)
+			{
+				entry.Users--;
+				if (entry.Users == 0 && GateRegistry.TryGetValue(key, out var current) &&
+					ReferenceEquals(entry, current))
+				{
+					GateRegistry.Remove(key);
+					entry.Semaphore.Dispose();
+				}
+			}
 		}
 
 		private static void AppendOptions(List<string> arguments, PitsCommandOptions options)

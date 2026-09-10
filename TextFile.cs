@@ -183,8 +183,31 @@ namespace OsLib
 		public TextFile(RaiPath path, string name, string ext = "txt", string content = null)
 			: base(path, name)
 		{
-			if (string.IsNullOrEmpty(Ext))
-				Ext = ext;
+			// A non-default extension is an explicit type contract. Preserve a dotted
+			// logical stem (for example "AIA.Api-1234") instead of mistaking its last
+			// segment for an existing extension and silently dropping the requested one.
+			// The default "txt" remains implicit so established calls such as
+			// new TextFile(path, "settings.json") keep parsing the supplied filename.
+			if (!string.IsNullOrEmpty(ext) &&
+				(string.IsNullOrEmpty(Ext) ||
+				 (!string.Equals(ext, "txt", StringComparison.OrdinalIgnoreCase) &&
+				  !string.Equals(Ext, ext, StringComparison.OrdinalIgnoreCase))))
+				NameAndExt = (name, ext);
+			if (content != null)
+			{
+				Append(content);
+				Save();
+			}
+		}
+		/// <summary>
+		/// Creates a text file from an unambiguous logical name/extension pair. Use
+		/// this form when the logical name itself contains dots and the extension is
+		/// <c>txt</c> (the optional-extension constructor must retain its historical
+		/// implicit filename parsing behavior).
+		/// </summary>
+		public TextFile(RaiPath path, (string Name, string Ext) nameAndExt, string content = null)
+			: base(path, nameAndExt.Name, nameAndExt.Ext)
+		{
 			if (content != null)
 			{
 				Append(content);
