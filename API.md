@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.2.8` API surface, including the accepted CR021 typed `pits` maintenance boundary.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.2.9` API surface, including accepted CR022 cloud-safe file and directory behavior.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -53,6 +53,14 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 	</details>
 
 - <details>
+	<summary>RaiCloudStorageException: rejected cloud-path operations.</summary>
+
+	- Derives from `IOException` and is thrown before mutation when a RaiFile/RaiPath operation would violate the CR022 cloud-storage invariant.
+	- `Operation`, `SourcePath`, and `DestinationPath` identify the rejected operation without requiring consumers to parse an operating-system message.
+	- Guarded cases include TempDir-to-cloud file/directory moves and replacement of an existing cloud-backed directory.
+	</details>
+
+- <details>
 	<summary>RaiFile.WriteFromAsync(chunks, cancellationToken): stream-free asynchronous ingestion.</summary>
 
 	- Accepts `IAsyncEnumerable&lt;byte[]&gt;` so callers can write chunked content without taking a direct dependency on `System.IO.Stream`.
@@ -95,6 +103,14 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		- `mkdir` waits for materialization only when the buffered `Cloud` flag is true.
 		- `rmdir` waits for vanishing only when the buffered `Cloud` flag is true.
 		</details>
+	- <details>
+		<summary>mv / cp / backup: cloud-safe directory operations.</summary>
+
+		- A move from `Os.TempDir` into a cloud-backed destination fails before either tree is changed.
+		- Replacing an existing cloud-backed directory by move or recursive copy is prohibited; no child is deleted as an implementation detail.
+		- A cloud-directory backup copies the tree and leaves its live pathname present.
+		- An intentional move to a new destination remains available.
+		</details>
 	</details>
 
 - <details>
@@ -110,6 +126,9 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		<summary>Exists(), rm(), cp(), mv(...): existence, delete, copy, and move lifecycle.</summary>
 
 		- `rm()` waits for vanishing only when the buffered `Cloud` flag is true.
+		- `cp(source)` opens and overwrites the destination in place; it never calls `rm()` first. Operating-system failures surface as `RaiFileIOException`.
+		- `mv(source, replace: true)` updates an existing cloud destination in place and removes the source only after copying succeeds.
+		- Moving a temporary file into a cloud destination fails with `RaiCloudStorageException` before path creation or source removal.
 		</details>
 	- <details>
 		<summary>AwaitVanishing() / AwaitMaterializing(...): public wrappers over file wait logic.</summary>
@@ -134,6 +153,7 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		- `mkdir()` is virtual so derived `RaiFile` types can override directory creation through normal polymorphic dispatch.
 		- Directory creation/deletion delegates to `RaiPath` in the base implementation.
 		- `backup(copy)` composes the destination below `Os.LocalBackupDir` when backups are enabled.
+		- A cloud source is copied to backup even when the compatibility API receives `copy: false`; its live pathname is not relocated.
 		</details>
 	</details>
 

@@ -147,15 +147,28 @@ namespace OsLib
 		public int mv(RaiFile from, bool replace) => mv(from, replace, keepBackup: false);
 		public int mv(RaiFile from, bool replace, bool keepBackup)
 		{
+			if (from == null) throw new ArgumentNullException(nameof(from));
 			var dest = FullName;
 			var src = from.FullName;
 			if (src == dest) return 0;
-			mkdir();
+			RejectTemporaryMoveIntoCloud("RaiFile.mv", src, dest);
 			if (!File.Exists(src)) throw new FileNotFoundException("Source file does not exist: " + src);
 			var destExists = File.Exists(dest);
 			if (destExists && !replace) throw new IOException("Destination file already exists: " + dest);
+			mkdir();
 			if (destExists && replace)
 			{
+				if (Cloud)
+				{
+					if (keepBackup)
+					{
+						var cloudBackup = new RaiFile(dest) { Ext = "bak" };
+						cloudBackup.cp(this);
+					}
+					cp(from);
+					from.rm();
+					return 0;
+				}
 				var bak = new RaiFile(dest) { Ext = "bak" };
 				try
 				{
@@ -177,10 +190,43 @@ namespace OsLib
 		}
 		public int cp(RaiFile from)
 		{
+			if (from == null) throw new ArgumentNullException(nameof(from));
 			if (from.FullName == FullName) return 0;
-			rm();
-			File.Copy(from.FullName, FullName, true);
-			return 0;
+			if (!from.Exists())
+			{
+				var missing = new FileNotFoundException("Source file does not exist: " + from.FullName, from.FullName);
+				throw new RaiFileIOException(
+					$"Unable to copy missing source '{from.FullName}' to '{FullName}'.",
+					from.FullName,
+					missing);
+			}
+			mkdir();
+			try
+			{
+				using var source = new FileStream(from.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
+				using var target = new FileStream(FullName, FileMode.Create, FileAccess.Write, FileShare.None);
+				source.CopyTo(target);
+				target.Flush(flushToDisk: true);
+				if (Cloud) AwaitMaterializing(newFileOldName: true);
+				return 0;
+			}
+			catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+			{
+				throw new RaiFileIOException(
+					$"Unable to copy '{from.FullName}' to '{FullName}' without replacing the destination pathname.",
+					FullName,
+					exception);
+			}
+		}
+
+		private void RejectTemporaryMoveIntoCloud(string operation, string source, string destination)
+		{
+			if (!Cloud || !Os.IsTempPath(source)) return;
+			throw new RaiCloudStorageException(
+				$"{operation} cannot move a temporary file into cloud storage. Write the destination at its final pathname instead.",
+				operation,
+				source,
+				destination);
 		}
 		public bool IsDirectory() => FullName.EndsWith(Os.DIR);
 		public TimeSpan FileAge
@@ -381,8 +427,8 @@ namespace OsLib
 			backupFile.mkdir();
 			backupFile.Name = backupFile.Name + "_" + DateTimeOffset.UtcNow.ToString(Os.DATEFORMAT);
 			backupFile.Ext = Ext;
-			if (copy) backupFile.cp(this);
-			else backupFile.mv(this);
+				if (copy || Cloud) backupFile.cp(this);
+				else backupFile.mv(this);
 			return backupFile;
 		}
 		internal static RaiRelPath BackupRelativePath(RaiPath sourceDirectoryPath)

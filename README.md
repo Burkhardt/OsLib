@@ -6,6 +6,16 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
+## 4.2.9
+
+- Implements accepted incident corrective action CR022 across the reusable filesystem boundary.
+- `RaiFile.cp` keeps an existing cloud pathname continuously present while overwriting its content in place.
+- `RaiFile.mv` and `RaiPath.mv` reject TempDir-to-CloudDrive moves before either path changes; replacement of an existing cloud directory is rejected.
+- Cloud backups copy the live file/directory instead of relocating it.
+- `RaiCloudStorageException` reports rejected operations with operation, source, and destination context.
+- Current release notes: [OsLib_RELEASE_NOTES_4.2.9.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.9.md)
+- Mandatory storage contract: [Cloud-Storage-In-Place-Invariant.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Cloud-Storage-In-Place-Invariant.md)
+
 ## 4.2.8
 
 - Implements accepted CR021 with dotted logical-stem preservation for explicit `TextFile` extensions.
@@ -88,11 +98,14 @@ OsLib
 ### RaiPath: Directory path type with buffered cloud classification.
 
 - RaiPath: `Path`, `Cloud`, `/` operator, `Parent`, `mkdir`, `rmdir`, `mv`, `cp`, `backup`, `EnumerateFiles`, `EnumerateDirectories`
+- TempDir-to-cloud moves and replacement of existing cloud directories fail before mutation.
 
 ### RaiFile: File utility with cloud-aware wait behavior.
 
 - RaiFile: `Exists`, `LastWriteTimeUtc`, `rm`, `mv`, `cp`, `mkdir`, `rmdir`, `WriteFromAsync`, `ReadAllBytesAsync`, `AwaitVanishing`, `AwaitMaterializing`, `BackdateCreationTime`, `DefaultSyncPropagationDelayMs`, `Zip`, `backup`
 - `ReadAllBytesAsync` preserves cancellation and wraps operating-system file I/O failures in `RaiFileIOException`, which retains `IOException` compatibility and exposes the affected `FileName`.
+- `cp` updates an existing cloud pathname in place; `mv` rejects TempDir-to-cloud relocation before mutation.
+- `RaiCloudStorageException` exposes `Operation`, `SourcePath`, and `DestinationPath` for prohibited cloud operations.
 
 ### RaiFileExtensions: Convenience extensions for string and CSV handling.
 
@@ -147,7 +160,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Latest release notes: [OsLib_RELEASE_NOTES_4.2.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.8.md)
+- Latest release notes: [OsLib_RELEASE_NOTES_4.2.9.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.9.md)
 
 ## nuget publish automation
 
@@ -156,4 +169,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.8` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.9` command after RAI approval.

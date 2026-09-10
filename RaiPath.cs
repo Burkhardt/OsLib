@@ -348,10 +348,13 @@ namespace OsLib
 		public int mv(RaiPath from, bool replace, bool keepBackup)
 		{
 			if (from == null) throw new ArgumentNullException(nameof(from));
+			RejectTemporaryMoveIntoCloud("RaiPath.mv", from.Path, Path);
 			if (!from.Exists()) throw new RaiPathNotFoundException("Source directory does not exist: " + from.Path, from.Path);
 			if (Exists())
 			{
 				if (!replace) throw new IOException("Target directory already exists: " + Path);
+				if (Cloud)
+					throw CloudDirectoryReplacementException("RaiPath.mv", from.Path);
 				if (keepBackup) backup(copy: false);
 				else
 				{
@@ -383,6 +386,8 @@ namespace OsLib
 			if (Exists())
 			{
 				if (!replace) throw new IOException("Target directory already exists: " + Path);
+				if (Cloud)
+					throw CloudDirectoryReplacementException("RaiPath.cp", from.Path);
 				if (keepBackup) backup(copy: false);
 				else
 				{
@@ -426,10 +431,27 @@ namespace OsLib
 			var stamped = leaf + "_" + DateTimeOffset.UtcNow.ToString(Os.DATEFORMAT);
 			var backupTarget = backupRoot / parentRel / stamped;
 			backupTarget.Parent.mkdir();
-			if (copy) backupTarget.cp(this, replace: false, keepBackup: false);
+			if (copy || Cloud) backupTarget.cp(this, replace: false, keepBackup: false);
 			else backupTarget.mv(this, replace: false, keepBackup: false);
 			return backupTarget;
 		}
+
+		private void RejectTemporaryMoveIntoCloud(string operation, string source, string destination)
+		{
+			if (!Cloud || !Os.IsTempPath(source)) return;
+			throw new RaiCloudStorageException(
+				$"{operation} cannot move a temporary directory into cloud storage. Create required directories at their final paths instead.",
+				operation,
+				source,
+				destination);
+		}
+
+		private RaiCloudStorageException CloudDirectoryReplacementException(string operation, string source) =>
+			new(
+				$"{operation} cannot replace an existing cloud-backed directory.",
+				operation,
+				source,
+				Path);
 		public void rmdir(int depth = 0, bool deleteFiles = false)
 		{
 			if (string.IsNullOrEmpty(Path) || !Exists()) return;

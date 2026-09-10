@@ -53,6 +53,30 @@ namespace OsLib
 			}
 		}
 		internal static bool IsCloudPath(string path) => runtime.IsCloudPath(path);
+		/// <summary>
+		/// Returns whether a file or directory path is the configured temporary
+		/// directory or one of its descendants. Used to reject temporary-object
+		/// moves into cloud-backed trees before either path is mutated.
+		/// </summary>
+		internal static bool IsTempPath(string path)
+		{
+			if (string.IsNullOrWhiteSpace(path)) return false;
+			try
+			{
+				var candidate = System.IO.Path.GetFullPath(NormSeperator(path));
+				var tempRoot = runtime.TempDir.Path;
+				var rootWithoutSeparator = tempRoot.TrimEnd(DIR[0]);
+				var comparison = Type == OsType.Windows
+					? StringComparison.OrdinalIgnoreCase
+					: StringComparison.Ordinal;
+				return candidate.Equals(rootWithoutSeparator, comparison) ||
+					candidate.StartsWith(tempRoot, comparison);
+			}
+			catch
+			{
+				return false;
+			}
+		}
 		private sealed class OsRuntimeSnapshot
 		{
 			private readonly Lazy<RaiPath> userHomeDir;
