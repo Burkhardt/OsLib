@@ -6,6 +6,12 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
+## 4.2.11
+
+- Participates unchanged in coordinated RAIkeep v4.2.11.
+- CR024 consumes the established `RaiFile.rm()` cloud disappearance boundary for owned PID-flag cleanup; no new OsLib API is introduced.
+- Current release notes: [OsLib_RELEASE_NOTES_4.2.11.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.11.md)
+
 ## 4.2.10
 
 - Adds `RaiZipFile`, a collection-capable immutable ZIP boundary that creates an archive directly at its final path in an existing directory and never overwrites a same-name archive.
@@ -176,7 +182,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Latest release notes: [OsLib_RELEASE_NOTES_4.2.10.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.10.md)
+- Latest release notes: [OsLib_RELEASE_NOTES_4.2.11.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.11.md)
 
 ## nuget publish automation
 
@@ -185,4 +191,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.10` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.2.11` command after RAI approval.
