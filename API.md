@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.3.0` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. CR024 consumes the existing `RaiFile.rm()` cloud disappearance boundary without adding an OsLib API. OsLibCore participates unchanged in CR025's coordinated dependency line.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.3.1` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore participates unchanged in the coordinated CR026 dependency line.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
