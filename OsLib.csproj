@@ -13,8 +13,8 @@
 		<PackageTags>RaiSystem, CliCommand, PitsCommand, IorgCommand, RaiNetDrive, EscapeMode, OsType, Os, RaiFile, RaiZipFile, TextFile, CsvFile, TmpFile</PackageTags>
 		<IsPackable>true</IsPackable>
 		<ProjectURL>https://github.com/Burkhardt/OsLib</ProjectURL>
-		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<Copyright>© Rainer Burkhardt</Copyright>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
 				<PackageReleaseNotes>4.3.2 coordinated RAIkeep release; OsLibCore behavior is unchanged.</PackageReleaseNotes>
