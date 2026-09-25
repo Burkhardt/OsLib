@@ -6,10 +6,13 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
-## 4.4.0
+## 4.4.1
 
-- Participates in the synchronized eight-package RAIkeep v4.4.0 CR036 release.
-- Current release notes: [OsLib_RELEASE_NOTES_4.4.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.0.md)
+- Adds the typed `RaidCommand` boundary for `raid import`, `export`, `refresh`, and `validate` under accepted CR037.
+- Adds shared `CliVerbDispatch` validation for CR037.1 command-first parsing
+  and actionable misplaced-verb corrections before product I/O.
+- Participates in the synchronized eight-package RAIkeep v4.4.1 release.
+- Current release notes: [OsLib_RELEASE_NOTES_4.4.1.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.1.md)
 
 ## 4.3.2
 
@@ -203,7 +206,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Latest release notes: [OsLib_RELEASE_NOTES_4.4.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.0.md)
+- Latest release notes: [OsLib_RELEASE_NOTES_4.4.1.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.1.md)
 
 ## nuget publish automation
 
@@ -212,4 +215,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.4.0` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.4.1` command after RAI approval.

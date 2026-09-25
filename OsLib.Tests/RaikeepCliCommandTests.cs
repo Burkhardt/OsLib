@@ -23,6 +23,24 @@ namespace OsLib.Tests
 		public void Dispose() => Cleanup();
 
 		[Fact]
+		public void CliVerbDispatch_DetectsReservedVerbAndBuildsExactCorrection()
+		{
+			var diagnostic = CliVerbDispatch.DetectMisplacedVerb(
+				"pits",
+				["-n", "export", "-c", "OneDrive", "-r", "AIA", "Person", "--json"],
+				["seed", "export", "audit", "maintain"]);
+
+			Assert.NotNull(diagnostic);
+			Assert.Equal("export", diagnostic.Verb);
+			Assert.Equal(
+				"pits export -n -c OneDrive -r AIA Person --json",
+				diagnostic.CorrectedCommandLine);
+			Assert.Contains("Subcommand 'export' must be the first parameter", diagnostic.Message);
+			Assert.Null(CliVerbDispatch.DetectMisplacedVerb(
+				"pits", ["export", "-n", "Person"], ["export"]));
+		}
+
+		[Fact]
 		public async Task PitsCommand_SeedAsync_PassesExactTokenizedArguments()
 		{
 			var command = CreatePitsCaptureCommand(exitCode: 0);
@@ -368,6 +386,126 @@ namespace OsLib.Tests
 				CapturedArguments(result));
 		}
 
+		[Fact]
+		public void RaidCommand_BuildsTypedExportRefreshImportAndValidateForms()
+		{
+			var command = new RaidCommand();
+			var identity = new RaidArtifactIdentity("SignContract")
+			{
+				Number = 2,
+				NameExt = "UCD"
+			};
+			var options = new RaidCommandOptions
+			{
+				Tenant = "AfricaStage",
+				CloudProvider = "OneDrive",
+				RootIsApplicationRoot = true,
+				PathConvention = PathConventionType.ItemIdTree8x2,
+				NoLogo = true
+			};
+
+			Assert.Equal(
+				new[]
+				{
+					"export", "SignContract", "--name-ext", "UCD", "--number", "2",
+					"--format", "all", "--svg-profile", "plain",
+					"--out", (root / "export").FullPath,
+					"--app", root.FullPath, "--tenant", "AfricaStage",
+					"--cloud", "OneDrive", "--pathconv", "3", "--nologo"
+				},
+				command.BuildExportArguments(new RaidExportRequest(identity, root)
+				{
+					Format = RaidExportFormat.All,
+					SvgProfile = RaidSvgProfile.Plain,
+					OutputDirectory = root / "export",
+					Options = options
+				}));
+
+			Assert.Equal(
+				new[]
+				{
+					"refresh", "SignContract", "--svg-profile", "hydratable",
+					"--name-ext", "UCD", "--number", "2",
+					"--app", root.FullPath, "--tenant", "AfricaStage",
+					"--cloud", "OneDrive", "--pathconv", "3", "--nologo"
+				},
+				command.BuildRefreshArguments(new RaidRefreshRequest(identity, root) { Options = options }));
+
+			var puml = new RaiFile(root, "Workflow", "puml");
+			Assert.Equal(
+				new[] { "import", "--puml", puml.FullName, "--name", "Workflow", "--name-ext", "AD", "--out", (root / "flat").FullPath },
+				command.BuildImportArguments(new RaidImportRequest(puml)
+				{
+					ItemId = "Workflow",
+					NameExt = "AD",
+					OutputDirectory = root / "flat"
+				}));
+			Assert.Equal(
+				new[] { "validate", puml.FullName },
+				command.BuildValidateArguments(new RaidValidateRequest(puml)));
+		}
+
+		[Fact]
+		public async Task RaidCommand_ExecutesExactTokenizedArgumentsThroughCliCommand()
+		{
+			var command = CreateRaidCaptureCommand(exitCode: 0);
+			var request = new RaidRefreshRequest(new RaidArtifactIdentity("Schedule Rehearsal"), root)
+			{
+				Options = new RaidCommandOptions { Tenant = "Nomsa Tenant" }
+			};
+
+			var result = await command.RefreshAsync(request, TestContext.Current.CancellationToken);
+
+			Assert.True(result.Succeeded);
+			Assert.Equal(
+				new[]
+				{
+					"refresh", "Schedule Rehearsal", "--svg-profile", "hydratable",
+					"--root", root.FullPath, "--tenant", "Nomsa Tenant", "--pathconv", "3"
+				},
+				CapturedArguments(result));
+		}
+
+		[Fact]
+		public async Task RaidCommand_TypedCallsSerializeAcrossWrapperInstances()
+		{
+			if (OperatingSystem.IsWindows()) return;
+			var lockPath = new RaiPath(root / "raid-command-lock").FullPath.TrimEnd('/', '\\');
+			var overlap = new RaiFile(root, "raid-command-overlap", "txt");
+			var script = CreateOutputScript("raid-command-gate",
+				$"#!/bin/sh\nif ! mkdir '{lockPath}' 2>/dev/null; then printf overlap > '{overlap.FullName}'; fi\nsleep 0.35\nrmdir '{lockPath}' 2>/dev/null\nexit 0\n");
+			var first = new RaidCommand(script.ScriptFile.Path, script.ScriptFile.NameWithExtension);
+			var second = new RaidCommand(script.ScriptFile.Path, script.ScriptFile.NameWithExtension);
+			var request = new RaidRefreshRequest(new RaidArtifactIdentity("ScheduleRehearsal"), root)
+			{
+				Options = new RaidCommandOptions { Tenant = "AIA" }
+			};
+
+			await Task.WhenAll(
+				first.RefreshAsync(request, TestContext.Current.CancellationToken),
+				second.RefreshAsync(request, TestContext.Current.CancellationToken));
+
+			Assert.False(overlap.Exists());
+		}
+
+		[Fact]
+		public void RaidCommand_RejectsFlattenedPathIdentityAndConflictingImportDestinations()
+		{
+			var command = new RaidCommand();
+			Assert.Throws<ArgumentException>(() => command.BuildRefreshArguments(
+				new RaidRefreshRequest(new RaidArtifactIdentity("folder/Diagram"), root)
+				{
+					Options = new RaidCommandOptions { Tenant = "AIA" }
+				}));
+			Assert.Throws<ArgumentException>(() => command.BuildImportArguments(
+				new RaidImportRequest(new RaiFile(root, "Diagram", "puml"))
+				{
+					Root = root,
+					OutputDirectory = root / "out",
+					Options = new RaidCommandOptions { Tenant = "AIA" }
+				}));
+		}
+
 		[Theory]
 		[InlineData("folder/item")]
 		[InlineData("folder\\item")]
@@ -696,6 +834,12 @@ namespace OsLib.Tests
 		{
 			var script = CreateCaptureScript("iorg-capture", exitCode);
 			return new IorgCommand(script.ScriptFile.Path, script.ScriptFile.NameWithExtension);
+		}
+
+		private RaidCommand CreateRaidCaptureCommand(int exitCode)
+		{
+			var script = CreateCaptureScript("raid-capture", exitCode);
+			return new RaidCommand(script.ScriptFile.Path, script.ScriptFile.NameWithExtension);
 		}
 
 		private Script CreateCaptureScript(string name, int exitCode)

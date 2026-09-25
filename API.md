@@ -1,8 +1,11 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.4.0` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore participates in the synchronized CR036 dependency line.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.4.1` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore participates in the synchronized CR037 dependency line.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
+
+The 4.4.1 typed diagram-command boundary is governed by
+[`CR037_AIA_to_RAIkeep_RaidSeeder_Diagram_Artifact_Management.md`](https://github.com/Burkhardt/RAIkeep/blob/main/doc/CR037_AIA_to_RAIkeep_RaidSeeder_Diagram_Artifact_Management.md).
 
 ## core types
 
@@ -239,6 +242,18 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 ## process and shell
 
 - <details>
+	<summary>RaidCommand: typed RaidSeeder/raid process boundary.</summary>
+
+	- `RaidImportRequest`, `RaidExportRequest`, `RaidRefreshRequest`, and `RaidValidateRequest` represent the four first-class `raid` verbs without shell-string assembly.
+	- `RaidArtifactIdentity` keeps `ItemId`, optional `Number`, and optional `NameExt` as separate values; it does not fold an archetype suffix into `ItemId`.
+	- `RaidCommandOptions` carries tenant/subscriber, cloud, exact-root versus application-root selection, ItemTree convention, debug, and no-logo settings.
+	- `RaidExportFormat` selects `Raid`, `PlantUml`, `Svg`, or `All`; `RaidSvgProfile` selects `Hydratable` or `Plain` SVG.
+	- `BuildImportArguments(...)`, `BuildExportArguments(...)`, `BuildRefreshArguments(...)`, and `BuildValidateArguments(...)` expose deterministic token arrays for tests and diagnostics.
+	- Synchronous and asynchronous execution flows through `CliCommand` and `RaiSystem`, preserves token boundaries, and is serialized by the process-wide `RaidCommand` execution gate.
+	- `ForManagedAssembly(...)` supports controlled execution tests without baking a separate process implementation.
+	</details>
+
+- <details>
 	<summary>IorgCommand: typed ImgSeeder/iorg process boundary.</summary>
 
 	- `IorgListRequest(FileNamePattern, Root)` carries a filename pattern plus optional subscriber, cloud, JSON, quiet, debug, and no-logo settings.
@@ -349,6 +364,13 @@ Historical docs that mention `CloudStorageRootDir`, provider-precedence helper A
 		- Tokenized overloads accept an optional timeout; completed results retain the exact original argument vector.
 		- Tokenized calls flow through `ProcessStartInfo.ArgumentList`, preserving argument count and values without shell reconstruction.
 		- `BuildPosixShellCommand(...)` safely serializes the executable and argument tokens when an SSH boundary explicitly requires POSIX shell text.
+		</details>
+	- <details>
+		<summary>CliVerbDispatch: command-first syntax validation.</summary>
+
+		- `DetectMisplacedVerb(toolName, arguments, reservedVerbs)` returns `null` for a canonical verb-first argument vector.
+		- A reserved verb found later returns `CliVerbDiagnostic` with the verb, a two-line actionable message, and the corrected command line.
+		- Suite CLIs use this before product filesystem or database access and return syntax exit code `2`.
 		</details>
 	- <details>
 		<summary>CurlCommand / ZipCommand / SevenZipCommand: generic command wrappers.</summary>

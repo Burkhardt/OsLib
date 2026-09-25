@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-				<Version>4.4.0</Version>
+				<Version>4.4.1</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-				<PackageReleaseNotes>4.4.0 synchronized RAIkeep suite release supporting CR036.</PackageReleaseNotes>
+				<PackageReleaseNotes>4.4.1 adds the typed RaidCommand boundary for CR037.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 
