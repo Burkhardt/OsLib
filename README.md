@@ -6,6 +6,11 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
+## 4.4.3
+
+- Participates unchanged in the synchronized eight-package CR043 release.
+- Current release notes: [OsLib_RELEASE_NOTES_4.4.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.3.md)
+
 ## 4.4.2
 
 - Participates unchanged in the synchronized eight-package CR040/CR041 release.
@@ -211,7 +216,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Latest release notes: [OsLib_RELEASE_NOTES_4.4.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.2.md)
+- Latest release notes: [OsLib_RELEASE_NOTES_4.4.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.3.md)
 
 ## nuget publish automation
 
@@ -220,4 +225,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.4.2` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.4.3` command after RAI approval.
