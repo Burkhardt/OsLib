@@ -6,6 +6,11 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
+## 4.4.5
+
+- Adds `PitsSeedRequest.RequireExisting` for typed, token-safe CR047 strict patch invocation.
+- Current release notes: [OsLib_RELEASE_NOTES_4.4.5.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.5.md)
+
 ## 4.4.4
 
 - Participates unchanged in the synchronized nine-package CR044 release.
@@ -184,7 +189,7 @@ OsLib
 - SshSystem: `ExecuteRemoteCommand`, `ExecuteScript`, `ReadRemoteConfigJson5`
 - CliCommand: `IsAvailable`, `TryResolveExecutable`, tokenized/string `Run` and `RunAsync`, timeout-aware token execution, `BuildPosixShellCommand`, `GetInstallCommand`, `GetUpdateCommand`
 - RaiSystemResult: exact `ArgumentList`, `StandardOutput`, `StandardError`, `ExitCode`, `Succeeded`, and `TimedOut` process metadata
-- PitsCommand: `BuildSeedArguments`, `BuildExportArguments`, `BuildAuditArguments`, `BuildDeletePropertyArguments`, `BuildDeleteItemArguments`, typed sync/async command methods, `PitsMaintainRequest.ArchiveEvents`, and `ForManagedAssembly`
+- PitsCommand: `BuildSeedArguments`, `BuildExportArguments`, `BuildAuditArguments`, `BuildDeletePropertyArguments`, `BuildDeleteItemArguments`, typed sync/async command methods, CR047 `PitsSeedRequest.RequireExisting`, `PitsMaintainRequest.ArchiveEvents`, and `ForManagedAssembly`
 - IorgCommand: `BuildOrganizeArguments`, `BuildCleanArguments`, `BuildListArguments`, `BuildMoveArguments`, sync/async counterparts, `IorgCommandOptions.Tenant`, `RootIsApplicationRoot`, and `ForManagedAssembly`
 - Built-in wrappers: `CurlCommand`, `ZipCommand`, `SevenZipCommand`, `RCloneCommand`, `PitsCommand`, `IorgCommand`
 
@@ -217,7 +222,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Latest release notes: [OsLib_RELEASE_NOTES_4.4.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.4.md)
+- Latest release notes: [OsLib_RELEASE_NOTES_4.4.5.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.5.md)
 
 ## nuget publish automation
 
@@ -226,4 +231,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.4.4` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.4.5` command after RAI approval.

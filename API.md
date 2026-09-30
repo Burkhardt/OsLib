@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.4.4` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore participates unchanged in the synchronized CR044 dependency line. CR044 adds no mutable configuration, cloud probing, or reload API to OsLib; those responsibilities belong to standalone Amafu.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.4.5` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore participates unchanged in the synchronized CR047 dependency line; cloud detection remains isolated in standalone Amafu.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -388,6 +388,7 @@ The 4.4.1 typed diagram-command boundary is governed by
 
 		- `PitsTarget.Pit(...)` and `PitsTarget.Wwwa()` make the target mode explicit.
 		- `PitsSeedRequest`, `PitsExportRequest`, `PitsAuditRequest`, `PitsDeletePropertyRequest`, `PitsDeleteItemRequest`, `PitsMaintainRequest`, and `PitsCommandOptions` model the preferred 4.x commands and global options.
+		- `PitsSeedRequest.RequireExisting` emits CR047's canonical `--require-existing` token for single-pit strict patches and rejects an incompatible WWWA target before process start.
 		- `BuildMaintainArguments(...)`, `Maintain(...)`, and `MaintainAsync(...)` expose report/apply maintenance, explicit process-flag pruning with an age, explicit legacy-extension repair, and `PitsMaintainRequest.ArchiveEvents`.
 		- All typed calls targeting the same provider/root/pit are serialized across every `PitsCommand` instance in the current process. WWWA takes the fixed `Person`, `Object`, `Place`, `Activity` gate order; unrelated pits may run concurrently and queued cancellation launches no child.
 		- `PitsExportRequest.At` optionally requests CR017 point-in-time projection. The value is emitted as a canonical UTC timestamp in a separate `--at` argument token; omitting it preserves the established export argument vector.

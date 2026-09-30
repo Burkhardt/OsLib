@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-				<Version>4.4.4</Version>
+				<Version>4.4.5</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-				<PackageReleaseNotes>4.4.4 synchronized RAIkeep release for accepted CR044; cloud detection remains isolated in Amafu.</PackageReleaseNotes>
+				<PackageReleaseNotes>4.4.5 adds CR047 PitsSeedRequest.RequireExisting to the typed pits command boundary.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 

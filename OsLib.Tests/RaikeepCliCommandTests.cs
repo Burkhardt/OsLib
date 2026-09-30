@@ -48,6 +48,7 @@ namespace OsLib.Tests
 			var pitRoot = root / "pit root";
 			var request = PitsSeedRequest.ForPit("Activity Schedule", source) with
 			{
+				RequireExisting = true,
 				Options = new PitsCommandOptions
 				{
 					PitRoot = pitRoot,
@@ -65,10 +66,23 @@ namespace OsLib.Tests
 				new[]
 				{
 					"seed", "Activity Schedule", "--source", source.FullName,
+					"--require-existing",
 					"--pitroot", pitRoot.FullPath, "--cloud", "One Drive",
 					"--debug", "--nologo", "--retain-window"
 				},
 				CapturedArguments(result));
+		}
+
+		[Fact]
+		public void PitsCommand_StrictSeedRejectsWwwaBeforeProcessStart()
+		{
+			var source = root / "wwwa-source";
+			var request = PitsSeedRequest.ForWwwa(source) with { RequireExisting = true };
+
+			var error = Assert.Throws<ArgumentException>(() =>
+				new PitsCommand().BuildSeedArguments(request));
+
+			Assert.Contains("single Pit target", error.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]

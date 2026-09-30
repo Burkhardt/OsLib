@@ -62,6 +62,12 @@ namespace OsLib
 
 		public PitsTarget Target { get; }
 		public string Source { get; }
+		/// <summary>
+		/// Requires every incoming entity ID to exist in current living state before
+		/// <c>pits</c> opens the target for write (CR047). Emits the canonical
+		/// <c>--require-existing</c> spelling; <c>--patch</c> remains a CLI-only alias.
+		/// </summary>
+		public bool RequireExisting { get; init; }
 		public PitsCommandOptions Options { get; init; }
 
 		public static PitsSeedRequest ForPit(string pitName, RaiFile source)
@@ -213,11 +219,17 @@ namespace OsLib
 				throw new ArgumentNullException(nameof(request));
 			RequireTarget(request.Target);
 			RequireValue(request.Source, "source");
+			if (request.RequireExisting && request.Target.IsWwwa)
+				throw new ArgumentException(
+					"Strict patch mode applies to a single Pit target, not WWWA.",
+					nameof(request));
 
 			var arguments = new List<string> { "seed" };
 			request.Target.AppendTo(arguments);
 			arguments.Add("--source");
 			arguments.Add(request.Source);
+			if (request.RequireExisting)
+				arguments.Add("--require-existing");
 			AppendOptions(arguments, request.Options);
 			return arguments;
 		}
