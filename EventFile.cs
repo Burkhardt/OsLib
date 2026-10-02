@@ -79,7 +79,7 @@ namespace OsLib
 				throw new ArgumentException("A logical filename stem is required.", nameof(logicalStem));
 			if (content is null) throw new ArgumentNullException(nameof(content));
 			(canonical, sha) = CanonicalJson.CanonicalizeWithHash(content);
-			return $"{logicalStem}_{sha}";
+			return logicalStem;
 		}
 
 		internal static JObject ToSingleObject(object content)
@@ -248,19 +248,34 @@ namespace OsLib
 		}
 
 		/// <summary>
-		/// Validates that the trailing hash segment of an event filename (without
-		/// extension) matches the SHA-256 of the file's exact content. A collision nonce
-		/// suffix of the form <c>-{nonce}</c> after the hash is tolerated.
+		/// Checks whether an event filename stem has a legacy trailing 64-character SHA-256 hash.
+		/// </summary>
+		public static bool TryExtractLegacyHash(string fileNameWithoutExtension, out string hashSegment)
+		{
+			hashSegment = null;
+			var lastSeparator = fileNameWithoutExtension.LastIndexOf('_');
+			if (lastSeparator < 0 || lastSeparator == fileNameWithoutExtension.Length - 1) return false;
+			var candidate = fileNameWithoutExtension[(lastSeparator + 1)..];
+			var nonceSeparator = candidate.IndexOf('-');
+			if (nonceSeparator >= 0) candidate = candidate[..nonceSeparator];
+			if (candidate.Length == 64 && candidate.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f'))
+			{
+				hashSegment = candidate;
+				return true;
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Validates that the trailing hash segment of a legacy event filename (without
+		/// extension) matches the SHA-256 of the file's exact content. Clean event filenames
+		/// without a 64-character hash segment are considered valid.
 		/// </summary>
 		internal static bool IsHashValid(string fileNameWithoutExtension, string content)
 		{
-			var lastSeparator = fileNameWithoutExtension.LastIndexOf('_');
-			if (lastSeparator < 0 || lastSeparator == fileNameWithoutExtension.Length - 1) return false;
-			var hashSegment = fileNameWithoutExtension[(lastSeparator + 1)..];
-			var nonceSeparator = hashSegment.IndexOf('-');
-			if (nonceSeparator >= 0) hashSegment = hashSegment[..nonceSeparator];
-			if (hashSegment.Length != 64 || !hashSegment.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f')) return false;
-			return CanonicalJson.Sha256Hex(content) == hashSegment;
+			if (TryExtractLegacyHash(fileNameWithoutExtension, out var hashSegment))
+				return CanonicalJson.Sha256Hex(content) == hashSegment;
+			return true;
 		}
 	}
 

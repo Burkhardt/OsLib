@@ -36,7 +36,7 @@ public sealed class EventFileTests : IDisposable
 		var events = EventDirectory.Events(root);
 
 		Assert.Equal("event", file.Ext);
-		Assert.StartsWith(stem + "_", file.Name, StringComparison.Ordinal);
+		Assert.Equal(stem, file.Name);
 		Assert.EndsWith(".event", file.NameWithExtension, StringComparison.Ordinal);
 		Assert.Contains(file.NameWithExtension, events.Keys);
 	}
@@ -67,15 +67,16 @@ public sealed class EventFileTests : IDisposable
 	}
 
 	[Fact]
-	public void EventFile_ConstructorWritesImmediately_CreatesEventsChild_HashNamedSingleObject()
+	public void EventFile_ConstructorWritesImmediately_CreatesEventsChild_CleanNamedSingleObject()
 	{
 		var root = NewCloudRoot("ctor-write");
+		const string stem = "1000_TestMachine-app-1_Completed";
 		var content = new JObject { ["Stage"] = "Completed", ["Message"] = "hello" };
-		var eventFile = new EventFile(root, "1000_TestMachine-app-1_Completed", content);
+		var eventFile = new EventFile(root, stem, content);
 
 		Assert.True(eventFile.Exists(), "The constructor performs the create-once write.");
 		Assert.StartsWith((root / EventDirectory.Name).FullPath, eventFile.FullName);
-		Assert.EndsWith($"_{eventFile.ContentSha256}.event", eventFile.NameWithExtension);
+		Assert.Equal($"{stem}.event", eventFile.NameWithExtension);
 
 		var bytes = File.ReadAllText(eventFile.FullName, new UTF8Encoding(false));
 		Assert.StartsWith("{", bytes);
@@ -100,7 +101,7 @@ public sealed class EventFileTests : IDisposable
 		Assert.Single(Directory.GetFiles((root / EventDirectory.Name).Path, "*.event"));
 
 		var different = new EventFile(root, stem, new JObject { ["Role"] = "Loser" });
-		Assert.NotEqual(first.FullName, different.FullName); // different content → different hash path
+		Assert.NotEqual(first.FullName, different.FullName); // different content → nonce sibling path
 		Assert.Equal(2, Directory.GetFiles((root / EventDirectory.Name).Path, "*.event").Length);
 	}
 
@@ -110,11 +111,11 @@ public sealed class EventFileTests : IDisposable
 		var root = NewCloudRoot("collision");
 		var stem = "3000_TestMachine-app-1_Failed";
 		var content = new JObject { ["Message"] = "original" };
-		var (canonical, sha) = CanonicalJson.CanonicalizeWithHash(content);
+		var (canonical, _) = CanonicalJson.CanonicalizeWithHash(content);
 
-		// Pre-create different bytes at the exact hash-derived path.
+		// Pre-create different bytes at the exact clean path.
 		var eventsDir = (root / EventDirectory.Name).mkdir();
-		var collidingPath = new RaiFile(eventsDir, $"{stem}_{sha}", "event").FullName;
+		var collidingPath = new RaiFile(eventsDir, stem, "event").FullName;
 		File.WriteAllText(collidingPath, "{\"foreign\":true}", new UTF8Encoding(false));
 
 		var eventFile = new EventFile(root, stem, content);
