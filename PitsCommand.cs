@@ -62,6 +62,8 @@ namespace OsLib
 
 		public PitsTarget Target { get; }
 		public string Source { get; }
+		/// <summary>Buffered payload sent to stdin when Source is "-".</summary>
+		public string StandardInput { get; private init; }
 		/// <summary>
 		/// Requires every incoming entity ID to exist in current living state before
 		/// <c>pits</c> opens the target for write (CR047). Emits the canonical
@@ -72,6 +74,9 @@ namespace OsLib
 
 		public static PitsSeedRequest ForPit(string pitName, RaiFile source)
 			=> new(PitsTarget.Pit(pitName), source?.FullName);
+
+		public static PitsSeedRequest FromStandardInput(string pitName, string payload)
+			=> new(PitsTarget.Pit(pitName), "-") { StandardInput = payload ?? throw new ArgumentNullException(nameof(payload)) };
 
 		public static PitsSeedRequest ForWwwa(RaiPath sourceDirectory)
 			=> new(PitsTarget.Wwwa(), sourceDirectory?.FullPath);
@@ -218,7 +223,7 @@ namespace OsLib
 			if (request == null)
 				throw new ArgumentNullException(nameof(request));
 			RequireTarget(request.Target);
-			RequireValue(request.Source, "source");
+			if (request.Source != "-" || request.StandardInput is null) RequireValue(request.Source, "source");
 			if (request.RequireExisting && request.Target.IsWwwa)
 				throw new ArgumentException(
 					"Strict patch mode applies to a single Pit target, not WWWA.",
@@ -341,13 +346,16 @@ namespace OsLib
 
 		public RaiSystemResult Seed(PitsSeedRequest request)
 		{
-			var arguments = BuildSeedArguments(request);
-			return RunCoordinated(request.Target, request.Options, arguments);
+			return SeedAsync(request).GetAwaiter().GetResult();
 		}
-		public Task<RaiSystemResult> SeedAsync(PitsSeedRequest request, CancellationToken cancellationToken = default)
+		public async Task<RaiSystemResult> SeedAsync(PitsSeedRequest request, CancellationToken cancellationToken = default)
 		{
 			var arguments = BuildSeedArguments(request);
-			return RunCoordinatedAsync(request.Target, request.Options, arguments, cancellationToken);
+			if (request.StandardInput is null)
+				return await RunCoordinatedAsync(request.Target, request.Options, arguments, cancellationToken).ConfigureAwait(false);
+			using var gate = await AcquireGatesAsync(request.Target, request.Options, cancellationToken).ConfigureAwait(false);
+			var process = new RaiSystem(ResolveExecutable(), WithManagedAssembly(arguments)) { StandardInput = request.StandardInput };
+			return await process.ExecAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 		public RaiSystemResult Export(PitsExportRequest request)

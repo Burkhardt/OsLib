@@ -64,6 +64,10 @@ namespace OsLib     // aka OsLibCore
 		readonly List<string> argumentList = new();
 		public static string IndirectShellExecFile = new RaiFile("~/bin/start").FullName;
 		public int ExitCode = 0;
+		/// <summary>Optional buffered stdin. Null inherits stdin; empty closes it with no data.</summary>
+		public string StandardInput { get; init; }
+		/// <summary>Per-process environment overrides. A null value removes an inherited variable.</summary>
+		public IReadOnlyDictionary<string, string> EnvironmentOverrides { get; init; }
 		public string this[string environmentVariable]
 		{
 			get
@@ -117,6 +121,7 @@ namespace OsLib     // aka OsLibCore
 				StartInfo = CreateStartInfo(redirectStandardOutput: true, redirectStandardError: true),
 				EnableRaisingEvents = true
 			};
+			process.StartInfo.RedirectStandardInput = StandardInput is not null;
 			process.Start();
 
 			var standardOutputTask = process.StandardOutput.ReadToEndAsync();
@@ -131,6 +136,12 @@ namespace OsLib     // aka OsLibCore
 			var timedOut = false;
 			try
 			{
+				if (StandardInput is not null)
+				{
+					try { await process.StandardInput.WriteAsync(StandardInput.AsMemory(), linked.Token).ConfigureAwait(false); }
+					catch (System.IO.IOException) { /* A rejecting child may close stdin early; preserve its diagnostic. */ }
+					finally { process.StandardInput.Close(); }
+				}
 				await process.WaitForExitAsync(linked.Token).ConfigureAwait(false);
 			}
 			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -259,6 +270,10 @@ namespace OsLib     // aka OsLibCore
 					startInfo.ArgumentList.Add(arg ?? string.Empty);
 			}
 			else startInfo.Arguments = param;
+			if (EnvironmentOverrides is not null)
+				foreach (var variable in EnvironmentOverrides)
+					if (variable.Value is null) startInfo.Environment.Remove(variable.Key);
+					else startInfo.Environment[variable.Key] = variable.Value;
 			return startInfo;
 		}
 		private static (string command, string param) SplitCommandLine(string cmdLine)

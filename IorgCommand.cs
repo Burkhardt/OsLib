@@ -30,6 +30,16 @@ namespace OsLib
 		int NamingConvention)
 	{
 		public IorgCommandOptions Options { get; init; }
+		/// <summary>Direct HTTPS ZIP source; when set, Source must be null.</summary>
+		public Uri SourceUrl { get; init; }
+		public string ImportId { get; init; }
+		public string ActivityId { get; init; }
+		public string Exif { get; init; }
+		public bool Json { get; init; }
+		public long? MaxArchiveBytes { get; init; }
+		public long? MaxExpandedBytes { get; init; }
+		public int? MaxEntries { get; init; }
+		public int? DownloadTimeoutSeconds { get; init; }
 	}
 
 	public sealed record IorgCleanRequest(string ItemId, RaiPath Root)
@@ -41,6 +51,7 @@ namespace OsLib
 
 	public sealed record IorgListRequest(string FileNamePattern, RaiPath Root)
 	{
+		public string Exif { get; init; }
 		public bool Json { get; init; }
 		public bool Quiet { get; init; }
 		public IorgCommandOptions Options { get; init; }
@@ -100,7 +111,10 @@ namespace OsLib
 		{
 			if (request == null)
 				throw new ArgumentNullException(nameof(request));
-			RequirePath(request.Source, nameof(request.Source));
+			if (request.SourceUrl is null) RequirePath(request.Source, nameof(request.Source));
+			else if (request.Source is not null || !request.SourceUrl.IsAbsoluteUri || request.SourceUrl.Scheme != Uri.UriSchemeHttps || !string.IsNullOrEmpty(request.SourceUrl.UserInfo))
+				throw new ArgumentException("Specify Source or a direct HTTPS SourceUrl without embedded credentials.");
+			if (request.Json || request.Exif is not null) RequireValue(request.ImportId, nameof(request.ImportId));
 			RequirePath(request.Root, nameof(request.Root));
 			RequireConvention(request.PathConvention, nameof(request.PathConvention), 4);
 			RequireConvention(request.NamingConvention, nameof(request.NamingConvention), 3);
@@ -108,13 +122,28 @@ namespace OsLib
 			var arguments = new List<string>
 			{
 				"organize",
-				"--source", request.Source.FullPath,
+				request.SourceUrl is null ? "--source" : "--source-url", request.SourceUrl?.AbsoluteUri ?? request.Source.FullPath,
 				RootOption(request.Options), request.Root.FullPath,
 				"--pathconv", request.PathConvention.ToString(),
 				"--nameconv", request.NamingConvention.ToString()
 			};
+			AppendOptionalValue(arguments, "--import-id", request.ImportId, nameof(request.ImportId));
+			AppendOptionalValue(arguments, "--activity-id", request.ActivityId, nameof(request.ActivityId));
+			AppendOptionalValue(arguments, "--exif", request.Exif, nameof(request.Exif));
+			if (request.Json) arguments.Add("--json");
+			AppendLimit(arguments, "--max-archive-bytes", request.MaxArchiveBytes);
+			AppendLimit(arguments, "--max-expanded-bytes", request.MaxExpandedBytes);
+			AppendLimit(arguments, "--max-entries", request.MaxEntries);
+			AppendLimit(arguments, "--download-timeout-seconds", request.DownloadTimeoutSeconds);
 			AppendOptions(arguments, request.Options);
 			return arguments;
+		}
+
+		private static void AppendLimit(List<string> arguments, string option, long? value)
+		{
+			if (value is null) return;
+			if (value <= 0) throw new ArgumentException($"{option} must be positive.");
+			arguments.AddRange([option, value.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)]);
 		}
 
 		public IReadOnlyList<string> BuildCleanArguments(IorgCleanRequest request)
@@ -153,6 +182,7 @@ namespace OsLib
 				throw new ArgumentException("FileNamePattern must be a filename pattern, not a path.", nameof(request.FileNamePattern));
 			RequirePath(request.Root, nameof(request.Root));
 			RequireOutputMode(request.Json, request.Quiet);
+			if (request.Exif is not null && request.Quiet) throw new ArgumentException("Exif cannot be combined with Quiet.");
 
 			var arguments = new List<string>
 			{
@@ -160,6 +190,7 @@ namespace OsLib
 				RootOption(request.Options), request.Root.FullPath
 			};
 			AppendOptions(arguments, request.Options);
+			AppendOptionalValue(arguments, "--exif", request.Exif, nameof(request.Exif));
 			if (request.Json) arguments.Add("--json");
 			if (request.Quiet) arguments.Add("--quiet");
 			return arguments;

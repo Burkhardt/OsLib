@@ -353,6 +353,21 @@ namespace OsLib
 		public bool DirEmpty => string.IsNullOrEmpty(Path?.ToString()) || !Directory.EnumerateFileSystemEntries(Path.ToString()).Any();
 		public virtual RaiPath mkdir() => Path?.mkdir() ?? RaiPath.mkdir();
 		public static RaiPath mkdir(string dirname = null) => RaiPath.mkdir(dirname);
+		/// <summary>Opens a bounded-memory, seekable read stream without creating anything.</summary>
+		public Stream OpenRead() => new FileStream(FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+		/// <summary>
+		/// Copies bytes into a new final pathname, refusing to replace an existing file.
+		/// CR049 uses this after collision preflight; CreateNew also detects a competing writer.
+		/// </summary>
+		public async Task WriteNewFromAsync(Stream source, CancellationToken ct = default)
+		{
+			if (source == null) throw new ArgumentNullException(nameof(source));
+			mkdir();
+			await using var target = new FileStream(FullName, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, useAsync: true);
+			await source.CopyToAsync(target, ct).ConfigureAwait(false);
+		}
+
 		public async Task WriteFromAsync(Stream source, CancellationToken ct = default)
 		{
 			if (source == null) throw new ArgumentNullException(nameof(source));

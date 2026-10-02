@@ -6,6 +6,12 @@ OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](
 
 _formerly_ __OsLibCore__
 
+## 4.4.6
+
+Adds asynchronous native `UnzipCommand`, per-process environment overrides, buffered stdin for typed `pits` calls, streaming exclusive file writes, and typed ZIP/EXIF `iorg` arguments.
+
+Release notes: [OsLib_RELEASE_NOTES_4.4.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.6.md).
+
 ## 4.4.5
 
 - Adds `PitsSeedRequest.RequireExisting` for typed, token-safe CR047 strict patch invocation.

@@ -23,6 +23,27 @@ namespace OsLib.Tests
 		public void Dispose() => Cleanup();
 
 		[Fact]
+		public void IorgImportAndExifRequestsPreserveSelectorsAndOptionalLimits()
+		{
+			var command = new IorgCommand();
+			var request = new IorgOrganizeRequest(null, root, 3, 3)
+			{
+				SourceUrl = new Uri("https://example.org/photos.zip"), ImportId = "Import001",
+				ActivityId = "Activity001", Json = true, Exif = "DateTimeOriginal,Thumbnail.*",
+				MaxArchiveBytes = 40_000_000_000, Options = new IorgCommandOptions { Tenant = "Nomsa" }
+			};
+			var args = command.BuildOrganizeArguments(request);
+			Assert.Contains("--source-url", args);
+			Assert.Contains("DateTimeOriginal,Thumbnail.*", args);
+			Assert.Contains("40000000000", args);
+			Assert.DoesNotContain("--max-expanded-bytes", args);
+			var list = command.BuildListArguments(new IorgListRequest("Nomsa*", root) { Exif = "*", Json = true });
+			Assert.Contains("--exif", list);
+			Assert.Contains("*", list);
+			Assert.Throws<ArgumentException>(() => command.BuildListArguments(new IorgListRequest("Nomsa*", root) { Exif = "*", Quiet = true }));
+		}
+
+		[Fact]
 		public void CliVerbDispatch_DetectsReservedVerbAndBuildsExactCorrection()
 		{
 			var diagnostic = CliVerbDispatch.DetectMisplacedVerb(
