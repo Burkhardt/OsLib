@@ -1,5 +1,12 @@
 # OsLib
 
+## 4.4.8
+
+Coordinated 4.4.8 foundation dependency; public behavior is unchanged.
+
+Release notes: [OsLib_RELEASE_NOTES_4.4.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.8.md).
+
+
 Handling of files, paths, temp/backup directories, and system calls.
 
 OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](https://github.com/Burkhardt/RAIkeep/tree/main/doc) directory under `OsLib_...` filenames; they are not stored separately in this child repository.
