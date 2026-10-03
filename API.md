@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.5.2` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore participates unchanged in the synchronized 4.5.2 dependency line; cloud detection remains isolated in standalone Amafu.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.5.3` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore participates unchanged in the synchronized 4.5.3 dependency line; cloud detection remains isolated in standalone Amafu.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -460,3 +460,13 @@ The 4.4.1 typed diagram-command boundary is governed by
 
 - Image-domain classes are intentionally maintained in a dedicated image package.
 - OsLib remains responsible for generic file/path/process foundations and shared contracts.
+
+## CR051 configuration compatibility (target 4.5.3)
+
+Amafu defines Cloud configuration entries, including account-qualified labels.
+Os.Config's immutable startup snapshot reads every nonempty string root in
+`Cloud`; it does not restrict names to four provider families or filter roots by
+`DefaultCloudOrder`. Normalization and deduplication are retained. RaiPath cloud
+classification also resolves symbolic shortcuts and existing ancestors of new
+file paths, so `~/.CloudStorage` access receives cloud-safe file handling.
+No configuration refresh or mutation API is introduced.

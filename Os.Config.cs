@@ -127,7 +127,7 @@ namespace OsLib
 				{
 					var normalized = NormalizeConfiguredDirectory(path, UserHomeDirText, AppRootDirText);
 					var comparison = Type == OsType.Windows ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-					return cloudRoots.Any(root => normalized.StartsWith(root, comparison));
+					return ConfiguredCloudPaths.Contains(cloudRoots, normalized, comparison);
 				}
 				catch
 				{
@@ -174,13 +174,9 @@ namespace OsLib
 			}
 			private static IReadOnlyList<string> GetCloudRoots(JObject config, string userHomeDirText, string appRootDirText)
 			{
-				var cloud = config["Cloud"] as JObject;
-				if (cloud == null) return Array.Empty<string>();
-				return new[] { "Dropbox", "OneDrive", "GoogleDrive", "ICloudDrive" }
-					.Select(provider => NormalizeOptionalConfiguredDirectory(cloud[provider]?.ToString(), userHomeDirText, appRootDirText))
-					.Where(root => !string.IsNullOrWhiteSpace(root))
-					.Distinct(Type == OsType.Windows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
-					.ToList();
+				return ConfiguredCloudPaths.Read(config,
+					value => NormalizeConfiguredDirectory(value, userHomeDirText, appRootDirText),
+					Type == OsType.Windows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 			}
 			private static string ResolveBootstrapConfigPath(string userHomeDirText, string appRootDirText)
 			{
