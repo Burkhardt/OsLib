@@ -1,5 +1,11 @@
 # OsLib
 
+## 4.5.0
+
+Coordinated 4.5.0 foundation dependency; public behavior is unchanged.
+
+Release notes: [OsLib_RELEASE_NOTES_4.5.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.5.0.md).
+
 ## 4.4.8
 
 Coordinated 4.4.8 foundation dependency; public behavior is unchanged.
@@ -235,7 +241,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## release notes
 
-- Latest release notes: [OsLib_RELEASE_NOTES_4.4.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.8.md)
+- Latest release notes: [OsLib_RELEASE_NOTES_4.5.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.5.0.md)
 
 ## nuget publish automation
 
@@ -244,4 +250,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.4.8` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.5.0` command after RAI approval.
