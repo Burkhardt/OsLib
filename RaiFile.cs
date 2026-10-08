@@ -136,6 +136,10 @@ namespace OsLib
 		/// Gets the physical file's last-write timestamp in UTC.
 		/// </summary>
 		public DateTimeOffset LastWriteTimeUtc => File.GetLastWriteTimeUtc(FullName);
+		/// <summary>
+		/// Gets the physical file length in bytes through the typed file boundary.
+		/// </summary>
+		public long Length => new FileInfo(FullName).Length;
 		public int rm()
 		{
 			if (!File.Exists(FullName)) return 0;
