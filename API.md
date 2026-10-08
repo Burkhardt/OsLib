@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.5.5` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore participates unchanged in the synchronized 4.5.5 dependency line; cloud detection remains isolated in standalone Amafu.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.5.6` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore participates unchanged in the synchronized 4.5.6 dependency line; cloud detection remains isolated in standalone Amafu.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
