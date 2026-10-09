@@ -19,6 +19,8 @@ namespace OsLib
 
 		public string ExecutableName => executableName;
 		public string PackageName { get; }
+		/// <summary>Optional SSH target. When set, execution is delegated to the target host.</summary>
+		public string RemoteTarget { get; set; }
 		public virtual string DisplayName => GetType().Name;
 		public virtual IEnumerable<string> CandidateExecutables
 		{
@@ -32,7 +34,26 @@ namespace OsLib
 		protected virtual string MacPackageName => PackageName;
 		protected virtual string WindowsPackageId => PackageName;
 
-		public bool IsAvailable() => TryResolveExecutable(out _);
+		/// <summary>Configures this command to execute on an SSH target.</summary>
+		public TCommand OverSsh<TCommand>(string remoteTarget) where TCommand : CliCommand
+		{
+			if (string.IsNullOrWhiteSpace(remoteTarget))
+				throw new ArgumentException("An SSH target is required.", nameof(remoteTarget));
+			RemoteTarget = remoteTarget;
+			return (TCommand)this;
+		}
+
+		public bool IsAvailable()
+		{
+			if (string.IsNullOrWhiteSpace(RemoteTarget))
+				return TryResolveExecutable(out _);
+
+			var result = ExecuteRemoteCommand(
+				RemoteTarget,
+				$"which {QuotePosixShellToken(ExecutableName)}",
+				timeoutMilliseconds: 120000);
+			return result.ExitCode == 0 && !string.IsNullOrWhiteSpace(result.StandardOutput);
+		}
 
 		public bool TryResolveExecutable(out string executable)
 		{
@@ -60,11 +81,15 @@ namespace OsLib
 
 		public virtual RaiSystemResult Run(string arguments = "")
 		{
+			if (!string.IsNullOrWhiteSpace(RemoteTarget))
+				return ExecuteRemoteCommand(RemoteTarget, BuildPosixShellCommand(arguments), 120000);
 			return RunAsync(arguments).GetAwaiter().GetResult();
 		}
 
 		public virtual Task<RaiSystemResult> RunAsync(string arguments = "", CancellationToken cancellationToken = default)
 		{
+			if (!string.IsNullOrWhiteSpace(RemoteTarget))
+				return ExecuteRemoteCommandAsync(RemoteTarget, BuildPosixShellCommand(arguments), 120000, cancellationToken);
 			var rs = new RaiSystem(ResolveExecutable(), arguments ?? string.Empty);
 			return rs.ExecAsync(cancellationToken);
 		}
@@ -77,15 +102,11 @@ namespace OsLib
 		public virtual Task<RaiSystemResult> RunAsync(
 			IEnumerable<string> arguments,
 			CancellationToken cancellationToken = default)
-		{
-			var rs = new RaiSystem(ResolveExecutable(), arguments ?? Enumerable.Empty<string>());
-			return rs.ExecAsync(cancellationToken);
-		}
+			=> RunWithRemoteTargetAsync(arguments, remoteTarget: null, 120000, cancellationToken);
 
 		public virtual RaiSystemResult Run(IEnumerable<string> arguments, int timeoutMilliseconds)
 		{
-			var rs = new RaiSystem(ResolveExecutable(), arguments ?? Enumerable.Empty<string>());
-			return rs.ExecResult(timeoutMilliseconds);
+			return RunWithRemoteTarget(arguments, remoteTarget: null, timeoutMilliseconds);
 		}
 
 		public virtual Task<RaiSystemResult> RunAsync(
@@ -93,8 +114,36 @@ namespace OsLib
 			int timeoutMilliseconds,
 			CancellationToken cancellationToken = default)
 		{
-			var rs = new RaiSystem(ResolveExecutable(), arguments ?? Enumerable.Empty<string>());
-			return rs.ExecAsync(timeoutMilliseconds, cancellationToken);
+			return RunWithRemoteTargetAsync(arguments, remoteTarget: null, timeoutMilliseconds, cancellationToken);
+		}
+
+		/// <summary>
+		/// Executes typed arguments locally or over an explicitly supplied SSH target.
+		/// A supplied target takes precedence over <see cref="RemoteTarget"/>.
+		/// </summary>
+		protected RaiSystemResult RunWithRemoteTarget(
+			IEnumerable<string> arguments,
+			string remoteTarget,
+			int timeoutMilliseconds = 120000)
+		{
+			var target = string.IsNullOrWhiteSpace(remoteTarget) ? RemoteTarget : remoteTarget;
+			if (!string.IsNullOrWhiteSpace(target))
+				return ExecuteRemoteCommand(target, BuildPosixShellCommand(arguments), timeoutMilliseconds);
+			return new RaiSystem(ResolveExecutable(), arguments ?? Enumerable.Empty<string>()).ExecResult(timeoutMilliseconds);
+		}
+
+		/// <summary>Asynchronously executes typed arguments locally or through SSH.</summary>
+		protected Task<RaiSystemResult> RunWithRemoteTargetAsync(
+			IEnumerable<string> arguments,
+			string remoteTarget,
+			int timeoutMilliseconds = 120000,
+			CancellationToken cancellationToken = default)
+		{
+			var target = string.IsNullOrWhiteSpace(remoteTarget) ? RemoteTarget : remoteTarget;
+			if (!string.IsNullOrWhiteSpace(target))
+				return ExecuteRemoteCommandAsync(target, BuildPosixShellCommand(arguments), timeoutMilliseconds, cancellationToken);
+			return new RaiSystem(ResolveExecutable(), arguments ?? Enumerable.Empty<string>())
+				.ExecAsync(timeoutMilliseconds, cancellationToken);
 		}
 
 		public string BuildPosixShellCommand(IEnumerable<string> arguments)
@@ -105,6 +154,38 @@ namespace OsLib
 					.Concat(arguments ?? Enumerable.Empty<string>())
 					.Select(QuotePosixShellToken));
 		}
+
+		/// <summary>
+		/// Preserves the legacy string-argument form for remote execution. New typed
+		/// wrappers should use the tokenized overload above.
+		/// </summary>
+		public string BuildPosixShellCommand(string arguments)
+		{
+			var executable = QuotePosixShellToken(ExecutableName);
+			return string.IsNullOrWhiteSpace(arguments) ? executable : $"{executable} {arguments}";
+		}
+
+		/// <summary>SSH seam for command wrappers and deterministic unit tests.</summary>
+		protected virtual RaiSystemResult ExecuteRemoteCommand(
+			string remoteTarget,
+			string remoteCommand,
+			int timeoutMilliseconds)
+			=> SshSystem.ExecuteRemoteCommand(remoteTarget, remoteCommand, timeoutMilliseconds);
+
+		private Task<RaiSystemResult> ExecuteRemoteCommandAsync(
+			string remoteTarget,
+			string remoteCommand,
+			int timeoutMilliseconds,
+			CancellationToken cancellationToken)
+			=> Task.Factory.StartNew(
+				() =>
+				{
+					cancellationToken.ThrowIfCancellationRequested();
+					return ExecuteRemoteCommand(remoteTarget, remoteCommand, timeoutMilliseconds);
+				},
+				cancellationToken,
+				TaskCreationOptions.LongRunning,
+				TaskScheduler.Default);
 
 		public virtual string GetInstallCommand()
 		{

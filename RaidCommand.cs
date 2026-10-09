@@ -64,6 +64,21 @@ namespace OsLib
 
 	public sealed record RaidValidateRequest(RaiFile Target);
 
+	/// <summary>Inspects a diagram through the modern raid CLI surface.</summary>
+	public sealed record RaidInspectRequest(RaiFile DiagramPath)
+	{
+		public bool Json { get; init; }
+	}
+
+	/// <summary>Renders one diagram to an SVG file.</summary>
+	public sealed record RaidRenderRequest(RaiFile DiagramPath, RaiFile OutputFile);
+
+	/// <summary>Builds all derived diagram artifacts into an output directory.</summary>
+	public sealed record RaidBuildRequest(RaiFile DiagramPath, RaiPath OutputDirectory)
+	{
+		public bool Json { get; init; }
+	}
+
 	/// <summary>Typed command boundary for the RAIkeep <c>raid</c> tool.</summary>
 	public sealed class RaidCommand : CliCommand
 	{
@@ -90,6 +105,8 @@ namespace OsLib
 
 		public static RaidCommand ForManagedAssembly(RaiFile managedAssembly, string hostCommand = "dotnet")
 			=> new(managedAssembly, hostCommand, managed: true);
+
+		public RaidCommand OverSsh(string remoteTarget) => base.OverSsh<RaidCommand>(remoteTarget);
 
 		public override IEnumerable<string> CandidateExecutables
 		{
@@ -165,6 +182,33 @@ namespace OsLib
 			return ["validate", request.Target.FullName];
 		}
 
+		public IReadOnlyList<string> BuildInspectArguments(RaidInspectRequest request)
+		{
+			if (request == null) throw new ArgumentNullException(nameof(request));
+			RequireFile(request.DiagramPath, nameof(request.DiagramPath));
+			var arguments = new List<string> { "inspect", request.DiagramPath.FullName };
+			if (request.Json) arguments.Add("--json");
+			return arguments;
+		}
+
+		public IReadOnlyList<string> BuildRenderArguments(RaidRenderRequest request)
+		{
+			if (request == null) throw new ArgumentNullException(nameof(request));
+			RequireFile(request.DiagramPath, nameof(request.DiagramPath));
+			RequireFile(request.OutputFile, nameof(request.OutputFile));
+			return ["render", request.DiagramPath.FullName, "--output", request.OutputFile.FullName];
+		}
+
+		public IReadOnlyList<string> BuildBuildArguments(RaidBuildRequest request)
+		{
+			if (request == null) throw new ArgumentNullException(nameof(request));
+			RequireFile(request.DiagramPath, nameof(request.DiagramPath));
+			RequirePath(request.OutputDirectory, nameof(request.OutputDirectory));
+			var arguments = new List<string> { "build", request.DiagramPath.FullName, "--out", request.OutputDirectory.FullPath };
+			if (request.Json) arguments.Add("--json");
+			return arguments;
+		}
+
 		public RaiSystemResult Import(RaidImportRequest request) => RunSerialized(BuildImportArguments(request));
 		public Task<RaiSystemResult> ImportAsync(RaidImportRequest request, CancellationToken cancellationToken = default)
 			=> RunSerializedAsync(BuildImportArguments(request), cancellationToken);
@@ -177,6 +221,15 @@ namespace OsLib
 		public RaiSystemResult Validate(RaidValidateRequest request) => RunSerialized(BuildValidateArguments(request));
 		public Task<RaiSystemResult> ValidateAsync(RaidValidateRequest request, CancellationToken cancellationToken = default)
 			=> RunSerializedAsync(BuildValidateArguments(request), cancellationToken);
+		public RaiSystemResult Inspect(RaidInspectRequest request) => RunSerialized(BuildInspectArguments(request));
+		public Task<RaiSystemResult> InspectAsync(RaidInspectRequest request, CancellationToken cancellationToken = default)
+			=> RunSerializedAsync(BuildInspectArguments(request), cancellationToken);
+		public RaiSystemResult Render(RaidRenderRequest request) => RunSerialized(BuildRenderArguments(request));
+		public Task<RaiSystemResult> RenderAsync(RaidRenderRequest request, CancellationToken cancellationToken = default)
+			=> RunSerializedAsync(BuildRenderArguments(request), cancellationToken);
+		public RaiSystemResult Build(RaidBuildRequest request) => RunSerialized(BuildBuildArguments(request));
+		public Task<RaiSystemResult> BuildAsync(RaidBuildRequest request, CancellationToken cancellationToken = default)
+			=> RunSerializedAsync(BuildBuildArguments(request), cancellationToken);
 
 		public override RaiSystemResult Run(IEnumerable<string> arguments)
 			=> base.RunAsync(WithManagedAssembly(arguments)).GetAwaiter().GetResult();

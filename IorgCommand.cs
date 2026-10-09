@@ -19,6 +19,8 @@ namespace OsLib
 		/// </summary>
 		public bool RootIsApplicationRoot { get; init; }
 		public string CloudProvider { get; init; }
+		/// <summary>Optional SSH target for this typed invocation.</summary>
+		public string RemoteTarget { get; init; }
 		public bool Debug { get; init; }
 		public bool NoLogo { get; init; }
 	}
@@ -92,6 +94,8 @@ namespace OsLib
 
 		public static IorgCommand ForManagedAssembly(RaiFile managedAssembly, string hostCommand = "dotnet")
 			=> new(managedAssembly, hostCommand, managed: true);
+
+		public IorgCommand OverSsh(string remoteTarget) => base.OverSsh<IorgCommand>(remoteTarget);
 
 		public override IEnumerable<string> CandidateExecutables
 		{
@@ -221,29 +225,33 @@ namespace OsLib
 			return arguments;
 		}
 
-		public RaiSystemResult Organize(IorgOrganizeRequest request) => Run(BuildOrganizeArguments(request));
+		public RaiSystemResult Organize(IorgOrganizeRequest request)
+			=> RunWithRequestTarget(BuildOrganizeArguments(request), request?.Options);
 		public Task<RaiSystemResult> OrganizeAsync(
 			IorgOrganizeRequest request,
 			CancellationToken cancellationToken = default)
-			=> RunAsync(BuildOrganizeArguments(request), cancellationToken);
+			=> RunWithRequestTargetAsync(BuildOrganizeArguments(request), request?.Options, cancellationToken);
 
-		public RaiSystemResult Clean(IorgCleanRequest request) => Run(BuildCleanArguments(request));
+		public RaiSystemResult Clean(IorgCleanRequest request)
+			=> RunWithRequestTarget(BuildCleanArguments(request), request?.Options);
 		public Task<RaiSystemResult> CleanAsync(
 			IorgCleanRequest request,
 			CancellationToken cancellationToken = default)
-			=> RunAsync(BuildCleanArguments(request), cancellationToken);
+			=> RunWithRequestTargetAsync(BuildCleanArguments(request), request?.Options, cancellationToken);
 
-		public RaiSystemResult List(IorgListRequest request) => Run(BuildListArguments(request));
+		public RaiSystemResult List(IorgListRequest request)
+			=> RunWithRequestTarget(BuildListArguments(request), request?.Options);
 		public Task<RaiSystemResult> ListAsync(
 			IorgListRequest request,
 			CancellationToken cancellationToken = default)
-			=> RunAsync(BuildListArguments(request), cancellationToken);
+			=> RunWithRequestTargetAsync(BuildListArguments(request), request?.Options, cancellationToken);
 
-		public RaiSystemResult Move(IorgMoveRequest request) => Run(BuildMoveArguments(request));
+		public RaiSystemResult Move(IorgMoveRequest request)
+			=> RunWithRequestTarget(BuildMoveArguments(request), request?.Options);
 		public Task<RaiSystemResult> MoveAsync(
 			IorgMoveRequest request,
 			CancellationToken cancellationToken = default)
-			=> RunAsync(BuildMoveArguments(request), cancellationToken);
+			=> RunWithRequestTargetAsync(BuildMoveArguments(request), request?.Options, cancellationToken);
 
 		public override RaiSystemResult Run(IEnumerable<string> arguments)
 			=> base.RunAsync(WithManagedAssembly(arguments)).GetAwaiter().GetResult();
@@ -271,6 +279,20 @@ namespace OsLib
 			foreach (var argument in arguments)
 				yield return argument;
 		}
+
+		private RaiSystemResult RunWithRequestTarget(
+			IEnumerable<string> arguments,
+			IorgCommandOptions options)
+			=> RunWithRemoteTarget(WithManagedAssembly(arguments), options?.RemoteTarget);
+
+		private Task<RaiSystemResult> RunWithRequestTargetAsync(
+			IEnumerable<string> arguments,
+			IorgCommandOptions options,
+			CancellationToken cancellationToken)
+			=> RunWithRemoteTargetAsync(
+				WithManagedAssembly(arguments),
+				options?.RemoteTarget,
+				cancellationToken: cancellationToken);
 
 		private static void AppendOptions(List<string> arguments, IorgCommandOptions options)
 		{

@@ -103,6 +103,62 @@ namespace OsLib.Tests
 			Assert.False(string.IsNullOrWhiteSpace(new SevenZipCommand().GetInstallCommand()));
 		}
 
+		[Fact]
+		public void CliCommand_IsAvailable_UsesLocalResolution_WhenNoSshTargetIsConfigured()
+		{
+			var root = CreateTempRoot();
+			try
+			{
+				var executable = OperatingSystem.IsWindows()
+					? CreateExecutableScript(root, "fleet.cmd", "@echo off\r\n")
+					: CreateExecutableScript(root, "fleet", "#!/bin/sh\nexit 0\n");
+				var sut = new RemoteCaptureCommand(executable);
+
+				Assert.True(sut.IsAvailable());
+				Assert.Equal(0, sut.RemoteCallCount);
+			}
+			finally
+			{
+				Cleanup(root);
+			}
+		}
+
+		[Fact]
+		public void CliCommand_OverSsh_ProbesAndRunsUsingQuotedRemoteCommand()
+		{
+			var sut = new RemoteCaptureCommand("fleet-tool")
+			{
+				RemoteResult = new RaiSystemResult { ExitCode = 0, StandardOutput = "/usr/local/bin/fleet-tool\n" }
+			};
+
+			Assert.Same(sut, sut.OverSsh<RemoteCaptureCommand>("worker@mdlaka"));
+			Assert.True(sut.IsAvailable());
+			Assert.Equal("worker@mdlaka", sut.LastRemoteTarget);
+			Assert.Equal("which fleet-tool", sut.LastRemoteCommand);
+
+			var result = sut.Run(["name with spaces", "owner's"]);
+
+			Assert.Equal(0, result.ExitCode);
+			Assert.Equal("worker@mdlaka", sut.LastRemoteTarget);
+			Assert.Equal("fleet-tool 'name with spaces' 'owner'\"'\"'s'", sut.LastRemoteCommand);
+			Assert.Equal(2, sut.RemoteCallCount);
+		}
+
+		[Fact]
+		public async Task CliCommand_RunAsync_DelegatesToSshWithoutBlockingCaller()
+		{
+			var sut = new RemoteCaptureCommand("fleet-tool")
+			{
+				RemoteResult = new RaiSystemResult { ExitCode = 0, StandardOutput = "done" }
+			};
+			sut.OverSsh<RemoteCaptureCommand>("worker@mdlaka");
+
+			var result = await sut.RunAsync(["status"], TestContext.Current.CancellationToken);
+
+			Assert.Equal(0, result.ExitCode);
+			Assert.Equal("fleet-tool status", sut.LastRemoteCommand);
+		}
+
 		private sealed class TestCliCommand : CliCommand
 		{
 			public TestCliCommand(string executable) : base(executable)
@@ -126,6 +182,29 @@ namespace OsLib.Tests
 					foreach (var candidate in candidates)
 						yield return candidate;
 				}
+			}
+		}
+
+		private sealed class RemoteCaptureCommand : CliCommand
+		{
+			public RemoteCaptureCommand(string executable) : base(executable)
+			{
+			}
+
+			public RaiSystemResult RemoteResult { get; set; } = new RaiSystemResult();
+			public string LastRemoteTarget { get; private set; } = string.Empty;
+			public string LastRemoteCommand { get; private set; } = string.Empty;
+			public int RemoteCallCount { get; private set; }
+
+			protected override RaiSystemResult ExecuteRemoteCommand(
+				string remoteTarget,
+				string remoteCommand,
+				int timeoutMilliseconds)
+			{
+				LastRemoteTarget = remoteTarget;
+				LastRemoteCommand = remoteCommand;
+				RemoteCallCount++;
+				return RemoteResult;
 			}
 		}
 	}

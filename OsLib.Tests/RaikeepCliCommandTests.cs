@@ -481,6 +481,73 @@ namespace OsLib.Tests
 		}
 
 		[Fact]
+		public void FleetCommands_BuildTypedArguments_WithSandboxFlagsBeforeDenoScript()
+		{
+			var script = root / "scripts" / "process.ts";
+			var context = root / "context.json";
+			var deno = new DenoCommand();
+			Assert.Equal(
+				new[]
+				{
+					"run", "--allow-net=localhost:5042,example.org", "--allow-read=/images",
+					"--deny-read=/secrets", "--allow-env", "--allow-run", script.FullPath,
+					"--context-file", context.FullPath, "--dry-run"
+				},
+				deno.BuildRunArguments(new DenoRunRequest(script)
+				{
+					AllowNet = "localhost:5042,example.org",
+					AllowRead = "/images",
+					DenyRead = "/secrets",
+					AllowEnv = true,
+					AllowRun = true,
+					ContextFile = context,
+					AdditionalArgs = ["--dry-run"]
+				}));
+
+			var amafu = new AmafuCommand();
+			Assert.Equal(
+				new[] { "detect", "--cloud", "ICloudDrive", "--all", "--json", "--nologo" },
+				amafu.BuildDetectArguments(new AmafuDetectRequest
+				{
+					CloudProvider = "ICloudDrive", All = true, Json = true,
+					Options = new AmafuCommandOptions { NoLogo = true }
+				}));
+			Assert.Equal(
+				new[] { "init", "--cloud", "ICloudDrive", "--create-links", "--json" },
+				amafu.BuildInitArguments(new AmafuInitRequest
+				{
+					CloudProvider = "ICloudDrive", CreateLinks = true, Json = true
+				}));
+
+			var jpit = new JpitCommand();
+			Assert.Equal(
+				new[] { "list", "--root", root.FullPath, "--all", "--long", "--cloud", "ICloudDrive", "--nologo" },
+				jpit.BuildListArguments(new JpitListRequest(root)
+				{
+					All = true, Long = true,
+					Options = new JpitCommandOptions { CloudProvider = "ICloudDrive", NoLogo = true }
+				}));
+		}
+
+		[Fact]
+		public void RaidCommand_BuildsInspectRenderAndBuildForms()
+		{
+			var command = new RaidCommand();
+			var diagram = new RaiFile(root, "Architecture", "raid");
+			var svg = new RaiFile(root, "Architecture", "svg");
+
+			Assert.Equal(
+				new[] { "inspect", diagram.FullName, "--json" },
+				command.BuildInspectArguments(new RaidInspectRequest(diagram) { Json = true }));
+			Assert.Equal(
+				new[] { "render", diagram.FullName, "--output", svg.FullName },
+				command.BuildRenderArguments(new RaidRenderRequest(diagram, svg)));
+			Assert.Equal(
+				new[] { "build", diagram.FullName, "--out", (root / "build").FullPath, "--json" },
+				command.BuildBuildArguments(new RaidBuildRequest(diagram, root / "build") { Json = true }));
+		}
+
+		[Fact]
 		public async Task RaidCommand_ExecutesExactTokenizedArgumentsThroughCliCommand()
 		{
 			var command = CreateRaidCaptureCommand(exitCode: 0);

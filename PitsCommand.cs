@@ -11,6 +11,8 @@ namespace OsLib
 	{
 		public RaiPath PitRoot { get; init; }
 		public string CloudProvider { get; init; }
+		/// <summary>Optional SSH target for this typed invocation.</summary>
+		public string RemoteTarget { get; init; }
 		public bool Debug { get; init; }
 		public bool NoLogo { get; init; }
 		public bool RetainWindow { get; init; }
@@ -204,6 +206,8 @@ namespace OsLib
 		public static PitsCommand ForManagedAssembly(RaiFile managedAssembly, string hostCommand = "dotnet")
 			=> new(managedAssembly, hostCommand, managed: true);
 
+		public PitsCommand OverSsh(string remoteTarget) => base.OverSsh<PitsCommand>(remoteTarget);
+
 		public override IEnumerable<string> CandidateExecutables
 		{
 			get
@@ -353,6 +357,8 @@ namespace OsLib
 			var arguments = BuildSeedArguments(request);
 			if (request.StandardInput is null)
 				return await RunCoordinatedAsync(request.Target, request.Options, arguments, cancellationToken).ConfigureAwait(false);
+			if (!string.IsNullOrWhiteSpace(EffectiveRemoteTarget(request.Options)))
+				throw new InvalidOperationException("Remote pits seed does not support buffered standard input; provide a remote-accessible source file.");
 			using var gate = await AcquireGatesAsync(request.Target, request.Options, cancellationToken).ConfigureAwait(false);
 			var process = new RaiSystem(ResolveExecutable(), WithManagedAssembly(arguments)) { StandardInput = request.StandardInput };
 			return await process.ExecAsync(cancellationToken).ConfigureAwait(false);
@@ -462,8 +468,14 @@ namespace OsLib
 			CancellationToken cancellationToken = default)
 		{
 			using var gate = await AcquireGatesAsync(target, options, cancellationToken).ConfigureAwait(false);
-			return await RunAsync(arguments, cancellationToken).ConfigureAwait(false);
+			return await RunWithRemoteTargetAsync(
+				WithManagedAssembly(arguments),
+				options?.RemoteTarget,
+				cancellationToken: cancellationToken).ConfigureAwait(false);
 		}
+
+		private string EffectiveRemoteTarget(PitsCommandOptions options)
+			=> string.IsNullOrWhiteSpace(options?.RemoteTarget) ? RemoteTarget : options.RemoteTarget;
 
 		private static async Task<GateLease> AcquireGatesAsync(
 			PitsTarget target,
@@ -502,7 +514,8 @@ namespace OsLib
 		{
 			var provider = options?.CloudProvider?.Trim().ToUpperInvariant() ?? string.Empty;
 			var root = options?.PitRoot?.FullPath?.TrimEnd('/', '\\') ?? string.Empty;
-			var route = $"{provider}\u001f{root}".ToUpperInvariant();
+			var remote = options?.RemoteTarget?.Trim().ToUpperInvariant() ?? string.Empty;
+			var route = $"{remote}\u001f{provider}\u001f{root}".ToUpperInvariant();
 			var pits = target.IsWwwa
 				? new[] { "Person", "Object", "Place", "Activity" }
 				: new[] { target.PitName };
