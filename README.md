@@ -1,10 +1,10 @@
 # OsLib
 
-## 4.5.9
+## 4.5.10
 
-Coordinated 4.5.9 release; public behavior is aligned with the synchronized platform.
+Coordinated 4.5.10 release; public behavior is aligned with the synchronized platform.
 
-Latest release notes: [OsLib 4.5.9 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/OsLib_RELEASE_NOTES_4.x.md#459).
+Latest release notes: [OsLib 4.5.10 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/OsLib_RELEASE_NOTES_4.x.md#4510).
 
 ## Previous Versions
 
@@ -15,13 +15,13 @@ For release notes and changelogs of earlier releases, see the [OsLib 4.x Release
 ### .NET CLI
 
 ```bash
-dotnet add package OsLibCore --version 4.5.9
+dotnet add package OsLibCore --version 4.5.10
 ```
 
 ### PackageReference
 
 ```xml
-<PackageReference Include="OsLibCore" Version="4.5.9" />
+<PackageReference Include="OsLibCore" Version="4.5.10" />
 ```
 
 OsLib handles files, paths, temp and backup directories, and system calls. It was formerly named OsLibCore. Change requests and release notes are kept in the RAIkeep [documentation archive](https://github.com/Burkhardt/RAIkeep/tree/main/doc).
@@ -133,4 +133,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.5.9` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.5.10` command after RAI approval.
