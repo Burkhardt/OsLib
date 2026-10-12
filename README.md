@@ -4,182 +4,27 @@
 
 Coordinated 4.5.8 release; public behavior is aligned with the synchronized platform.
 
-Release notes: [OsLib_RELEASE_NOTES_4.5.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.5.8.md).
+Latest release notes: [OsLib 4.5.8 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/OsLib_RELEASE_NOTES_4.x.md#458).
 
-## 4.5.7
+## Previous Versions
 
-Coordinated 4.5.7 release; public behavior is aligned with the synchronized platform.
+For release notes and changelogs of earlier releases, see the [OsLib 4.x Release Notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/OsLib_RELEASE_NOTES_4.x.md).
 
-Release notes: [OsLib_RELEASE_NOTES_4.5.7.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.5.7.md).
+## Installation
 
-## 4.5.6
+### .NET CLI
 
-Coordinated 4.5.6 release; public behavior is aligned with the synchronized platform.
+```bash
+dotnet add package OsLibCore --version 4.5.8
+```
 
-Release notes: [OsLib_RELEASE_NOTES_4.5.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.5.6.md).
+### PackageReference
 
-## 4.5.5
+```xml
+<PackageReference Include="OsLibCore" Version="4.5.8" />
+```
 
-Coordinated 4.5.5 release; public behavior is aligned with the synchronized platform.
-
-Release notes: [OsLib_RELEASE_NOTES_4.5.5.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.5.5.md).
-
-## 4.5.4
-
-Coordinated 4.5.4 release; public behavior is aligned with the synchronized platform.
-
-Release notes: [OsLib_RELEASE_NOTES_4.5.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.5.4.md).
-
-## 4.5.3
-
-Coordinated 4.5.3 release; public behavior is aligned with the synchronized platform.
-
-Release notes: [OsLib_RELEASE_NOTES_4.5.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.5.3.md).
-
-## 4.5.2
-
-Coordinated 4.5.2 release; public behavior is aligned with the synchronized platform.
-
-Release notes: [OsLib_RELEASE_NOTES_4.5.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.5.2.md).
-
-## 4.5.0
-
-Coordinated 4.5.0 foundation dependency; public behavior is unchanged.
-
-Release notes: [OsLib_RELEASE_NOTES_4.5.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.5.0.md).
-
-## 4.4.8
-
-Coordinated 4.4.8 foundation dependency; public behavior is unchanged.
-
-Release notes: [OsLib_RELEASE_NOTES_4.4.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.8.md).
-
-
-Handling of files, paths, temp/backup directories, and system calls.
-
-OsLib change requests and release notes are centralized in the RAIkeep [`doc/`](https://github.com/Burkhardt/RAIkeep/tree/main/doc) directory under `OsLib_...` filenames; they are not stored separately in this child repository.
-
-_formerly_ __OsLibCore__
-
-## 4.4.6
-
-Adds asynchronous native `UnzipCommand`, per-process environment overrides, buffered stdin for typed `pits` calls, streaming exclusive file writes, and typed ZIP/EXIF `iorg` arguments.
-
-Release notes: [OsLib_RELEASE_NOTES_4.4.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.6.md).
-
-## 4.4.5
-
-- Adds `PitsSeedRequest.RequireExisting` for typed, token-safe CR047 strict patch invocation.
-- Current release notes: [OsLib_RELEASE_NOTES_4.4.5.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.5.md)
-
-## 4.4.4
-
-- Participates unchanged in the synchronized nine-package CR044 release.
-- Cloud discovery and configuration generation are deliberately isolated in the standalone, dependency-free `amafu` tool; OsLib configuration remains immutable after startup.
-- Current release notes: [OsLib_RELEASE_NOTES_4.4.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.4.md)
-
-## 4.4.2
-
-- Participates unchanged in the synchronized eight-package CR040/CR041 release.
-- Current release notes: [OsLib_RELEASE_NOTES_4.4.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.2.md)
-
-## 4.4.1
-
-- Adds the typed `RaidCommand` boundary for `raid import`, `export`, `refresh`, and `validate` under accepted CR037.
-- Adds shared `CliVerbDispatch` validation for CR037.1 command-first parsing
-  and actionable misplaced-verb corrections before product I/O.
-- Participates in the synchronized eight-package RAIkeep v4.4.1 release.
-- Current release notes: [OsLib_RELEASE_NOTES_4.4.1.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.4.1.md)
-
-## 4.3.2
-
-- Participates unchanged in the coordinated seven-package RAIkeep v4.3.2 CR027 release.
-- Current release notes: [OsLib_RELEASE_NOTES_4.3.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.3.2.md)
-
-## 4.3.1
-
-- Participates unchanged in the coordinated seven-package RAIkeep v4.3.1 CR026 release.
-- Current release notes: [OsLib_RELEASE_NOTES_4.3.1.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.3.1.md)
-
-## 4.3.0
-
-- Coordinated foundation for the seven-package RAIkeep v4.3.0 line.
-- CR023, CR024, and CR025 consume the established path, file, and command boundaries without adding an OsLibCore API.
-- Current release notes: [OsLib_RELEASE_NOTES_4.3.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.3.0.md)
-
-## 4.2.11 (superseded before publication)
-
-- This prepared line was not published; its changes are carried by v4.3.0.
-- CR024 consumes the established `RaiFile.rm()` cloud disappearance boundary for owned PID-flag cleanup; no new OsLib API is introduced.
-- Current release notes: [OsLib_RELEASE_NOTES_4.2.11.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.11.md)
-
-## 4.2.10
-
-- Adds `RaiZipFile`, a collection-capable immutable ZIP boundary that creates an archive directly at its final path in an existing directory and never overwrites a same-name archive.
-- Adds `RaiZipEntry` plus semantic retry validation and read-without-extraction support.
-- `EventDirectory.Inspect(...)` reads loose `.event` files and `Events_*.zip` archives together while reporting invalid or conflicting evidence.
-- `PitsMaintainRequest.ArchiveEvents` emits the preferred `--archive-events` token.
-- Typed `IorgCommand` requests can emit `--app` through `RootIsApplicationRoot`; `Tenant` emits `--tenant`, while `Subscriber` remains a source-compatible alias.
-- Current release notes: [OsLib_RELEASE_NOTES_4.2.10.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.10.md)
-
-## 4.2.9
-
-- Implements accepted incident corrective action CR022 across the reusable filesystem boundary.
-- `RaiFile.cp` keeps an existing cloud pathname continuously present while overwriting its content in place.
-- `RaiFile.mv` and `RaiPath.mv` reject TempDir-to-CloudDrive moves before either path changes; replacement of an existing cloud directory is rejected.
-- Cloud backups copy the live file/directory instead of relocating it.
-- `RaiCloudStorageException` reports rejected operations with operation, source, and destination context.
-- Current release notes: [OsLib_RELEASE_NOTES_4.2.9.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.9.md)
-- Mandatory storage contract: [Cloud-Storage-In-Place-Invariant.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Cloud-Storage-In-Place-Invariant.md)
-
-## 4.2.8
-
-- Implements accepted CR021 with dotted logical-stem preservation for explicit `TextFile` extensions.
-- Adds `PitsMaintainRequest` plus typed sync/async maintenance execution.
-- Serializes same-target typed `PitsCommand` calls process-locally while allowing unrelated pits to proceed concurrently; queued cancellation starts no child process.
-- Current release notes: [OsLib_RELEASE_NOTES_4.2.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.8.md)
-
-## 4.2.7
-
-- Implements accepted CR020 with typed `IorgListRequest` and `IorgMoveRequest` execution through `IorgCommand`.
-- Adds the compatibility-safe fourth `PathConventionType` value, `Flat`; existing numeric values remain unchanged.
-- Current release notes: [OsLib_RELEASE_NOTES_4.2.7.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.7.md)
-
-## 4.2.6
-
-- Aligns OsLibCore with the coordinated seven-package RAIkeep 4.2.6 release implementing accepted CR019.
-- Runtime and public API behavior are unchanged from 4.2.5.
-- Current release notes: [OsLib_RELEASE_NOTES_4.2.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.6.md)
-
-## 4.2.5
-
-- Implements the accepted CR017 typed boundary by adding optional `PitsExportRequest.At`.
-- `PitsCommand` emits `--at` and a canonical UTC timestamp as separate argument tokens for both sync and async execution.
-- Requests without `At` preserve their exact established argument list.
-- 4.2.5 release notes: [OsLib_RELEASE_NOTES_4.2.5.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.5.md)
-
-## 4.2.4
-
-- Aligns OsLibCore with the coordinated seven-package RAIkeep 4.2.4 release implementing accepted CR016.
-- RaiImage performs normalization-resilient traversal exclusively through the existing `RaiPath.EnumerateDirectories(...)` and `RaiPath.EnumerateFiles(...)` boundary.
-- No new direct filesystem surface or OsLib runtime behavior is introduced.
-- 4.2.4 release notes: [OsLib_RELEASE_NOTES_4.2.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.4.md)
-
-## 4.2.3
-
-- The `4.2.3` release added the accepted CR015 typed delete requests.
-- CR015 adds typed `PitsDeletePropertyRequest` and `PitsDeleteItemRequest` forms, exact token builders, and sync/async execution through `PitsCommand`.
-- This coordinated release preserves the CR008 runtime behavior introduced in 4.1.0 and supplies the remaining asynchronous file-read exception boundary requested by AIA.
-- `Os.TempDir` remains sourced from immutable runtime configuration and is now validated once at first Os initialization with an OsLib `TmpFile` write/remove probe.
-- Startup fails fast when the configured temp directory is not writable; `Os.Config` is neither mutated nor bypassed with a fallback.
-- `RaiPathException` and `RaiPathNotFoundException` provide path-specific failures.
-- `RaiFile.WriteFromAsync(IAsyncEnumerable<byte[]>, CancellationToken)` provides stream-free chunk ingestion.
-- `RaiFile.ReadAllBytesAsync(...)` wraps operating-system file failures in `RaiFileIOException` while preserving cancellation and `IOException` catch compatibility.
-- CR014 adds typed `PitsCommand` and `IorgCommand` wrappers for server/agent invocation of the installed RAIkeep CLIs, including validated preferred-command arguments and exact tokenized process execution.
-- `TextFile.SaveInPlace()` writes a small coordination file without a preceding delete or rename, while retaining cloud materialization checks.
-- Configured cloud-path classification recognizes `Dropbox`, `OneDrive`, `GoogleDrive`, and `ICloudDrive` roots.
-- The `RaiFile.mkdir()` virtual dispatch, UTC timestamp handling, and async `RaiFile` APIs remain current.
-- See [OsLib_RELEASE_NOTES_4.2.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.2.3.md) for details.
+OsLib handles files, paths, temp and backup directories, and system calls. It was formerly named OsLibCore. Change requests and release notes are kept in the RAIkeep [documentation archive](https://github.com/Burkhardt/RAIkeep/tree/main/doc).
 
 ## namespace
 
@@ -260,7 +105,7 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## diagram
 
-- Source: [RaiFile-Hierarchy.puml](RaiFile-Hierarchy.puml)
+- Source: [RaiFile-Hierarchy.puml](https://github.com/Burkhardt/OsLib/blob/main/RaiFile-Hierarchy.puml)
 - CLI render (if PlantUML is installed): `plantuml RaiFile-Hierarchy.puml`
 - VS Code: open the `.puml` file and use a PlantUML preview/render extension.
 
@@ -269,7 +114,7 @@ https://www.nuget.org/packages/OsLibCore/
 - Foldable class and method-level documentation: [API.md](https://github.com/Burkhardt/OsLib/blob/main/API.md)
 - Current cloud configuration and buffered cloud-path behavior: [CLOUD_STORAGE_DISCOVERY.md](https://github.com/Burkhardt/OsLib/blob/main/CLOUD_STORAGE_DISCOVERY.md)
 - Historical path/config/logging design note, now marked with 3.7.7 caveats: [PATH_CONFIG_LOGGING_REFACTOR.md](https://github.com/Burkhardt/OsLib/blob/main/PATH_CONFIG_LOGGING_REFACTOR.md)
-- CLI command hierarchy and external tool wrappers: [../CliCommand-Hierarchy.puml](../CliCommand-Hierarchy.puml)
+- CLI command hierarchy and external tool wrappers: [CliCommand-Hierarchy.puml](https://github.com/Burkhardt/RAIkeep/blob/main/CliCommand-Hierarchy.puml)
 - Local backup placement: `Os.LocalBackupDir` is optional; when absent, backup features are disabled instead of falling back.
 - Structured logging: OsLib diagnostics use `ILogger<T>` templates. TempDir initialization validates the configured path once and fails fast when its OsLib tempfile probe cannot write; it does not mutate or bypass `Os.Config`.
 - Cloud config guidance: prefer explicit `Cloud.*` entries in `RAIkeep.json5` when you want stable cloud-backed path classification.
@@ -278,12 +123,8 @@ https://www.nuget.org/packages/OsLibCore/
 
 ## unit tests
 
-- Local unit tests are in [OsLib.Tests](OsLib.Tests).
+- Local unit tests are in [OsLib.Tests](https://github.com/Burkhardt/OsLib/tree/main/OsLib.Tests).
 - Run from repository root: `dotnet test OsLib/OsLib.Tests/OsLib.Tests.csproj --nologo -v minimal`
-
-## release notes
-
-- Latest release notes: [OsLib_RELEASE_NOTES_4.5.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/OsLib_RELEASE_NOTES_4.5.8.md)
 
 ## nuget publish automation
 
