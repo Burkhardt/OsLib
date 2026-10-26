@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.5.13` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore participates unchanged in the synchronized 4.5.13 dependency line; cloud detection remains isolated in standalone Amafu.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.5.14` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore adds tenant-scoped PitsCommand options and packaged public request documentation in the synchronized 4.5.14 dependency line; cloud detection remains isolated in standalone Amafu.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -387,10 +387,12 @@ The 4.4.1 typed diagram-command boundary is governed by
 		<summary>PitsCommand: typed invocation of the installed `pits` CLI.</summary>
 
 		- `PitsTarget.Pit(...)` and `PitsTarget.Wwwa()` make the target mode explicit.
+		- `PitsCommandOptions.Tenant` emits a bare `-r` value unchanged; `PitRoot` emits an absolute `--pitroot` path. They are mutually exclusive. Tenant-scoped mutations require an explicit `CloudProvider`.
+		- Create seed requests with `PitsSeedRequest.ForPit`, `FromStandardInput`, or `ForWwwa`; attach options using `with { Options = new PitsCommandOptions { ... } }`. XML IntelliSense documentation and a tenant-scoped factory example ship inside the NuGet package.
 		- `PitsSeedRequest`, `PitsExportRequest`, `PitsAuditRequest`, `PitsDeletePropertyRequest`, `PitsDeleteItemRequest`, `PitsMaintainRequest`, and `PitsCommandOptions` model the preferred 4.x commands and global options.
 		- `PitsSeedRequest.RequireExisting` emits CR047's canonical `--require-existing` token for single-pit strict patches and rejects an incompatible WWWA target before process start.
 		- `BuildMaintainArguments(...)`, `Maintain(...)`, and `MaintainAsync(...)` expose report/apply maintenance, explicit process-flag pruning with an age, explicit legacy-extension repair, and `PitsMaintainRequest.ArchiveEvents`.
-		- All typed calls targeting the same provider/root/pit are serialized across every `PitsCommand` instance in the current process. WWWA takes the fixed `Person`, `Object`, `Place`, `Activity` gate order; unrelated pits may run concurrently and queued cancellation launches no child.
+		- All typed calls targeting the same execution target/provider/tenant-or-root/pit are serialized across every `PitsCommand` instance in the current process. WWWA takes the fixed `Person`, `Object`, `Place`, `Activity` gate order; unrelated pits may run concurrently and queued cancellation launches no child.
 		- `PitsExportRequest.At` optionally requests CR017 point-in-time projection. The value is emitted as a canonical UTC timestamp in a separate `--at` argument token; omitting it preserves the established export argument vector.
 		- `BuildSeedArguments`, `BuildExportArguments`, `BuildAuditArguments`, `BuildDeletePropertyArguments`, and `BuildDeleteItemArguments` validate required and mutually exclusive values before process start.
 		- `DeleteProperty` uses an explicit dot-delimited `PropertyPath`; malformed paths are rejected before process execution.

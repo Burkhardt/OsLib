@@ -7,17 +7,26 @@ using System.Threading.Tasks;
 
 namespace OsLib
 {
+	/// <summary>Addressing, presentation, and execution options shared by typed pits requests.</summary>
 	public sealed record PitsCommandOptions
 	{
+		/// <summary>Bare tenant directory name passed unchanged as <c>-r</c>; mutually exclusive with <see cref="PitRoot"/>.</summary>
+		public string Tenant { get; init; }
+		/// <summary>Explicit filesystem root containing pit directories. Mutually exclusive with Tenant; omit CloudProvider when addressing a local filesystem path.</summary>
 		public RaiPath PitRoot { get; init; }
+		/// <summary>Configured cloud provider passed as --cloud. Required for tenant-scoped mutations; the wrapper never selects a default provider.</summary>
 		public string CloudProvider { get; init; }
 		/// <summary>Optional SSH target for this typed invocation.</summary>
 		public string RemoteTarget { get; init; }
+		/// <summary>Whether to emit --debug for CLI diagnostics.</summary>
 		public bool Debug { get; init; }
+		/// <summary>Whether to emit --nologo to suppress the CLI banner.</summary>
 		public bool NoLogo { get; init; }
+		/// <summary>Whether to ask pits to retain its process activity window after execution.</summary>
 		public bool RetainWindow { get; init; }
 	}
 
+	/// <summary>A validated single-pit target or the coordinated Person, Object, Place, and Activity target set.</summary>
 	public sealed class PitsTarget
 	{
 		private PitsTarget(string pitName, bool isWwwa)
@@ -26,15 +35,19 @@ namespace OsLib
 			IsWwwa = isWwwa;
 		}
 
+		/// <summary>The validated pit name, or null for the WWWA target.</summary>
 		public string PitName { get; }
+		/// <summary>Whether the target addresses all four WWWA pits.</summary>
 		public bool IsWwwa { get; }
 
+		/// <summary>Creates a single-pit target without resolving the name as a filesystem path.</summary>
 		public static PitsTarget Pit(string pitName)
 		{
 			RequireValue(pitName, nameof(pitName));
 			return new PitsTarget(pitName, isWwwa: false);
 		}
 
+		/// <summary>Creates a target covering Person, Object, Place, and Activity.</summary>
 		public static PitsTarget Wwwa() => new(null, isWwwa: true);
 
 		internal void AppendTo(List<string> arguments)
@@ -54,6 +67,14 @@ namespace OsLib
 		}
 	}
 
+	/// <summary>An immutable seed request created with a named factory and customized with a record with-expression.</summary>
+	/// <example><code>
+	/// var request = PitsSeedRequest.ForPit("Person", sourceFile) with
+	/// {
+	///     Options = new PitsCommandOptions { Tenant = "SampleTenant", CloudProvider = "OneDrive", NoLogo = true }
+	/// };
+	/// var result = new PitsCommand().Seed(request);
+	/// </code></example>
 	public sealed record PitsSeedRequest
 	{
 		private PitsSeedRequest(PitsTarget target, string source)
@@ -62,7 +83,9 @@ namespace OsLib
 			Source = source;
 		}
 
+		/// <summary>The single-pit or WWWA target selected by the factory or constructor.</summary>
 		public PitsTarget Target { get; }
+		/// <summary>The absolute source filename, WWWA source directory, or a single hyphen for buffered standard input.</summary>
 		public string Source { get; }
 		/// <summary>Buffered payload sent to stdin when Source is "-".</summary>
 		public string StandardInput { get; private init; }
@@ -72,18 +95,23 @@ namespace OsLib
 		/// <c>--require-existing</c> spelling; <c>--patch</c> remains a CLI-only alias.
 		/// </summary>
 		public bool RequireExisting { get; init; }
+		/// <summary>Optional command settings. Use a with-expression to attach tenant or filesystem addressing to a factory-created request.</summary>
 		public PitsCommandOptions Options { get; init; }
 
+		/// <summary>Creates a seed request for one pit from a typed source file. Attach Options with a with-expression.</summary>
 		public static PitsSeedRequest ForPit(string pitName, RaiFile source)
 			=> new(PitsTarget.Pit(pitName), source?.FullName);
 
+		/// <summary>Creates a single-pit seed request whose buffered payload is sent through --source -. Buffered stdin is supported for local execution.</summary>
 		public static PitsSeedRequest FromStandardInput(string pitName, string payload)
 			=> new(PitsTarget.Pit(pitName), "-") { StandardInput = payload ?? throw new ArgumentNullException(nameof(payload)) };
 
+		/// <summary>Creates a bulk seed request from a typed source directory containing the WWWA input files.</summary>
 		public static PitsSeedRequest ForWwwa(RaiPath sourceDirectory)
 			=> new(PitsTarget.Wwwa(), sourceDirectory?.FullPath);
 	}
 
+	/// <summary>An immutable JSON or directory export request.</summary>
 	public sealed record PitsExportRequest
 	{
 		private PitsExportRequest(PitsTarget target, RaiPath outputDirectory, bool json)
@@ -93,68 +121,95 @@ namespace OsLib
 			Json = json;
 		}
 
+		/// <summary>The single-pit or WWWA target selected by the factory or constructor.</summary>
 		public PitsTarget Target { get; }
+		/// <summary>The absolute export destination, or null when JSON is returned on stdout.</summary>
 		public RaiPath OutputDirectory { get; }
+		/// <summary>Whether the CLI returns machine-readable JSON on stdout.</summary>
 		public bool Json { get; }
 		/// <summary>
 		/// Optional historical projection cutoff. When supplied, <c>pits</c> emits
 		/// the CR017 point-in-time provenance envelope.
 		/// </summary>
 		public DateTimeOffset? At { get; init; }
+		/// <summary>Optional command settings. Use a with-expression to attach tenant or filesystem addressing to a factory-created request.</summary>
 		public PitsCommandOptions Options { get; init; }
 
+		/// <summary>Creates an export request that writes to a typed output directory.</summary>
 		public static PitsExportRequest ToDirectory(PitsTarget target, RaiPath outputDirectory)
 			=> new(target, outputDirectory, json: false);
 
+		/// <summary>Creates an export request that returns JSON on stdout.</summary>
 		public static PitsExportRequest ToJson(PitsTarget target)
 			=> new(target, outputDirectory: null, json: true);
 	}
 
+	/// <summary>A read-only recovery-event audit request.</summary>
 	public sealed record PitsAuditRequest
 	{
+		/// <summary>Creates a request for the supplied target; customize optional settings with init properties.</summary>
 		public PitsAuditRequest(PitsTarget target)
 		{
 			Target = target;
 		}
 
+		/// <summary>The single-pit or WWWA target selected by the factory or constructor.</summary>
 		public PitsTarget Target { get; }
+		/// <summary>Optional machine filter passed to the audit command.</summary>
 		public string Machine { get; init; }
+		/// <summary>Optional minimum event severity passed as --level.</summary>
 		public string MinimumLevel { get; init; }
+		/// <summary>Whether the CLI returns machine-readable JSON on stdout.</summary>
 		public bool Json { get; init; }
+		/// <summary>Optional command settings. Use a with-expression to attach tenant or filesystem addressing to a factory-created request.</summary>
 		public PitsCommandOptions Options { get; init; }
 	}
 
+	/// <summary>A sparse property-deletion request for one item.</summary>
 	public sealed record PitsDeletePropertyRequest(
 		string PitName,
 		string ItemId,
 		string PropertyPath)
 	{
+		/// <summary>Optional command settings. Use a with-expression to attach tenant or filesystem addressing to a factory-created request.</summary>
 		public PitsCommandOptions Options { get; init; }
 	}
 
+	/// <summary>A lifecycle deletion request for one item.</summary>
 	public sealed record PitsDeleteItemRequest(string PitName, string ItemId)
 	{
+		/// <summary>Optional command settings. Use a with-expression to attach tenant or filesystem addressing to a factory-created request.</summary>
 		public PitsCommandOptions Options { get; init; }
 	}
 
+	/// <summary>A maintenance preview or explicitly applied reconciliation request.</summary>
 	public sealed record PitsMaintainRequest
 	{
+		/// <summary>Creates a request for the supplied target; customize optional settings with init properties.</summary>
 		public PitsMaintainRequest(PitsTarget target)
 		{
 			Target = target;
 		}
 
+		/// <summary>The single-pit or WWWA target selected by the factory or constructor.</summary>
 		public PitsTarget Target { get; }
+		/// <summary>Whether maintenance changes are applied rather than previewed.</summary>
 		public bool Apply { get; init; }
+		/// <summary>Whether the CLI returns machine-readable JSON on stdout.</summary>
 		public bool Json { get; init; }
+		/// <summary>Whether applied maintenance prunes process flags older than OlderThan.</summary>
 		public bool PruneProcessFlags { get; init; }
+		/// <summary>Positive minimum age for process-flag pruning; requires Apply and PruneProcessFlags.</summary>
 		public TimeSpan? OlderThan { get; init; }
+		/// <summary>Whether applied maintenance repairs legacy event extensions.</summary>
 		public bool RepairLegacyExtensions { get; init; }
 		/// <summary>Preview or apply immutable compaction of loose recovery events.</summary>
 		public bool ArchiveEvents { get; init; }
+		/// <summary>Optional command settings. Use a with-expression to attach tenant or filesystem addressing to a factory-created request.</summary>
 		public PitsCommandOptions Options { get; init; }
 	}
 
+	/// <summary>Runs tokenized pits requests with process-local concurrency gates for each execution target, cloud, root or tenant, and pit.</summary>
 	public sealed class PitsCommand : CliCommand
 	{
 		private sealed class GateEntry
@@ -187,6 +242,7 @@ namespace OsLib
 		private readonly string commandName;
 		private readonly RaiFile managedAssembly;
 
+		/// <summary>Creates a pits wrapper; an optional executable directory and command name support configured installations and test hosts.</summary>
 		public PitsCommand(RaiPath commandPath = null, string commandName = "pits")
 			: base(string.IsNullOrWhiteSpace(commandName) ? "pits" : commandName)
 		{
@@ -203,11 +259,14 @@ namespace OsLib
 			commandName = string.IsNullOrWhiteSpace(hostCommand) ? "dotnet" : hostCommand;
 		}
 
+		/// <summary>Runs a compiled pits DLL through the specified host, normally dotnet; the DLL remains one argument token.</summary>
 		public static PitsCommand ForManagedAssembly(RaiFile managedAssembly, string hostCommand = "dotnet")
 			=> new(managedAssembly, hostCommand, managed: true);
 
+		/// <summary>Selects an SSH execution target and returns this command for fluent composition. Source paths are interpreted on the remote host.</summary>
 		public PitsCommand OverSsh(string remoteTarget) => base.OverSsh<PitsCommand>(remoteTarget);
 
+		/// <summary>Executable candidates, including an explicitly supplied command directory before the command name on PATH.</summary>
 		public override IEnumerable<string> CandidateExecutables
 		{
 			get
@@ -222,6 +281,8 @@ namespace OsLib
 			}
 		}
 
+		/// <summary>Validates a seed request and returns its exact argument tokens without starting a process. Tenant values are passed unchanged.</summary>
+		/// <exception cref="ArgumentException">The request contains invalid or contradictory options.</exception>
 		public IReadOnlyList<string> BuildSeedArguments(PitsSeedRequest request)
 		{
 			if (request == null)
@@ -239,10 +300,12 @@ namespace OsLib
 			arguments.Add(request.Source);
 			if (request.RequireExisting)
 				arguments.Add("--require-existing");
-			AppendOptions(arguments, request.Options);
+			AppendOptions(arguments, request.Options, mutating: true);
 			return arguments;
 		}
 
+		/// <summary>Validates an export request and returns its exact argument tokens without starting a process.</summary>
+		/// <exception cref="ArgumentException">The request contains invalid or contradictory options.</exception>
 		public IReadOnlyList<string> BuildExportArguments(PitsExportRequest request)
 		{
 			if (request == null)
@@ -272,6 +335,8 @@ namespace OsLib
 			return arguments;
 		}
 
+		/// <summary>Validates an audit request and returns its exact argument tokens without starting a process.</summary>
+		/// <exception cref="ArgumentException">The request contains invalid or contradictory options.</exception>
 		public IReadOnlyList<string> BuildAuditArguments(PitsAuditRequest request)
 		{
 			if (request == null)
@@ -288,6 +353,8 @@ namespace OsLib
 			return arguments;
 		}
 
+		/// <summary>Validates a sparse property-deletion request and returns its exact argument tokens without starting a process.</summary>
+		/// <exception cref="ArgumentException">The request contains invalid or contradictory options.</exception>
 		public IReadOnlyList<string> BuildDeletePropertyArguments(PitsDeletePropertyRequest request)
 		{
 			if (request == null)
@@ -300,10 +367,12 @@ namespace OsLib
 			{
 				"delete-property", request.PitName, request.ItemId, request.PropertyPath
 			};
-			AppendOptions(arguments, request.Options);
+			AppendOptions(arguments, request.Options, mutating: true);
 			return arguments;
 		}
 
+		/// <summary>Validates an item-deletion request and returns its exact argument tokens without starting a process.</summary>
+		/// <exception cref="ArgumentException">The request contains invalid or contradictory options.</exception>
 		public IReadOnlyList<string> BuildDeleteItemArguments(PitsDeleteItemRequest request)
 		{
 			if (request == null)
@@ -312,10 +381,12 @@ namespace OsLib
 			RequireValue(request.ItemId, nameof(request.ItemId));
 
 			var arguments = new List<string> { "delete-item", request.PitName, request.ItemId };
-			AppendOptions(arguments, request.Options);
+			AppendOptions(arguments, request.Options, mutating: true);
 			return arguments;
 		}
 
+		/// <summary>Validates maintenance options and returns exact argument tokens; destructive operations require Apply.</summary>
+		/// <exception cref="ArgumentException">The request contains invalid or contradictory options.</exception>
 		public IReadOnlyList<string> BuildMaintainArguments(PitsMaintainRequest request)
 		{
 			if (request == null)
@@ -344,14 +415,16 @@ namespace OsLib
 			if (request.RepairLegacyExtensions) arguments.Add("--repair-legacy-extensions");
 			if (request.ArchiveEvents) arguments.Add("--archive-events");
 			if (request.Json) arguments.Add("--json");
-			AppendOptions(arguments, request.Options);
+			AppendOptions(arguments, request.Options, mutating: request.Apply);
 			return arguments;
 		}
 
+		/// <summary>Executes a validated seed request while holding its target gates and returns the captured exit code, stdout, and stderr.</summary>
 		public RaiSystemResult Seed(PitsSeedRequest request)
 		{
 			return SeedAsync(request).GetAwaiter().GetResult();
 		}
+		/// <summary>Asynchronously executes a validated seed request while holding its target gates. Cancellation also applies while waiting for a gate.</summary>
 		public async Task<RaiSystemResult> SeedAsync(PitsSeedRequest request, CancellationToken cancellationToken = default)
 		{
 			var arguments = BuildSeedArguments(request);
@@ -364,33 +437,39 @@ namespace OsLib
 			return await process.ExecAsync(cancellationToken).ConfigureAwait(false);
 		}
 
+		/// <summary>Executes a validated export request while holding its target gates and returns captured process output.</summary>
 		public RaiSystemResult Export(PitsExportRequest request)
 		{
 			var arguments = BuildExportArguments(request);
 			return RunCoordinated(request.Target, request.Options, arguments);
 		}
+		/// <summary>Asynchronously executes an export request with target gates and cancellation.</summary>
 		public Task<RaiSystemResult> ExportAsync(PitsExportRequest request, CancellationToken cancellationToken = default)
 		{
 			var arguments = BuildExportArguments(request);
 			return RunCoordinatedAsync(request.Target, request.Options, arguments, cancellationToken);
 		}
 
+		/// <summary>Executes a read-only audit request with target gates and captured process output.</summary>
 		public RaiSystemResult Audit(PitsAuditRequest request)
 		{
 			var arguments = BuildAuditArguments(request);
 			return RunCoordinated(request.Target, request.Options, arguments);
 		}
+		/// <summary>Asynchronously executes a read-only audit request with target gates and cancellation.</summary>
 		public Task<RaiSystemResult> AuditAsync(PitsAuditRequest request, CancellationToken cancellationToken = default)
 		{
 			var arguments = BuildAuditArguments(request);
 			return RunCoordinatedAsync(request.Target, request.Options, arguments, cancellationToken);
 		}
 
+		/// <summary>Executes a validated sparse property-deletion request with target gates.</summary>
 		public RaiSystemResult DeleteProperty(PitsDeletePropertyRequest request)
 		{
 			var arguments = BuildDeletePropertyArguments(request);
 			return RunCoordinated(PitsTarget.Pit(request.PitName), request.Options, arguments);
 		}
+		/// <summary>Asynchronously executes a sparse property-deletion request with target gates and cancellation.</summary>
 		public Task<RaiSystemResult> DeletePropertyAsync(
 			PitsDeletePropertyRequest request,
 			CancellationToken cancellationToken = default)
@@ -400,11 +479,13 @@ namespace OsLib
 				arguments, cancellationToken);
 		}
 
+		/// <summary>Executes a validated lifecycle item-deletion request with target gates.</summary>
 		public RaiSystemResult DeleteItem(PitsDeleteItemRequest request)
 		{
 			var arguments = BuildDeleteItemArguments(request);
 			return RunCoordinated(PitsTarget.Pit(request.PitName), request.Options, arguments);
 		}
+		/// <summary>Asynchronously executes an item-deletion request with target gates and cancellation.</summary>
 		public Task<RaiSystemResult> DeleteItemAsync(
 			PitsDeleteItemRequest request,
 			CancellationToken cancellationToken = default)
@@ -414,11 +495,13 @@ namespace OsLib
 				arguments, cancellationToken);
 		}
 
+		/// <summary>Executes a validated maintenance request with target gates and captured process output.</summary>
 		public RaiSystemResult Maintain(PitsMaintainRequest request)
 		{
 			var arguments = BuildMaintainArguments(request);
 			return RunCoordinated(request.Target, request.Options, arguments);
 		}
+		/// <summary>Asynchronously executes a maintenance request with target gates and cancellation.</summary>
 		public Task<RaiSystemResult> MaintainAsync(
 			PitsMaintainRequest request,
 			CancellationToken cancellationToken = default)
@@ -428,17 +511,21 @@ namespace OsLib
 				arguments, cancellationToken);
 		}
 
+		/// <summary>Executes already-tokenized arguments, prefixing a configured managed assembly. Use typed request methods when target coordination is required.</summary>
 		public override RaiSystemResult Run(IEnumerable<string> arguments)
 			=> base.RunAsync(WithManagedAssembly(arguments)).GetAwaiter().GetResult();
 
+		/// <summary>Asynchronously executes already-tokenized arguments, prefixing a configured managed assembly. Use typed request methods when target coordination is required.</summary>
 		public override Task<RaiSystemResult> RunAsync(
 			IEnumerable<string> arguments,
 			CancellationToken cancellationToken = default)
 			=> base.RunAsync(WithManagedAssembly(arguments), cancellationToken);
 
+		/// <summary>Executes already-tokenized arguments, prefixing a configured managed assembly. Use typed request methods when target coordination is required.</summary>
 		public override RaiSystemResult Run(IEnumerable<string> arguments, int timeoutMilliseconds)
 			=> base.Run(WithManagedAssembly(arguments), timeoutMilliseconds);
 
+		/// <summary>Asynchronously executes already-tokenized arguments, prefixing a configured managed assembly. Use typed request methods when target coordination is required.</summary>
 		public override Task<RaiSystemResult> RunAsync(
 			IEnumerable<string> arguments,
 			int timeoutMilliseconds,
@@ -477,7 +564,7 @@ namespace OsLib
 		private string EffectiveRemoteTarget(PitsCommandOptions options)
 			=> string.IsNullOrWhiteSpace(options?.RemoteTarget) ? RemoteTarget : options.RemoteTarget;
 
-		private static async Task<GateLease> AcquireGatesAsync(
+		private async Task<GateLease> AcquireGatesAsync(
 			PitsTarget target,
 			PitsCommandOptions options,
 			CancellationToken cancellationToken)
@@ -510,11 +597,13 @@ namespace OsLib
 			}
 		}
 
-		private static IReadOnlyList<string> GateKeys(PitsTarget target, PitsCommandOptions options)
+		private IReadOnlyList<string> GateKeys(PitsTarget target, PitsCommandOptions options)
 		{
 			var provider = options?.CloudProvider?.Trim().ToUpperInvariant() ?? string.Empty;
-			var root = options?.PitRoot?.FullPath?.TrimEnd('/', '\\') ?? string.Empty;
-			var remote = options?.RemoteTarget?.Trim().ToUpperInvariant() ?? string.Empty;
+			var root = options?.Tenant != null
+				? "tenant:" + options.Tenant
+				: "path:" + (options?.PitRoot?.FullPath?.TrimEnd('/', '\\') ?? string.Empty);
+			var remote = EffectiveRemoteTarget(options)?.Trim().ToUpperInvariant() ?? string.Empty;
 			var route = $"{remote}\u001f{provider}\u001f{root}".ToUpperInvariant();
 			var pits = target.IsWwwa
 				? new[] { "Person", "Object", "Place", "Activity" }
@@ -551,10 +640,23 @@ namespace OsLib
 			}
 		}
 
-		private static void AppendOptions(List<string> arguments, PitsCommandOptions options)
+		private static void AppendOptions(List<string> arguments, PitsCommandOptions options, bool mutating = false)
 		{
 			if (options == null)
 				return;
+			if (options.Tenant != null)
+			{
+				if (options.PitRoot != null)
+					throw new ArgumentException("Tenant and PitRoot are mutually exclusive.", nameof(options));
+				RequireValue(options.Tenant, nameof(options.Tenant));
+				if (options.Tenant != options.Tenant.Trim() || options.Tenant is "." or ".." or "~" ||
+					options.Tenant.IndexOfAny(new[] { '/', '\\', ':', '\0' }) >= 0)
+					throw new ArgumentException("Tenant must be one plain directory name, not a filesystem path.", nameof(options.Tenant));
+				if (mutating && string.IsNullOrWhiteSpace(options.CloudProvider))
+					throw new ArgumentException("Tenant-scoped mutations require an explicit CloudProvider.", nameof(options.CloudProvider));
+				arguments.Add("-r");
+				arguments.Add(options.Tenant);
+			}
 			if (options.PitRoot != null)
 			{
 				RequireValue(options.PitRoot.FullPath, nameof(options.PitRoot));

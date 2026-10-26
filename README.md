@@ -1,10 +1,10 @@
 # OsLib
 
-## 4.5.13
+## 4.5.14
 
-Coordinated 4.5.13 release; public behavior is aligned with the synchronized platform.
+Typed pits requests now preserve bare tenant names, scope invocation gates by tenant, and include public factory/option documentation in the NuGet package.
 
-Latest release notes: [OsLib 4.5.13 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/OsLib_RELEASE_NOTES_4.x.md#4513).
+Latest release notes: [OsLib 4.5.14 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/OsLib_RELEASE_NOTES_4.x.md#4514).
 
 ## Previous Versions
 
@@ -15,13 +15,13 @@ For release notes and changelogs of earlier releases, see the [OsLib 4.x Release
 ### .NET CLI
 
 ```bash
-dotnet add package OsLibCore --version 4.5.13
+dotnet add package OsLibCore --version 4.5.14
 ```
 
 ### PackageReference
 
 ```xml
-<PackageReference Include="OsLibCore" Version="4.5.13" />
+<PackageReference Include="OsLibCore" Version="4.5.14" />
 ```
 
 OsLib handles files, paths, temp and backup directories, and system calls. It was formerly named OsLibCore. Change requests and release notes are kept in the RAIkeep [documentation archive](https://github.com/Burkhardt/RAIkeep/tree/main/doc).
@@ -99,6 +99,31 @@ OsLib
 - IorgCommand: `BuildOrganizeArguments`, `BuildCleanArguments`, `BuildListArguments`, `BuildMoveArguments`, sync/async counterparts, `IorgCommandOptions.Tenant`, `RootIsApplicationRoot`, and `ForManagedAssembly`
 - Built-in wrappers: `CurlCommand`, `ZipCommand`, `SevenZipCommand`, `RCloneCommand`, `PitsCommand`, `IorgCommand`
 
+### Seed a cloud tenant through pits
+
+Use a bare tenant name for cloud addressing. `sourceFile` is a `RaiFile` (or a
+`TextFile`) containing the input payload:
+
+```csharp
+var request = PitsSeedRequest.ForPit("Person", sourceFile) with
+{
+    Options = new PitsCommandOptions
+    {
+        Tenant = "SampleTenant",
+        CloudProvider = "OneDrive",
+        NoLogo = true
+    }
+};
+var result = new PitsCommand().Seed(request);
+if (result.ExitCode != 0)
+    throw new InvalidOperationException(result.StandardError);
+```
+
+`Tenant` is passed unchanged as `-r SampleTenant`. For a local filesystem root,
+use `PitRoot = localRoot` instead and omit `CloudProvider`. `Tenant` and `PitRoot`
+are mutually exclusive. Same-target calls are serialized within the calling
+process; different tenants can run independently.
+
 ## nuget
 
 https://www.nuget.org/packages/OsLibCore/
@@ -133,4 +158,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.5.13` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.5.14` command after RAI approval.

@@ -106,6 +106,59 @@ namespace OsLib.Tests
 			Assert.Contains("single Pit target", error.Message, StringComparison.Ordinal);
 		}
 
+		[Theory]
+		[InlineData("SampleTenant")]
+		[InlineData("Example Tenant")]
+		public async Task PitsCommand_TenantSeedPreservesBareNameAndExactTokens(string tenant)
+		{
+			var source = new RaiFile(root / "source files", "people", "json");
+			var request = PitsSeedRequest.ForPit("Person", source) with
+			{
+				Options = new PitsCommandOptions { Tenant = tenant, CloudProvider = "OneDrive", NoLogo = true }
+			};
+			var expected = new[] { "seed", "Person", "--source", source.FullName, "-r", tenant, "--cloud", "OneDrive", "--nologo" };
+			var command = CreatePitsCaptureCommand(exitCode: 0);
+			Assert.Equal(expected, command.BuildSeedArguments(request));
+			var result = await command.SeedAsync(request, TestContext.Current.CancellationToken);
+			Assert.Equal(expected, CapturedArguments(result));
+		}
+
+		[Theory]
+		[InlineData("")]
+		[InlineData(" ")]
+		[InlineData(" Example")]
+		[InlineData("../Example")]
+		[InlineData("Example/Subtenant")]
+		[InlineData("Example\\Subtenant")]
+		[InlineData("C:Example")]
+		[InlineData("..")]
+		[InlineData("~")]
+		[InlineData("--debug")]
+		public void PitsCommand_RejectsInvalidTenantNamesBeforeExecution(string tenant)
+		{
+			var request = PitsSeedRequest.FromStandardInput("Person", "[]") with
+			{
+				Options = new PitsCommandOptions { Tenant = tenant, CloudProvider = "OneDrive" }
+			};
+			Assert.Throws<ArgumentException>(() => new PitsCommand().BuildSeedArguments(request));
+		}
+
+		[Fact]
+		public void PitsCommand_RejectsAmbiguousTenantRootAndUnspecifiedMutationCloud()
+		{
+			var command = new PitsCommand();
+			var request = PitsSeedRequest.FromStandardInput("Person", "[]");
+			Assert.Throws<ArgumentException>(() => command.BuildSeedArguments(request with
+			{
+				Options = new PitsCommandOptions { Tenant = "SampleTenant", PitRoot = root, CloudProvider = "OneDrive" }
+			}));
+			var options = new PitsCommandOptions { Tenant = "SampleTenant" };
+			Assert.Throws<ArgumentException>(() => command.BuildSeedArguments(request with { Options = options }));
+			Assert.Throws<ArgumentException>(() => command.BuildDeleteItemArguments(new PitsDeleteItemRequest("Person", "Customer001") { Options = options }));
+			Assert.Throws<ArgumentException>(() => command.BuildDeletePropertyArguments(new PitsDeletePropertyRequest("Person", "Customer001", "Phone") { Options = options }));
+			Assert.Throws<ArgumentException>(() => command.BuildMaintainArguments(new PitsMaintainRequest(PitsTarget.Pit("Person")) { Apply = true, Options = options }));
+		}
+
 		[Fact]
 		public void PitsCommand_BuildsWwwaExportAndAuditForms()
 		{
@@ -832,6 +885,29 @@ namespace OsLib.Tests
 				command.ExportAsync(PitsExportRequest.ToJson(PitsTarget.Pit("Person")) with { Options = options }, TestContext.Current.CancellationToken));
 
 			Assert.True(overlap.Exists());
+		}
+
+		[Theory]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		[InlineData(false, false)]
+		public async Task PitsCommand_TenantGatesCoordinateOnlyMatchingTenantTargets(bool sameTenant, bool wwwa)
+		{
+			if (OperatingSystem.IsWindows()) return;
+			var lockPath = (root / "tenant-gate-lock").FullPath.TrimEnd('/', '\\');
+			var overlap = new RaiFile(root, "tenant-gate-overlap", "txt");
+			var script = CreateOutputScript("tenant-gate",
+				$"#!/bin/sh\nif ! mkdir '{lockPath}' 2>/dev/null; then printf overlap > '{overlap.FullName}'; fi\nsleep 0.35\nrmdir '{lockPath}' 2>/dev/null\nexit 0\n");
+			var first = new PitsCommand(script.ScriptFile.Path, script.ScriptFile.NameWithExtension);
+			var second = new PitsCommand(script.ScriptFile.Path, script.ScriptFile.NameWithExtension);
+			var options = new PitsCommandOptions { Tenant = "TenantAlpha", CloudProvider = "OneDrive" };
+			var firstRequest = PitsSeedRequest.ForPit("Person", new RaiFile(root, "people", "json")) with { Options = options };
+			var secondRequest = (wwwa ? PitsSeedRequest.ForWwwa(root) : firstRequest) with
+			{
+				Options = options with { Tenant = sameTenant ? "TenantAlpha" : "TenantBeta" }
+			};
+			await Task.WhenAll(first.SeedAsync(firstRequest, TestContext.Current.CancellationToken), second.SeedAsync(secondRequest, TestContext.Current.CancellationToken));
+			Assert.Equal(!sameTenant, overlap.Exists());
 		}
 
 		[Fact]
