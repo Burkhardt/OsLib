@@ -1,11 +1,19 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.5.14` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore adds tenant-scoped PitsCommand options and packaged public request documentation in the synchronized 4.5.14 dependency line; cloud detection remains isolated in standalone Amafu.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.5.15` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore adds tenant-scoped PitsCommand options and packaged public request documentation in the synchronized 4.5.15 dependency line; cloud detection remains isolated in standalone Amafu.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
 The 4.4.1 typed diagram-command boundary is governed by
 [`CR037_AIA_to_RAIkeep_RaidSeeder_Diagram_Artifact_Management.md`](https://github.com/Burkhardt/RAIkeep/blob/main/doc/CR037_AIA_to_RAIkeep_RaidSeeder_Diagram_Artifact_Management.md).
+
+## CLI help formatting
+
+`CliHelpStyle` formats aligned `Row` tables, glyph-based colors, syntax highlighting,
+provider badges, and versioned banners without initializing `Os.Config`. `UseColor`
+respects redirected output, `NO_COLOR`, and `TERM=dumb`. `Syntax` keeps switches
+consistent and applies required-value, choice, optional, and quoted-code styles.
+See the [CLI style guide](https://github.com/Burkhardt/RAIkeep/blob/main/doc/cli-style.md).
 
 ## core types
 

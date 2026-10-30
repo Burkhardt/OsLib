@@ -1,10 +1,11 @@
 # OsLib
 
-## 4.5.14
+## 4.5.15
 
-Typed pits requests now preserve bare tenant names, scope invocation gates by tenant, and include public factory/option documentation in the NuGet package.
+Adds the shared CliHelpStyle formatter for aligned help, glyph colors, syntax
+emphasis, provider badges, and terminal-aware plain output.
 
-Latest release notes: [OsLib 4.5.14 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/OsLib_RELEASE_NOTES_4.x.md#4514).
+Latest release notes: [OsLib 4.5.15 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/OsLib_RELEASE_NOTES_4.x.md#4515).
 
 ## Previous Versions
 
@@ -15,13 +16,13 @@ For release notes and changelogs of earlier releases, see the [OsLib 4.x Release
 ### .NET CLI
 
 ```bash
-dotnet add package OsLibCore --version 4.5.14
+dotnet add package OsLibCore --version 4.5.15
 ```
 
 ### PackageReference
 
 ```xml
-<PackageReference Include="OsLibCore" Version="4.5.14" />
+<PackageReference Include="OsLibCore" Version="4.5.15" />
 ```
 
 OsLib handles files, paths, temp and backup directories, and system calls. It was formerly named OsLibCore. Change requests and release notes are kept in the RAIkeep [documentation archive](https://github.com/Burkhardt/RAIkeep/tree/main/doc).
@@ -158,4 +159,4 @@ https://www.nuget.org/packages/OsLibCore/
 - Safety check: workflow validates tag version equals `<Version>` in `OsLib.csproj`
 - Required GitHub repository secret: `NUGET_API_KEY`
 - Typical release command:
-	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.5.14` command after RAI approval.
+	- The coordinated release is started only through the umbrella `scripts/release-chain.sh 4.5.15` command after RAI approval.

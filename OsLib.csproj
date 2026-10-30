@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>OsLib</Title>
 		<PackageId>OsLibCore</PackageId>
-				<Version>4.5.14</Version>
+				<Version>4.5.15</Version>
 		<Authors>Rainer Burkhardt</Authors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Handling of files and system calls</Description>
@@ -17,7 +17,7 @@
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/Burkhardt/OsLib</RepositoryUrl>
 		<RepositoryType>github</RepositoryType>
-				<PackageReleaseNotes>Tenant-scoped PitsCommand requests, public XML documentation, and tenant-aware invocation gates (CR069).</PackageReleaseNotes>
+				<PackageReleaseNotes>Shared CliHelpStyle formatter for aligned terminal help, glyph colors, syntax emphasis, provider badges, and plain redirected output.</PackageReleaseNotes>
 		<PackageIcon>HardCastle.png</PackageIcon>
 	</PropertyGroup>
 
