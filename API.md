@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.5.15` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore adds tenant-scoped PitsCommand options and packaged public request documentation in the synchronized 4.5.15 dependency line; cloud detection remains isolated in standalone Amafu.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.5.16` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore adds tenant-scoped PitsCommand options and packaged public request documentation in the synchronized 4.5.16 dependency line; cloud detection remains isolated in standalone Amafu.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -480,3 +480,29 @@ Os.Config's immutable startup snapshot reads every nonempty string root in
 classification also resolves symbolic shortcuts and existing ancestors of new
 file paths, so `~/.CloudStorage` access receives cloud-safe file handling.
 No configuration refresh or mutation API is introduced.
+
+## CR075 media inventory and matching
+
+`IorgListRequest` adds `Long`, `AllFiles`, `Checksum` (`sha256`) and `IgnoreCase`.
+`Long` requires `Json`; all-files inventory is metadata-only. Existing requests
+keep filename-array output. `IorgInventoryItem`, `IorgMatchResult` and
+`IorgMatchEvidence` carry typed execution-host provenance and comparison evidence.
+
+```csharp
+var request = IorgListRequest.ForCloud("*.mov", "ICloudDrive") with
+{
+	Long = true,
+	Json = true,
+	IgnoreCase = true
+};
+var result = await new IorgCommand().OverSsh("rsb@ingwe").ListAsync(request);
+```
+
+`ForCloud` preserves `RootAddress` (default `.`) instead of resolving a relative
+cloud path on the controller. The execution host resolves it using its own
+`Os.Config`. An explicit local `RaiPath` remains available through the original
+constructor. `IorgDuplicateRequest.ForCloud` and `Duplicates`/`DuplicatesAsync`
+provide equivalent transport for byte or explicit `visual`/`strict-v1` matching.
+Source names and paths must belong to that host. `RunBinaryAsync` is a local
+stream callback: remote callers execute the enclosing typed iorg command over
+SSH. Callbacks must leave the process-owned stream open.

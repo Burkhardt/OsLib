@@ -278,6 +278,38 @@ namespace OsLib
 		{
 			Path = f?.Path?.ToString() ?? string.Empty;
 		}
+		/// <summary>Resolve existing parent shortcuts without creating or moving anything.</summary>
+		public RaiPath Canonical() => new RaiPath(CanonicalName(FullPath));
+		internal static string CanonicalName(string value)
+		{
+			var full = System.IO.Path.GetFullPath(value);
+			var current = System.IO.Path.GetPathRoot(full);
+			foreach (var segment in full.Substring(current.Length).Split(System.IO.Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
+			{
+				current = System.IO.Path.Combine(current, segment);
+				var info = new FileInfo(current);
+				if (info.LinkTarget is not null)
+					current = info.ResolveLinkTarget(true)?.FullName ?? throw new IOException($"Unresolved link: {current}");
+			}
+			return full.EndsWith(System.IO.Path.DirectorySeparatorChar) ? Os.ensureTrailingDirSeparator(current) : current;
+		}
+		public bool IsSymbolicLink => new DirectoryInfo(FullPath).LinkTarget is not null;
+		/// <summary>Get a contained, slash-normalized path; rejects escapes after resolving links.</summary>
+		public string RelativeFileName(RaiFile file)
+		{
+			var relative = System.IO.Path.GetRelativePath(Canonical().FullPath, CanonicalName(file.FullName)).Replace('\\', '/');
+			if (relative == ".." || relative.StartsWith("../", StringComparison.Ordinal) || System.IO.Path.IsPathRooted(relative))
+				throw new ArgumentException($"File is outside selected root: {file.FullName}");
+			return relative;
+		}
+		public RaiFile ContainedFile(string relative)
+		{
+			if (System.IO.Path.IsPathRooted(relative) || relative.Replace('\\', '/').Split('/').Contains(".."))
+				throw new ArgumentException("Source must be contained in the selected root; traversal is not allowed.");
+			var file = new RaiFile(System.IO.Path.Combine(FullPath, relative));
+			_ = RelativeFileName(file);
+			return file;
+		}
 		public bool Exists() => Directory.Exists(Path);
 		/// <summary>
 		/// The parent directory of this path, i.e. one level up.

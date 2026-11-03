@@ -132,6 +132,10 @@ namespace OsLib
 		public virtual string FullName => (Path?.FullPath ?? string.Empty) + NameWithExtension;
 		public override string ToString() => FullName;
 		public bool Exists() => File.Exists(FullName);
+		/// <summary>Match a filename glob through the filesystem boundary.</summary>
+		public static bool MatchesPattern(string name, string pattern, bool ignoreCase = false)
+			=> System.IO.Enumeration.FileSystemName.MatchesSimpleExpression(pattern, name, ignoreCase);
+
 		/// <summary>
 		/// Gets the physical file's last-write timestamp in UTC.
 		/// </summary>
@@ -140,6 +144,8 @@ namespace OsLib
 		/// Gets the physical file length in bytes through the typed file boundary.
 		/// </summary>
 		public long Length => new FileInfo(FullName).Length;
+		public string CanonicalFullName => RaiPath.CanonicalName(FullName);
+		public bool IsSymbolicLink => new FileInfo(FullName).LinkTarget is not null;
 		public int rm()
 		{
 			if (!File.Exists(FullName)) return 0;

@@ -53,6 +53,15 @@ namespace OsLib
 
 	public sealed record IorgListRequest(string FileNamePattern, RaiPath Root)
 	{
+		public bool Long { get; init; }
+		public bool AllFiles { get; init; }
+		public bool IgnoreCase { get; init; }
+		public string Checksum { get; init; }
+		/// <summary>Cloud-relative spelling, resolved only on the execution host. Root must be null.</summary>
+		public string RootAddress { get; init; }
+		public static IorgListRequest ForCloud(string pattern, string cloud, string relativeRoot = ".")
+			=> new(pattern, null) { RootAddress = relativeRoot, Options = new() { CloudProvider = cloud } };
+
 		public string Exif { get; init; }
 		public bool Json { get; init; }
 		public bool Quiet { get; init; }
@@ -70,7 +79,7 @@ namespace OsLib
 		public IorgCommandOptions Options { get; init; }
 	}
 
-	public sealed class IorgCommand : CliCommand
+	public class IorgCommand : CliCommand
 	{
 		private readonly RaiPath commandPath;
 		private readonly string commandName;
@@ -184,21 +193,60 @@ namespace OsLib
 			RequireValue(request.FileNamePattern, nameof(request.FileNamePattern));
 			if (request.FileNamePattern.Contains('/') || request.FileNamePattern.Contains('\\'))
 				throw new ArgumentException("FileNamePattern must be a filename pattern, not a path.", nameof(request.FileNamePattern));
-			RequirePath(request.Root, nameof(request.Root));
+			var root = RequestRoot(request.Root, request.RootAddress, request.Options);
 			RequireOutputMode(request.Json, request.Quiet);
 			if (request.Exif is not null && request.Quiet) throw new ArgumentException("Exif cannot be combined with Quiet.");
 
+			if ((request.Long || request.AllFiles || request.Checksum is not null) && (!request.Json || !request.Long || request.Exif is not null))
+				throw new ArgumentException("Structured inventory requires --long --json, without --exif.");
+			if (request.AllFiles && request.Checksum is not null) throw new ArgumentException("All-files census is metadata-only.");
+			if (request.Checksum is not null && request.Checksum != "sha256") throw new ArgumentException("Only sha256 is supported.");
 			var arguments = new List<string>
 			{
 				"list", request.FileNamePattern,
-				RootOption(request.Options), request.Root.FullPath
+				RootOption(request.Options), root
 			};
 			AppendOptions(arguments, request.Options);
 			AppendOptionalValue(arguments, "--exif", request.Exif, nameof(request.Exif));
+			if (request.Long) arguments.Add("--long");
+			if (request.AllFiles) arguments.Add("--all-files");
+			if (request.IgnoreCase) arguments.Add("--ignore-case");
+			AppendOptionalValue(arguments, "--checksum", request.Checksum, nameof(request.Checksum));
 			if (request.Json) arguments.Add("--json");
 			if (request.Quiet) arguments.Add("--quiet");
 			return arguments;
 		}
+
+		private static string RequestRoot(RaiPath root, string address, IorgCommandOptions options)
+		{
+			if (address is null) { RequirePath(root, nameof(root)); return root.FullPath; }
+			if (root is not null || string.IsNullOrWhiteSpace(options?.CloudProvider))
+				throw new ArgumentException("RootAddress requires a cloud provider and no locally resolved Root.");
+			RequireValue(address, nameof(address));
+			_ = new RaiRelPath(address);
+			if (address.Replace('\\', '/').Split('/').Contains("..")) throw new ArgumentException("Cloud-relative root cannot escape the cloud.");
+			return address;
+		}
+
+		public IReadOnlyList<string> BuildDuplicateArguments(IorgDuplicateRequest request)
+		{
+			if (request is null) throw new ArgumentNullException(nameof(request));
+			RequireValue(request.FileOrPattern, nameof(request.FileOrPattern));
+			var root = RequestRoot(request.Root, request.RootAddress, request.Options);
+			if (request.Match is not ("bytes" or "visual")) throw new ArgumentException("Match must be bytes or visual.");
+			if (request.Match == "visual" ? request.VisualProfile != "strict-v1" : request.VisualProfile is not null)
+				throw new ArgumentException("Visual mode requires --visual-profile strict-v1; byte mode has no visual profile.");
+			var args = new List<string> { "duplicates", request.FileOrPattern, RootOption(request.Options), root, "--match", request.Match };
+			AppendOptions(args, request.Options);
+			AppendOptionalValue(args, "--visual-profile", request.VisualProfile, nameof(request.VisualProfile));
+			if (request.Json) args.Add("--json");
+			if (request.IgnoreCase) args.Add("--ignore-case");
+			return args;
+		}
+		public RaiSystemResult Duplicates(IorgDuplicateRequest request)
+			=> RunWithRequestTarget(BuildDuplicateArguments(request), request?.Options);
+		public Task<RaiSystemResult> DuplicatesAsync(IorgDuplicateRequest request, CancellationToken cancellationToken = default)
+			=> RunWithRequestTargetAsync(BuildDuplicateArguments(request), request?.Options, cancellationToken);
 
 		public IReadOnlyList<string> BuildMoveArguments(IorgMoveRequest request)
 		{

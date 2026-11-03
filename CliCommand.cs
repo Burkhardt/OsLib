@@ -79,6 +79,15 @@ namespace OsLib
 			return CandidateExecutables.FirstOrDefault(c => !string.IsNullOrWhiteSpace(c)) ?? executableName;
 		}
 
+		/// <summary>Locally consume a tool's binary stdout; remote callers run the enclosing typed operation over SSH.</summary>
+		public Task<T> RunBinaryAsync<T>(IEnumerable<string> arguments, Func<Stream, CancellationToken, Task<T>> consume,
+			CancellationToken cancellationToken = default)
+		{
+			if (!string.IsNullOrWhiteSpace(RemoteTarget))
+				throw new InvalidOperationException("Run the enclosing IorgCommand over SSH; binary decoder pipes execute on that host.");
+			return new RaiSystem(ResolveExecutable(), arguments).ExecBinaryAsync(consume, cancellationToken);
+		}
+
 		public virtual RaiSystemResult Run(string arguments = "")
 		{
 			if (!string.IsNullOrWhiteSpace(RemoteTarget))

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -175,6 +176,47 @@ namespace OsLib     // aka OsLibCore
 				WorkerThreadId = workerThreadId
 			};
 		}
+		/// <summary>Consume stdout as a bounded stream. No shell, output file or captured binary string is used.</summary>
+		public async Task<T> ExecBinaryAsync<T>(Func<Stream, CancellationToken, Task<T>> consume,
+			CancellationToken cancellationToken = default, int timeoutMilliseconds = 600000)
+		{
+			using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+			if (timeoutMilliseconds > 0) timeout.CancelAfter(timeoutMilliseconds);
+			using var process = new Process { StartInfo = CreateStartInfo(true, true) };
+			process.StartInfo.RedirectStandardInput = true;
+			timeout.Token.ThrowIfCancellationRequested();
+			process.Start();
+			process.StandardInput.Close();
+			using var registration = timeout.Token.Register(() => TryKill(process));
+			async Task<string> DrainError()
+			{
+				var text = new System.Text.StringBuilder();
+				var buffer = new char[2048];
+				int count;
+				while ((count = await process.StandardError.ReadAsync(buffer.AsMemory(), CancellationToken.None)) > 0)
+					if (text.Length < 32768) text.Append(buffer, 0, Math.Min(count, 32768 - text.Length));
+				return text.ToString();
+			}
+			var error = DrainError();
+			try
+			{
+				var value = await consume(process.StandardOutput.BaseStream, timeout.Token).ConfigureAwait(false);
+				if (process.StandardOutput.BaseStream.CanRead)
+					await process.StandardOutput.BaseStream.CopyToAsync(Stream.Null, timeout.Token).ConfigureAwait(false);
+				await process.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
+				var diagnostic = await error.ConfigureAwait(false);
+				timeout.Token.ThrowIfCancellationRequested();
+				if (process.ExitCode != 0) throw new InvalidOperationException($"{command} exited {process.ExitCode}: {diagnostic}");
+				return value;
+			}
+			finally
+			{
+				TryKill(process);
+				await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+				await error.ConfigureAwait(false);
+			}
+		}
+
 		private static void TryKill(Process process)
 		{
 			try
