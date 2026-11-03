@@ -86,7 +86,7 @@ public static class CliHelpStyle
 	/// <summary>Formats a cyan banner with its complete heading in bold.</summary>
 	public static string[] Banner(string title, bool useColor)
 	{
-		var rule = "\ueb1e " + new string('─', Math.Max(40, title.EnumerateRunes().Count() - 2));
+		var rule = "\ueb1e " + new string('─', Math.Max(0, title.EnumerateRunes().Count() - 2));
 		return [Paint(rule, "36", useColor), Paint(title, "1;36", useColor), Paint(rule, "36", useColor)];
 	}
 
