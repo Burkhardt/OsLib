@@ -8,23 +8,30 @@ namespace OsLib
 {
 	public static partial class Os
 	{
-		private static readonly OsRuntimeSnapshot runtime;
-		static Os()
+		// Keep run-scoped switches independent of configuration and filesystem startup.
+		// The runtime snapshot and temporary-directory probe still initialize together,
+		// once, on first access to a configured runtime property.
+		private static OsRuntimeSnapshot runtime => RuntimeState.Value;
+		private static class RuntimeState
 		{
-			runtime = OsRuntimeSnapshot.Create();
-			ValidateTempDir();
+			internal static readonly OsRuntimeSnapshot Value;
+			static RuntimeState()
+			{
+				Value = OsRuntimeSnapshot.Create();
+				ValidateTempDir();
+			}
 		}
 		public static dynamic Config => runtime.Config;
 		public static bool IsConfigLoaded => runtime.IsConfigLoaded;
 		public static string ConfigFileFullName => runtime.ConfigFileFullName;
 		/// <summary>
 		/// Gets the configured temporary directory as a validated <see cref="RaiPath"/>.
-		/// First access to <see cref="Os"/> fails fast if a temporary file cannot be
+		/// First configured-runtime access fails fast if a temporary file cannot be
 		/// created in this directory.
 		/// </summary>
 		public static RaiPath TempDir => runtime.TempDir;
 		/// <summary>
-		/// Fails fast during first <see cref="Os"/> initialization unless the configured
+		/// Fails fast during first configured-runtime initialization unless the configured
 		/// temporary directory can create, observe, and remove an OsLib temporary file.
 		/// The configured value is never replaced or mutated by this probe.
 		/// </summary>

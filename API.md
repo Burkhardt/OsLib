@@ -1,6 +1,6 @@
 # OsLib API Reference
 
-This document provides a detailed, foldable overview of the current `OsLibCore 4.6.0` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore adds tenant-scoped PitsCommand options and packaged public request documentation in the synchronized 4.6.0 dependency line; cloud detection remains isolated in standalone Amafu.
+This document provides a detailed, foldable overview of the current `OsLibCore 4.6.1` API surface, including immutable collection archives, archived-event inspection, typed CLI additions, and the accepted CR022 cloud-safe file and directory behavior. OsLibCore adds tenant-scoped PitsCommand options and packaged public request documentation in the synchronized 4.6.1 dependency line; cloud detection remains isolated in standalone Amafu.
 
 Historical docs that mention `CloudStorageRootDir`, provider-precedence helper APIs, typed config wrappers, or public `LoadConfig(...)` behavior describe older package lines and should not be treated as current.
 
@@ -14,6 +14,28 @@ provider badges, and versioned banners without initializing `Os.Config`. `UseCol
 respects redirected output, `NO_COLOR`, and `TERM=dumb`. `Syntax` keeps switches
 consistent and applies required-value, choice, optional, and quoted-code styles.
 See the [CLI style guide](https://github.com/Burkhardt/RAIkeep/blob/main/doc/cli-style.md).
+
+## Process-invocation switches and rule-subject exemptions (4.6.1 / CR070)
+
+`Os.RunSwitch(string name)` returns the current process environment value, or null
+when unset. Use it for a developer/CI opt-in passed to this invocation. It neither
+reads values from nor writes values to Os.Config. Configuration loading and the
+existing temporary-directory validation occur on first configured-runtime access,
+so reading a run switch does not initialize storage. Persistent machine paths and
+cloud settings still belong in Os.Config; host settings still use UseSetting.
+
+```csharp
+if (Os.RunSwitch("AIA_LIVE_TENANT_SCAN") == "1")
+{
+	// Run the explicitly requested scan.
+}
+```
+
+`[RaiRuleExemption("RAI015", "Default parser coercion is this test's subject.")]`
+may be declared on a method or class. It carries an auditable justification for
+one rule. Nonblank justification is required; multiple rule-specific declarations
+are allowed. The exemption is not inherited by derived classes. Prefer a method
+for intentional regression subjects; do not exempt entire test assemblies.
 
 ## core types
 
