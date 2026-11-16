@@ -9,6 +9,27 @@ public class RaiTildeResolutionTests
 	// works for unix: HOME - used to be able to test without writing the actual user here, e.g. /Users/RSB/
 	static string userHomeDir = Environment.GetEnvironmentVariable("HOME") + Os.DIR;    // convention here: directories are terminated by a /
 	[Fact]
+	public void NestedHiddenDirectoriesUnderHomeRetainBothLeadingDots()
+	{
+		const string directory = "~/.CloudStorage/GoogleDrive/.config/engenho/";
+		var expected = Path.Combine(Os.UserHomeDir.FullPath, ".CloudStorage", "GoogleDrive", ".config", "engenho") + Os.DIR;
+		Assert.Equal(expected, new RaiPath(directory).FullPath);
+
+		var (parent, name) = RaiPath.SplitRaiPathAndName(directory);
+		Assert.Equal(expected, parent.FullPath);
+		Assert.Equal(string.Empty, name);
+		var directoryFile = new RaiFile(directory);
+		Assert.True(directoryFile.IsDirectory());
+		Assert.Equal(expected, directoryFile.FullName);
+
+		var file = new RaiFile(directory + "settings.json");
+		Assert.Equal(expected, file.Path.FullPath);
+		Assert.Equal("settings", file.Name);
+		Assert.Equal("json", file.Ext);
+		Assert.Equal(expected + "settings.json", file.FullName);
+	}
+
+	[Fact]
 	public void RaiFile_And_RaiPath_Parse_ConfigPath_From_RealHomeDirectory()
 	{
 		var expectedPath = $"{userHomeDir}.config{Path.DirectorySeparatorChar}"; // i.e. /Users/RSB/.config/
