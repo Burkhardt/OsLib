@@ -1,5 +1,7 @@
 # OsLib
 
+[Code signing policy](https://github.com/Burkhardt/RAIkeep/blob/main/README_codesigning.md)
+
 ## 4.6.5
 
 Adds typed media inventory and duplicate requests, execution-host cloud-relative
