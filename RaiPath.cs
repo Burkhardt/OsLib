@@ -293,6 +293,15 @@ namespace OsLib
 			}
 			return full.EndsWith(System.IO.Path.DirectorySeparatorChar) ? Os.ensureTrailingDirSeparator(current) : current;
 		}
+		public static bool IsRooted(string path) => System.IO.Path.IsPathRooted(path);
+
+		public string RelativeDirectoryName(RaiPath directory)
+		{
+			var relative = System.IO.Path.GetRelativePath(Canonical().FullPath, directory.Canonical().FullPath).Replace('\\', '/');
+			if (relative == ".." || relative.StartsWith("../", StringComparison.Ordinal) || IsRooted(relative))
+				throw new ArgumentException($"Directory is outside selected root: {directory.FullPath}");
+			return relative;
+		}
 		public bool IsSymbolicLink => new DirectoryInfo(FullPath).LinkTarget is not null;
 		/// <summary>Get a contained, slash-normalized path; rejects escapes after resolving links.</summary>
 		public string RelativeFileName(RaiFile file)
@@ -310,6 +319,7 @@ namespace OsLib
 			_ = RelativeFileName(file);
 			return file;
 		}
+		public DateTimeOffset LastWriteTimeUtc => Directory.GetLastWriteTimeUtc(FullPath);
 		public bool Exists() => Directory.Exists(Path);
 		/// <summary>
 		/// The parent directory of this path, i.e. one level up.

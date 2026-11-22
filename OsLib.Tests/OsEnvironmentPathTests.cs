@@ -13,7 +13,7 @@ public class OsEnvironmentPathTests
 			return string.Empty;
 
 		var normalized = Os.NormSeperator(value);
-		return normalized.EndsWith(Os.DIR, StringComparison.Ordinal) ? normalized : normalized + Os.DIR;
+		return normalized.EndsWith(Os.DIR, StringComparison.Ordinal) ? normalized : $"{normalized}{Os.DIR}";
 	}
 
 }

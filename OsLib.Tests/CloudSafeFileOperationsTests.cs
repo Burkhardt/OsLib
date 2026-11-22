@@ -80,7 +80,7 @@ public sealed class CloudSafeFileOperationsTests : IDisposable
 		var observer = new Thread(() =>
 		{
 			while (!Volatile.Read(ref stop))
-				if (!File.Exists(destination.FullName)) alwaysPresent = false;
+				if (!destination.Exists()) alwaysPresent = false;
 		});
 		observer.Start();
 		try
@@ -122,7 +122,7 @@ public sealed class CloudSafeFileOperationsTests : IDisposable
 		var observer = new Thread(() =>
 		{
 			while (!Volatile.Read(ref stop))
-				if (!File.Exists(destination.FullName)) alwaysPresent = false;
+				if (!destination.Exists()) alwaysPresent = false;
 		});
 		observer.Start();
 		try

@@ -9,7 +9,7 @@ public class TmpFileTests
 {
 	private static RaiPath NewTestRoot([CallerMemberName] string testName = "")
 	{
-		var root = new RaiPath(Path.GetTempPath()) / "RAIkeep" / "oslib-tests" / "tmpfile" / SanitizeSegment(testName);
+		var root = Os.TempDir / "RAIkeep" / "oslib-tests" / "tmpfile" / SanitizeSegment(testName);
 		CleanupDir(root);
 		return root;
 	}
@@ -18,7 +18,7 @@ public class TmpFileTests
 	{
 		try
 		{
-			new RaiFile(path.Path).rmdir(depth: 10, deleteFiles: true);
+			path.rmdir(depth: 10, deleteFiles: true);
 		}
 		catch
 		{
@@ -30,7 +30,7 @@ public class TmpFileTests
 		if (string.IsNullOrWhiteSpace(value))
 			return "test";
 
-		var invalid = Path.GetInvalidFileNameChars();
+		var invalid = RaiPath.InvalidFileNameChars;
 		var cleaned = new string(value
 			.Select(ch => invalid.Contains(ch) || char.IsWhiteSpace(ch) ? '-' : ch)
 			.ToArray())

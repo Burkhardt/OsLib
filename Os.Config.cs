@@ -22,6 +22,14 @@ namespace OsLib
 			}
 		}
 		public static dynamic Config => runtime.Config;
+		/// <summary>Explicit live provider, falling back to the first preference.</summary>
+		public static string LiveCloud => CloudRoles.Live(runtime.Config);
+		/// <summary>Optional test provider; null means no role was configured.</summary>
+#nullable enable
+		public static string? TestCloud => CloudRoles.Test(runtime.Config);
+#nullable restore
+		/// <summary>Resolve a configured provider root, with a diagnostic for missing keys.</summary>
+		public static RaiPath CloudRoot(string provider) => new RaiPath(CloudRoles.Root(runtime.Config, provider));
 		public static bool IsConfigLoaded => runtime.IsConfigLoaded;
 		public static string ConfigFileFullName => runtime.ConfigFileFullName;
 		/// <summary>
@@ -153,16 +161,28 @@ namespace OsLib
 				{
 					config = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(configFileFullName))
 						?? throw new InvalidOperationException("Config file did not contain a JSON object.");
-					tempDirText = NormalizeConfiguredDirectory(
-						config["TempDir"]?.ToString() ?? throw new ArgumentNullException("TempDir missing"),
-						userHomeDirText,
-						appRootDirText);
+					tempDirText = null;
 					isConfigLoaded = true;
 				}
 				catch
 				{
 					tempDirText = ensureTrailingDirSeparator(Path.GetTempPath());
 					config = JObject.FromObject(new { TempDir = tempDirText });
+				}
+				CloudRoles.Validate(config);
+				if (isConfigLoaded)
+				{
+					try
+					{
+						tempDirText = NormalizeConfiguredDirectory(config["TempDir"]?.ToString()
+							?? throw new ArgumentNullException("TempDir missing"), userHomeDirText, appRootDirText);
+					}
+					catch
+					{
+						tempDirText = ensureTrailingDirSeparator(Path.GetTempPath());
+						config = JObject.FromObject(new { TempDir = tempDirText });
+						isConfigLoaded = false;
+					}
 				}
 				var localBackupDirText = NormalizeOptionalConfiguredDirectory(
 					config["LocalBackupDir"]?.ToString(),

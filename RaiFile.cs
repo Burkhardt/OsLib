@@ -139,7 +139,11 @@ namespace OsLib
 		/// <summary>
 		/// Gets the physical file's last-write timestamp in UTC.
 		/// </summary>
-		public DateTimeOffset LastWriteTimeUtc => File.GetLastWriteTimeUtc(FullName);
+		public DateTimeOffset LastWriteTimeUtc
+		{
+			get => File.GetLastWriteTimeUtc(FullName);
+			set => File.SetLastWriteTimeUtc(FullName, value.UtcDateTime);
+		}
 		/// <summary>
 		/// Gets the physical file length in bytes through the typed file boundary.
 		/// </summary>
@@ -341,7 +345,7 @@ namespace OsLib
 				Thread.Sleep(5);
 				count++;
 			}
-			if (count >= maxWaitCount) throw new FileNotFoundException("ensure failed - timeout.", FullName);
+			if (count >= maxWaitCount) throw new FileNotFoundException($"Timed out waiting for {(newFileOldName ? "freshly written" : "existing")} file to materialize: {FullName}", FullName);
 			return -count;
 		}
 		private int awaitVanishing()
@@ -363,6 +367,13 @@ namespace OsLib
 		public bool DirEmpty => string.IsNullOrEmpty(Path?.ToString()) || !Directory.EnumerateFileSystemEntries(Path.ToString()).Any();
 		public virtual RaiPath mkdir() => Path?.mkdir() ?? RaiPath.mkdir();
 		public static RaiPath mkdir(string dirname = null) => RaiPath.mkdir(dirname);
+		/// <summary>Reads the file contents without changing the original bytes.</summary>
+		public byte[] ReadAllBytes() => File.ReadAllBytes(FullName);
+
+		public Stream OpenUpdate() => new FileStream(FullName, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+		/// <summary>Create a new file exclusively, failing if it already exists.</summary>
+		public Stream OpenNew() => new FileStream(FullName, FileMode.CreateNew, FileAccess.Write, FileShare.None);
 		/// <summary>Opens a bounded-memory, seekable read stream without creating anything.</summary>
 		public Stream OpenRead() => new FileStream(FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
 

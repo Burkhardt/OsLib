@@ -6,8 +6,8 @@ public sealed class ConfiguredCloudPathsTests
 	[Fact]
 	public void AllAmafuAccountLabelsAreRoots_IndependentOfDefaultOrder()
 	{
-		var home = Path.Combine(Path.GetTempPath(), "cloud-contract-fixture");
-		var config = JObject.Parse("""
+		var home = Os.TempDir / "cloud-contract-fixture";
+		var config = TestJson.ParseObject("""
 		{
 		  "Cloud": {
 		    "GoogleDriveRainer": "~/rainer/", "GoogleDriveYebo": "~/yebo/",
@@ -19,38 +19,38 @@ public sealed class ConfiguredCloudPathsTests
 		}
 		""");
 		var roots = ConfiguredCloudPaths.Read(config,
-			value => Path.GetFullPath(value.Replace("~/", home + Path.DirectorySeparatorChar)), StringComparer.Ordinal);
+			value => new RaiPath(value.Replace("~/", home.FullPath)).FullPath, StringComparer.Ordinal);
 		foreach (var name in new[] { "rainer", "yebo", "personal", "business", "custom" })
 		{
-			Assert.True(ConfiguredCloudPaths.Contains(roots, Path.Combine(home, name), StringComparison.Ordinal));
-			Assert.True(ConfiguredCloudPaths.Contains(roots, Path.Combine(home, name, "Pits", "future.pit"), StringComparison.Ordinal));
+			Assert.True(ConfiguredCloudPaths.Contains(roots, (home / name).FullPath, StringComparison.Ordinal));
+			Assert.True(ConfiguredCloudPaths.Contains(roots, new RaiFile(home / name / "Pits", "future.pit").FullName, StringComparison.Ordinal));
 		}
-		Assert.False(ConfiguredCloudPaths.Contains(roots, Path.Combine(home, "rainer-neighbor", "Pits"), StringComparison.Ordinal));
-		Assert.False(ConfiguredCloudPaths.Contains(roots, Path.Combine(home, "wrong"), StringComparison.Ordinal));
+		Assert.False(ConfiguredCloudPaths.Contains(roots, (home / "rainer-neighbor" / "Pits").FullPath, StringComparison.Ordinal));
+		Assert.False(ConfiguredCloudPaths.Contains(roots, (home / "wrong").FullPath, StringComparison.Ordinal));
 	}
 
 	[Fact]
 	public void ShortcutAndItsNewDescendantsHaveCloudClassification()
 	{
 		if (OperatingSystem.IsWindows()) Assert.Skip("Symlinks require Windows developer mode.");
-		var home = Path.Combine(Path.GetTempPath(), "oslib-cloud-links-" + Guid.NewGuid().ToString("N"));
-		Directory.CreateDirectory(home);
+		var home = (Os.TempDir / ("oslib-cloud-links-" + Guid.NewGuid().ToString("N"))).mkdir();
 		try
 		{
-			var root = Path.Combine(home, "real-root");
-			Directory.CreateDirectory(root);
-			var shortcuts = Directory.CreateDirectory(Path.Combine(home, ".CloudStorage")).FullName;
-			var link = Path.Combine(shortcuts, "GoogleDriveRainer");
-			Directory.CreateSymbolicLink(link, root);
+			var root = (home / "real-root").mkdir();
+			var shortcuts = (home / ".CloudStorage").mkdir();
+			var link = shortcuts / "GoogleDriveRainer";
+#pragma warning disable RAI001 // Create a physical OS link to test recognition of two names for the same cloud directory.
+			Directory.CreateSymbolicLink(link.FullPath.TrimEnd(Os.DIR[0]), root.FullPath);
+#pragma warning restore RAI001
 			foreach (var configured in new[] { root, link })
 			{
-				var config = new JObject { ["Cloud"] = new JObject { ["GoogleDriveRainer"] = configured } };
-				var roots = ConfiguredCloudPaths.Read(config, Path.GetFullPath, StringComparer.Ordinal);
-				Assert.True(ConfiguredCloudPaths.Contains(roots, Path.Combine(link, "not-created", "Item.pit"), StringComparison.Ordinal));
-				Assert.True(ConfiguredCloudPaths.Contains(roots, Path.Combine(root, "Item.pit"), StringComparison.Ordinal));
-				Assert.False(ConfiguredCloudPaths.Contains(roots, Path.Combine(home, "real-root-other"), StringComparison.Ordinal));
+				var config = new JObject { ["Cloud"] = new JObject { ["GoogleDriveRainer"] = configured.FullPath } };
+				var roots = ConfiguredCloudPaths.Read(config, value => new RaiPath(value).FullPath, StringComparer.Ordinal);
+				Assert.True(ConfiguredCloudPaths.Contains(roots, new RaiFile(link / "not-created", "Item.pit").FullName, StringComparison.Ordinal));
+				Assert.True(ConfiguredCloudPaths.Contains(roots, new RaiFile(root, "Item.pit").FullName, StringComparison.Ordinal));
+				Assert.False(ConfiguredCloudPaths.Contains(roots, (home / "real-root-other").FullPath, StringComparison.Ordinal));
 			}
 		}
-		finally { Directory.Delete(home, recursive: true); }
+		finally { home.rmdir(deleteFiles: true); }
 	}
 }

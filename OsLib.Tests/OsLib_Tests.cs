@@ -28,8 +28,8 @@ namespace OsLib.Tests
 		{
 			try
 			{
-				if (Directory.Exists(root.Path))
-					new RaiFile(root.Path).rmdir(depth: 10, deleteFiles: true);
+				if (root.Exists())
+					root.rmdir(depth: 10, deleteFiles: true);
 			}
 			catch
 			{
@@ -41,7 +41,7 @@ namespace OsLib.Tests
 			if (string.IsNullOrWhiteSpace(value))
 				return "test";
 
-			var invalid = Path.GetInvalidFileNameChars();
+			var invalid = RaiPath.InvalidFileNameChars;
 			var cleaned = new string(value
 				.Select(ch => invalid.Contains(ch) || char.IsWhiteSpace(ch) ? '-' : ch)
 				.ToArray())
@@ -80,26 +80,28 @@ namespace OsLib.Tests
 		public void Os_DirSeparator_MatchesSystemDirectorySeparatorChar()
 		{
 			ResetOsCaches();
+#pragma warning disable RAI003 // Check Os.DIR against the host platform independently.
 			Assert.Equal(Path.DirectorySeparatorChar.ToString(), Os.DIR);
+#pragma warning restore RAI003
 		}
 
 		[Fact]
 		public void RaiPath_AppendsDirectorySeparator()
 		{
-			var path0 = new RaiPath("/tmp/raipath");
+			var path0 = new RaiPath((Os.TempDir / "raipath").FullPath.TrimEnd(Os.DIR[0]));
 			Assert.EndsWith(Os.DIR, path0.Path);
-			Assert.EndsWith("raipath" + Os.DIR, path0.Path);
-			var path = new RaiPath("/tmp/raipath" + Os.DIR);
+			Assert.EndsWith($"raipath{Os.DIR}", path0.Path);
+			var path = new RaiPath($"raipath{Os.DIR}");
 			Assert.EndsWith(Os.DIR, path.Path);
-			Assert.EndsWith("raipath" + Os.DIR, path.Path);
+			Assert.EndsWith($"raipath{Os.DIR}", path.Path);
 		}
 
 		[Fact]
 		public void RaiPath_OperatorAddsSubDirectory()
 		{
-			var basePath = new RaiPath("/tmp/base");
+			var basePath = Os.TempDir / "base";
 			var subPath = basePath / "child";
-			Assert.EndsWith("child" + Os.DIR, subPath.Path);
+			Assert.EndsWith($"child{Os.DIR}", subPath.Path);
 		}
 
 		[Fact]
@@ -154,7 +156,9 @@ namespace OsLib.Tests
 			{
 				var file = new TextFile(root, "last-write.txt", content: "data");
 				var expected = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+#pragma warning disable RAI002 // Set the physical timestamp independently of the OsLib accessor under test.
 				File.SetLastWriteTimeUtc(file.FullName, expected);
+#pragma warning restore RAI002
 
 				Assert.Equal(new DateTimeOffset(expected), file.LastWriteTimeUtc);
 			}
@@ -201,7 +205,7 @@ namespace OsLib.Tests
 				await target.WriteFromAsync(source, cancellationToken);
 
 				Assert.True(target.Exists());
-				Assert.Equal(bytes, File.ReadAllBytes(target.FullName));
+				Assert.Equal(bytes, target.ReadAllBytes());
 			}
 			finally
 			{
@@ -298,13 +302,13 @@ namespace OsLib.Tests
 				var dest = new TextFile(root, "dest.txt", content: "dest");
 
 				dest.mv(source, replace: true, keepBackup: true);
-				Assert.True(File.Exists(dest.FullName));
-				Assert.Equal("src", File.ReadAllText(dest.FullName).TrimEnd('\r', '\n'));
+				Assert.True(dest.Exists());
+				Assert.Equal("src", new TextFile(dest.FullName).ReadFromDisk().TrimEnd('\r', '\n'));
 
 				var bak = new RaiFile(dest.FullName);
 				bak.Ext = "bak";
-				Assert.True(File.Exists(bak.FullName));
-				Assert.Equal("dest", File.ReadAllText(bak.FullName).TrimEnd('\r', '\n'));
+				Assert.True(bak.Exists());
+				Assert.Equal("dest", new TextFile(bak.FullName).ReadFromDisk().TrimEnd('\r', '\n'));
 			}
 			finally
 			{
@@ -322,12 +326,12 @@ namespace OsLib.Tests
 				var dest = new TextFile(root, "dest.txt", content: "dest");
 
 				dest.mv(source, replace: true, keepBackup: false);
-				Assert.True(File.Exists(dest.FullName));
-				Assert.Equal("src", File.ReadAllText(dest.FullName).TrimEnd('\r', '\n'));
+				Assert.True(dest.Exists());
+				Assert.Equal("src", new TextFile(dest.FullName).ReadFromDisk().TrimEnd('\r', '\n'));
 
 				var bak = new RaiFile(dest.FullName);
 				bak.Ext = "bak";
-				Assert.False(File.Exists(bak.FullName));
+				Assert.False(bak.Exists());
 			}
 			finally
 			{
@@ -365,7 +369,7 @@ namespace OsLib.Tests
 
 				var rf = new RaiFile(dirPath.Path);
 				rf.rmdir(depth: 1, deleteFiles: true);
-				Assert.False(Directory.Exists(dirPath.Path));
+				Assert.False(dirPath.Exists());
 			}
 			finally
 			{
@@ -385,13 +389,15 @@ namespace OsLib.Tests
 					: "#!/bin/sh\necho hello\n";
 				var script = RaiSystem.CreateScript(root, name, content);
 
-				Assert.True(File.Exists(script.FullName));
+				Assert.True(new RaiFile(script.FullName).Exists());
 				Assert.Contains("hello", string.Join("\n", script.ScriptFile.Read()));
 
 				if (OperatingSystem.IsWindows())
 					return;
 
+#pragma warning disable RAI002 // Check that the operating system granted execute permission.
 				Assert.True(File.GetUnixFileMode(script.FullName).HasFlag(UnixFileMode.UserExecute));
+#pragma warning restore RAI002
 			}
 			finally
 			{
@@ -526,10 +532,12 @@ namespace OsLib.Tests
 				var filePath = sample.FullName;
 
 				var forwardSlashPath = filePath.Replace('\\', '/');
+#pragma warning disable RAI002 // This Windows regression specifically exercises FileInfo with forward slashes.
 				var info = new FileInfo(forwardSlashPath);
 
 				Assert.True(info.Exists);
 				Assert.Equal("sample.txt", info.Name);
+#pragma warning restore RAI002
 			}
 			finally
 			{
@@ -551,10 +559,10 @@ namespace OsLib.Tests
 			try
 			{
 				const string osRelease = "/etc/os-release";
-				if (!File.Exists(osRelease))
+				if (!new RaiFile(osRelease).Exists())
 					return false;
 
-				foreach (var line in File.ReadAllLines(osRelease))
+				foreach (var line in new TextFile(osRelease).Read())
 				{
 					if (!line.StartsWith("ID=", StringComparison.OrdinalIgnoreCase) &&
 						!line.StartsWith("ID_LIKE=", StringComparison.OrdinalIgnoreCase))

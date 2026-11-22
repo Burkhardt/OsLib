@@ -42,11 +42,11 @@ public sealed class IorgInventoryTests
 		if (OperatingSystem.IsWindows()) return;
 		var data = await new RaiSystem("sh", new[] { "-c", "printf 'binary-data'" }).ExecBinaryAsync(async (stream, ct) =>
 		{
-			using var reader = new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true); return await reader.ReadToEndAsync(ct);
-		});
+			using var reader = RaiSystem.ReadOutput(stream); return await reader.ReadToEndAsync(ct);
+		}, TestContext.Current.CancellationToken);
 		Assert.Equal("binary-data", data);
 		await Assert.ThrowsAsync<InvalidOperationException>(() => new RaiSystem("sh", new[] { "-c", "printf 'decoder failed' >&2; exit 7" })
-			.ExecBinaryAsync((stream, ct) => Task.FromResult(0)));
+			.ExecBinaryAsync((stream, ct) => Task.FromResult(0), TestContext.Current.CancellationToken));
 		using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new RaiSystem("sh", new[] { "-c", "sleep 30" })
 			.ExecBinaryAsync((stream, ct) => Task.FromResult(0), cancelled.Token));

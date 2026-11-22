@@ -52,16 +52,16 @@ public sealed class EventFileTests : IDisposable
 	[Fact]
 	public void CanonicalJson_OrdersPropertiesOrdinally_PreservesArrayOrder_EmitsCompactInvariantJson()
 	{
-		var a = JObject.Parse(@"{ ""b"": 1, ""a"": { ""z"": true, ""y"": [3, 1, 2] } }");
-		var b = JObject.Parse(@"{ ""a"": { ""y"": [3, 1, 2], ""z"": true }, ""b"": 1 }");
+		var a = TestJson.ParseObject(@"{ ""b"": 1, ""a"": { ""z"": true, ""y"": [3, 1, 2] } }");
+		var b = TestJson.ParseObject(@"{ ""a"": { ""y"": [3, 1, 2], ""z"": true }, ""b"": 1 }");
 		Assert.Equal(CanonicalJson.Canonicalize(a), CanonicalJson.Canonicalize(b));
 		Assert.Equal(@"{""a"":{""y"":[3,1,2],""z"":true},""b"":1}", CanonicalJson.Canonicalize(a));
 		// Array order is significant: a reordered array is different content.
-		var c = JObject.Parse(@"{ ""a"": { ""y"": [1, 2, 3], ""z"": true }, ""b"": 1 }");
+		var c = TestJson.ParseObject(@"{ ""a"": { ""y"": [1, 2, 3], ""z"": true }, ""b"": 1 }");
 		Assert.NotEqual(CanonicalJson.Sha256Hex(CanonicalJson.Canonicalize(a)),
 			CanonicalJson.Sha256Hex(CanonicalJson.Canonicalize(c)));
 		// A changed value produces a different hash.
-		var d = JObject.Parse(@"{ ""a"": { ""y"": [3, 1, 2], ""z"": false }, ""b"": 1 }");
+		var d = TestJson.ParseObject(@"{ ""a"": { ""y"": [3, 1, 2], ""z"": false }, ""b"": 1 }");
 		Assert.NotEqual(CanonicalJson.Sha256Hex(CanonicalJson.Canonicalize(a)),
 			CanonicalJson.Sha256Hex(CanonicalJson.Canonicalize(d)));
 	}
@@ -78,7 +78,7 @@ public sealed class EventFileTests : IDisposable
 		Assert.StartsWith((root / EventDirectory.Name).FullPath, eventFile.FullName);
 		Assert.Equal($"{stem}.event", eventFile.NameWithExtension);
 
-		var bytes = File.ReadAllText(eventFile.FullName, new UTF8Encoding(false));
+		var bytes = new TextFile(eventFile.FullName).ReadAllText();
 		Assert.StartsWith("{", bytes);
 		Assert.EndsWith("}", bytes);
 		Assert.Equal(eventFile.CanonicalContent, bytes); // exact bytes, no trailing terminator
@@ -93,16 +93,16 @@ public sealed class EventFileTests : IDisposable
 		var content = new JObject { ["Role"] = "Master" };
 
 		var first = new EventFile(root, stem, content);
-		var firstWriteTime = File.GetLastWriteTimeUtc(first.FullName);
+		var firstWriteTime = first.LastWriteTimeUtc.UtcDateTime;
 		var second = new EventFile(root, stem, (JObject)content.DeepClone());
 
 		Assert.Equal(first.FullName, second.FullName); // same path, idempotent success
-		Assert.Equal(firstWriteTime, File.GetLastWriteTimeUtc(second.FullName)); // not rewritten
-		Assert.Single(Directory.GetFiles((root / EventDirectory.Name).Path, "*.event"));
+		Assert.Equal(firstWriteTime, second.LastWriteTimeUtc.UtcDateTime); // not rewritten
+		Assert.Single((root / EventDirectory.Name).EnumerateFiles("*.event"));
 
 		var different = new EventFile(root, stem, new JObject { ["Role"] = "Loser" });
 		Assert.NotEqual(first.FullName, different.FullName); // different content → nonce sibling path
-		Assert.Equal(2, Directory.GetFiles((root / EventDirectory.Name).Path, "*.event").Length);
+		Assert.Equal(2, (root / EventDirectory.Name).EnumerateFiles("*.event").Count());
 	}
 
 	[Fact]
@@ -116,15 +116,15 @@ public sealed class EventFileTests : IDisposable
 		// Pre-create different bytes at the exact clean path.
 		var eventsDir = (root / EventDirectory.Name).mkdir();
 		var collidingPath = new RaiFile(eventsDir, stem, "event").FullName;
-		File.WriteAllText(collidingPath, "{\"foreign\":true}", new UTF8Encoding(false));
+		new TextFile(collidingPath).WriteAllText("{\"foreign\":true}");
 
 		var eventFile = new EventFile(root, stem, content);
 
 		// Existing artifact preserved; new event on a nonce-suffixed sibling path.
-		Assert.Equal("{\"foreign\":true}", File.ReadAllText(collidingPath, new UTF8Encoding(false)));
+		Assert.Equal("{\"foreign\":true}", new TextFile(collidingPath).ReadAllText());
 		Assert.NotEqual(collidingPath, eventFile.FullName);
 		Assert.True(eventFile.Exists());
-		Assert.Equal(canonical, File.ReadAllText(eventFile.FullName, new UTF8Encoding(false)));
+		Assert.Equal(canonical, new TextFile(eventFile.FullName).ReadAllText());
 	}
 
 	[Fact]
@@ -133,7 +133,7 @@ public sealed class EventFileTests : IDisposable
 		var root = NewCloudRoot("dynamic");
 		var eventFile = new EventFile(root, "4000_TestMachine-app-1_Info", new { Stage = "Completed", Count = 3 });
 		Assert.True(eventFile.Exists());
-		var parsed = JObject.Parse(File.ReadAllText(eventFile.FullName));
+		var parsed = TestJson.ParseObject(new TextFile(eventFile.FullName).ReadAllText());
 		Assert.Equal("Completed", (string?)parsed["Stage"]);
 		Assert.Equal(3, (int)parsed["Count"]!);
 	}
@@ -144,7 +144,7 @@ public sealed class EventFileTests : IDisposable
 		var root = NewCloudRoot("missing-dir");
 		var events = EventDirectory.Events(root);
 		Assert.Empty(events);
-		Assert.False(Directory.Exists((root / EventDirectory.Name).Path), "Reading must never create the Events child.");
+		Assert.False((root / EventDirectory.Name).Exists(), "Reading must never create the Events child.");
 	}
 
 	[Fact]
@@ -182,13 +182,13 @@ public sealed class EventFileTests : IDisposable
 
 		// Hash-invalid: correct-looking name, wrong content bytes.
 		var wrongHashName = $"6001_MachineA-app-1_Failed_{new string('a', 64)}";
-		File.WriteAllText(new RaiFile(eventsDir, wrongHashName, "event").FullName, "{\"Ok\":false}", new UTF8Encoding(false));
+		new TextFile(eventsDir, wrongHashName, "event").WriteAllText("{\"Ok\":false}");
 
 		// Unparseable: hash matches the truncated bytes, but JSON is incomplete.
 		var truncated = "{\"Ok\":fal";
 		var truncatedSha = CanonicalJson.Sha256Hex(truncated);
 		var truncatedFile = new RaiFile(eventsDir, $"6002_MachineA-app-1_Failed_{truncatedSha}", "event");
-		File.WriteAllText(truncatedFile.FullName, truncated, new UTF8Encoding(false));
+		new TextFile(truncatedFile.FullName).WriteAllText(truncated);
 
 		var events = EventDirectory.Events(root);
 		Assert.Single(events); // the two bad files are omitted individually, not the whole read
@@ -198,7 +198,7 @@ public sealed class EventFileTests : IDisposable
 		var completed = "{\"Ok\":false}";
 		var completedSha = CanonicalJson.Sha256Hex(completed);
 		var completedFile = new RaiFile(eventsDir, $"6002_MachineA-app-1_Failed_{completedSha}", "event");
-		File.WriteAllText(completedFile.FullName, completed, new UTF8Encoding(false));
+		new TextFile(completedFile.FullName).WriteAllText(completed);
 		var later = EventDirectory.Events(root);
 		Assert.Contains(completedFile.NameWithExtension, later.Keys);
 	}

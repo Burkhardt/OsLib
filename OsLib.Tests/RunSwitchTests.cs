@@ -5,6 +5,7 @@ namespace OsLib.Tests;
 public class RunSwitchTests
 {
 	[Fact]
+#pragma warning disable RAI007 // Change and independently sample the process environment to verify the configuration accessor.
 	public void RunSwitchReadsCurrentInvocationValueWithoutCachingOrWritingConfiguration()
 	{
 		var name = "RAIKEEP_RUN_SWITCH_TEST_" + Guid.NewGuid().ToString("N");
@@ -25,6 +26,7 @@ public class RunSwitchTests
 	public void RunSwitchDoesNotFallBackToMachineConfiguration()
 	{
 		Assert.Equal(Environment.GetEnvironmentVariable("TempDir"), Os.RunSwitch("TempDir"));
+#pragma warning restore RAI007
 	}
 
 	[Theory]

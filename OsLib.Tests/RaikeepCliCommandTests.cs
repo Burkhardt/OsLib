@@ -966,10 +966,12 @@ namespace OsLib.Tests
 				return;
 
 			var script = CreateOutputScript("not-executable", "#!/bin/sh\nexit 0\n");
+#pragma warning disable RAI002 // Arrange a non-executable POSIX script to test the command start failure.
 			File.SetUnixFileMode(
 				script.FullName,
 				UnixFileMode.UserRead | UnixFileMode.UserWrite |
 				UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+#pragma warning restore RAI002
 			var command = new IorgCommand(script.ScriptFile.Path, script.ScriptFile.NameWithExtension);
 
 			Assert.Throws<Win32Exception>(() => command.Run(Array.Empty<string>()));

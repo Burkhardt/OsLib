@@ -17,13 +17,10 @@ internal sealed class OsTestEnvironment : IDisposable
 	{
 		this.forcedType = forcedType;
 		Root = root;
-		Home = (root / "home").Path;
-		AppData = (root / "app-data").Path;
-		LocalAppData = (root / "local-app-data").Path;
+		Home = (root / "home").mkdir().Path;
+		AppData = (root / "app-data").mkdir().Path;
+		LocalAppData = (root / "local-app-data").mkdir().Path;
 
-		Directory.CreateDirectory(Home);
-		Directory.CreateDirectory(AppData);
-		Directory.CreateDirectory(LocalAppData);
 
 		SetEnvironmentVariable("HOME", Home);
 		SetEnvironmentVariable("USERPROFILE", Home);
@@ -50,7 +47,7 @@ internal sealed class OsTestEnvironment : IDisposable
 
 	internal static RaiPath NewTestRoot(string area, string? suffix = null, [CallerMemberName] string testName = "")
 	{
-		var root = new RaiPath(Path.GetTempPath()) / "RAIkeep" / "oslib-tests" / SanitizeSegment(area) / SanitizeSegment(testName);
+		var root = Os.SystemTempDir / "RAIkeep" / "oslib-tests" / SanitizeSegment(area) / SanitizeSegment(testName);
 		if (!string.IsNullOrWhiteSpace(suffix))
 			root /= SanitizeSegment(suffix);
 
@@ -62,8 +59,7 @@ internal sealed class OsTestEnvironment : IDisposable
 	{
 		try
 		{
-			if (Directory.Exists(root.Path))
-				new RaiFile(root.Path).rmdir(depth: 10, deleteFiles: true);
+			root.rmdir(depth: 10, deleteFiles: true);
 		}
 		catch
 		{
@@ -74,10 +70,10 @@ internal sealed class OsTestEnvironment : IDisposable
 	{
 		var osType = typeof(Os);
 		osType.GetField("type", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, null);
-		osType.GetField("dIRSEPERATOR", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, System.IO.Path.DirectorySeparatorChar.ToString());
 		Os.resetDiagnosticsForTesting();
 	}
 
+#pragma warning disable RAI007 // Install and restore an isolated process environment for configuration discovery tests.
 	public void Dispose()
 	{
 		typeof(Os).GetField("type", BindingFlags.Static | BindingFlags.NonPublic)?.SetValue(null, originalType);
@@ -91,6 +87,7 @@ internal sealed class OsTestEnvironment : IDisposable
 	{
 		before[name] = Environment.GetEnvironmentVariable(name);
 		Environment.SetEnvironmentVariable(name, value);
+#pragma warning restore RAI007
 	}
 
 	private static string SanitizeSegment(string? value)
@@ -98,7 +95,7 @@ internal sealed class OsTestEnvironment : IDisposable
 		if (string.IsNullOrWhiteSpace(value))
 			return "test";
 
-		var invalid = Path.GetInvalidFileNameChars();
+		var invalid = RaiPath.InvalidFileNameChars;
 		var cleaned = new string(value
 			.Select(ch => invalid.Contains(ch) || char.IsWhiteSpace(ch) ? '-' : ch)
 			.ToArray())

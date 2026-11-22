@@ -40,7 +40,7 @@ public class PathConventionsTests
 		if (string.IsNullOrWhiteSpace(value))
 			return "test";
 
-		var invalid = Path.GetInvalidFileNameChars();
+		var invalid = RaiPath.InvalidFileNameChars;
 		var cleaned = new string(value
 			.Select(ch => invalid.Contains(ch) || char.IsWhiteSpace(ch) ? '-' : ch)
 			.ToArray())
@@ -67,7 +67,7 @@ public class PathConventionsTests
 	[Fact]
 	public void CloudPathWiring_Initialize_IsCompatibilityNoOp()
 	{
-		var pathBefore = new RaiPath(Path.GetTempPath()) / "RAIkeep" / "local-probe";
+		var pathBefore = Os.TempDir / "RAIkeep" / "local-probe";
 
 		CloudPathWiring.Initialize();
 
@@ -119,9 +119,10 @@ public class PathConventionsTests
 	[Fact]
 	public void RaiPath_CreateFromFullName()
 	{
-		var p = new RaiPath("/Users/RSB/Projects/PitSeeder/pits/sample/Person.json5");
-		Assert.Equal("/Users/RSB/Projects/PitSeeder/pits/sample/Person.json5/", p.ToString());
-		Assert.Equal("/Users/RSB/Projects/PitSeeder/pits/sample/Person.json5/", p.Path);
+		var input = new RaiFile(Os.TempDir / "sample", "Person.json5").FullName;
+		var p = new RaiPath(input);
+		Assert.Equal($"{input}{Os.DIR}", p.ToString());
+		Assert.Equal($"{input}{Os.DIR}", p.Path);
 	}
 	[Fact]
 	public void RaiPath_CloudStatus_PersistsThroughNavigation()
@@ -136,7 +137,7 @@ public class PathConventionsTests
 	[Fact]
 	public void RaiPath_StringAssignment_ReevaluatesCloudState_FromRuntimeSnapshot()
 	{
-		var path = new RaiPath(Path.GetTempPath()) / "RAIkeep" / "local-probe";
+		var path = Os.TempDir / "RAIkeep" / "local-probe";
 		var cloudPath = new RaiPath(RequireConfiguredCloudRoot()) / "workspace";
 
 		Assert.False(path.Cloud);
@@ -149,7 +150,7 @@ public class PathConventionsTests
 	[Fact]
 	public void RaiPath_StringAssignment_ReevaluatesCloudState()
 	{
-		var path = new RaiPath(Path.GetTempPath()) / "RAIkeep" / "local-workspace";
+		var path = Os.TempDir / "RAIkeep" / "local-workspace";
 		var changedPath = (new RaiPath(RequireConfiguredCloudRoot()) / "workspace").FullPath;
 
 		path.Path = changedPath;
@@ -204,11 +205,11 @@ public class PathConventionsTests
 
 			root.rmdir(depth: 8, deleteFiles: true);
 
-			Assert.False(Directory.Exists(root.Path));
+			Assert.False(root.Exists());
 		}
 		finally
 		{
-			if (Directory.Exists(root.Path))
+			if (root.Exists())
 			{
 				CleanupDir(root);
 			}
@@ -232,8 +233,8 @@ public class PathConventionsTests
 			var result = target.mv(source, replace: false, keepBackup: false);
 
 			Assert.Equal(0, result);
-			Assert.False(Directory.Exists(source.Path));
-			Assert.True(Directory.Exists(target.Path));
+			Assert.False(source.Exists());
+			Assert.True(target.Exists());
 			Assert.True(new RaiFile(target.Path + "probe.txt").Exists());
 		}
 		finally
@@ -255,8 +256,8 @@ public class PathConventionsTests
 			target.mkdir();
 
 			Assert.Throws<IOException>(() => target.mv(source, replace: false, keepBackup: false));
-			Assert.True(Directory.Exists(source.Path));
-			Assert.True(Directory.Exists(target.Path));
+			Assert.True(source.Exists());
+			Assert.True(target.Exists());
 		}
 		finally
 		{
@@ -286,8 +287,8 @@ public class PathConventionsTests
 			var result = target.mv(source, replace: true, keepBackup: false);
 
 			Assert.Equal(0, result);
-			Assert.False(Directory.Exists(source.Path));
-			Assert.True(Directory.Exists(target.Path));
+			Assert.False(source.Exists());
+			Assert.True(target.Exists());
 			Assert.True(new RaiFile(target.Path + "src.txt").Exists());
 			Assert.False(new RaiFile(target.Path + "tgt.txt").Exists());
 		}
@@ -328,15 +329,15 @@ public class PathConventionsTests
 			var result = target.mv(source, replace: true, keepBackup: true);
 
 			Assert.Equal(0, result);
-			Assert.False(Directory.Exists(source.Path));
-			Assert.True(Directory.Exists(target.Path));
+			Assert.False(source.Exists());
+			Assert.True(target.Exists());
 			Assert.True(new RaiFile(target.Path + "src.txt").Exists());
 
 			Assert.True(backupMirrorParent.Exists(),
 				$"Expected backup mirror parent to exist: {backupMirrorParent.Path}");
-			var backups = Directory.EnumerateDirectories(backupMirrorParent.Path, "target_*").ToList();
+			var backups = backupMirrorParent.EnumerateDirectories("target_*").ToList();
 			Assert.Single(backups);
-			createdBackup = new RaiPath(backups[0]);
+			createdBackup = backups[0];
 			Assert.True(new RaiFile(createdBackup.Path + "tgt.txt").Exists());
 		}
 		finally

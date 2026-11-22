@@ -39,7 +39,7 @@ internal static class ConfiguredCloud
 		foreach (var provider in ProviderOrder())
 		{
 			string? root = (string?)Os.Config?.Cloud?[provider];
-			if (!string.IsNullOrWhiteSpace(root) && Directory.Exists(new RaiPath(root).Path))
+			if (!string.IsNullOrWhiteSpace(root) && new RaiPath(root).Exists())
 				return provider;
 		}
 		return null;
@@ -72,6 +72,9 @@ internal static class ConfiguredCloud
 public sealed class TextFileSaveContractTests : IDisposable
 {
 	private readonly List<RaiPath> cleanup = new();
+#pragma warning disable RAI002 // Use an independent disk reader to verify actual TextFile.Save output and line boundaries.
+	private static string[] ReadPhysicalLines(string path) => File.ReadAllLines(path);
+#pragma warning restore RAI002
 
 	public void Dispose()
 	{
@@ -104,7 +107,7 @@ public sealed class TextFileSaveContractTests : IDisposable
 		file.Changed = true;
 		file.Save();
 
-		var reread = File.ReadAllLines(file.FullName);
+		var reread = ReadPhysicalLines(file.FullName);
 		Assert.Equal(new[] { "v2" }, reread); // truncated, not appended
 	}
 
@@ -145,7 +148,7 @@ public sealed class TextFileSaveContractTests : IDisposable
 		{
 			while (!Volatile.Read(ref stop))
 			{
-				if (!File.Exists(file.FullName))
+				if (!file.Exists())
 					pathnameAlwaysPresent = false;
 			}
 		});
@@ -184,15 +187,15 @@ public sealed class TextFileSaveContractTests : IDisposable
 
 		// The original pathname was overwritten in place — never deleted or moved.
 		Assert.True(file.Exists());
-		Assert.Equal(new[] { "new content" }, File.ReadAllLines(file.FullName));
+		Assert.Equal(new[] { "new content" }, ReadPhysicalLines(file.FullName));
 
 		// The previous content was copied (not moved) to the configured backup location.
 		var backupRoot = Os.LocalBackupDir / RaiFile.BackupRelativePath(file.Path);
-		var backupFiles = Directory.Exists(backupRoot.Path)
-			? Directory.GetFiles(backupRoot.Path, "backup-target_*.txt")
+		var backupFiles = backupRoot.Exists()
+			? backupRoot.EnumerateFiles("backup-target_*.txt").Select(file => file.FullName).ToArray()
 			: Array.Empty<string>();
 		Assert.NotEmpty(backupFiles);
-		Assert.Contains(backupFiles, b => File.ReadAllLines(b).SequenceEqual(new[] { "old content" }));
+		Assert.Contains(backupFiles, b => ReadPhysicalLines(b).SequenceEqual(new[] { "old content" }));
 	}
 
 	[Fact]
@@ -207,7 +210,7 @@ public sealed class TextFileSaveContractTests : IDisposable
 		file.Lines = new List<string> { "two" };
 		file.Changed = true;
 		file.SaveInPlace();
-		Assert.Equal(new[] { "two" }, File.ReadAllLines(file.FullName));
+		Assert.Equal(new[] { "two" }, ReadPhysicalLines(file.FullName));
 	}
 
 	[Fact]

@@ -17,6 +17,7 @@ namespace OsLib
 		public static readonly string DefaultConfigFileLocation = "~/.config/RAIkeep.json5";
 		private static OsType? type = null;
 		private static readonly string DIRSEPERATOR = System.IO.Path.DirectorySeparatorChar.ToString();
+		public static RaiPath SystemTempDir => new RaiPath(System.IO.Path.GetTempPath());
 		public static readonly string DIR = DIRSEPERATOR;
 		public const string ESCAPECHAR = "\\";
 		public const string DATEFORMAT = "yyyy-MM-dd HH.mm.ss";

@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OsLib
 {
@@ -78,6 +80,30 @@ namespace OsLib
 			return this;
 		}
 
+		/// <summary>Write UTF-8 text in place without adding a line terminator.</summary>
+		public void WriteAllText(string content)
+		{
+			mkdir();
+			File.WriteAllText(FullName, content, new UTF8Encoding(false));
+			lines = null;
+			Changed = false;
+		}
+
+		public async Task WriteAllTextAsync(string content, CancellationToken cancellationToken = default)
+		{
+			mkdir();
+			await File.WriteAllTextAsync(FullName, content, cancellationToken).ConfigureAwait(false);
+			lines = null;
+			Changed = false;
+		}
+
+		/// <summary>Read the complete file from disk, preserving line endings.</summary>
+		public Task<string> ReadAllTextAsync(CancellationToken cancellationToken = default) =>
+			File.ReadAllTextAsync(FullName, cancellationToken);
+
+		/// <summary>Read the complete file from disk, throwing if it cannot be opened.</summary>
+		public string ReadFromDisk() => File.ReadAllText(FullName);
+
 		public TextFile Sort(bool reverse = false)
 		{
 			var lineArray = Lines.ToArray();
@@ -148,6 +174,7 @@ namespace OsLib
 				if (backup)
 					this.backup(copy: true); // copy, never move — the original pathname must not disappear
 				File.WriteAllLines(FullName, (lines == null ? new List<string>() : lines), new UTF8Encoding(false));
+				// A timeout throws FileNotFoundException. Keep the edit dirty until the write is visible.
 				AwaitMaterializing(true);
 				Changed = false;
 			}

@@ -39,7 +39,7 @@ namespace OsLib.Tests
 			if (string.IsNullOrWhiteSpace(value))
 				return "test";
 
-			var invalid = Path.GetInvalidFileNameChars();
+			var invalid = RaiPath.InvalidFileNameChars;
 			var cleaned = new string(value
 				.Select(ch => invalid.Contains(ch) || char.IsWhiteSpace(ch) ? '-' : ch)
 				.ToArray())
@@ -57,7 +57,7 @@ namespace OsLib.Tests
 				var script = OperatingSystem.IsWindows()
 					? CreateExecutableScript(root, "rclone", "cmd", content: "@echo off\r\n")
 					: CreateExecutableScript(root, "rclone", "sh", content: "#!/bin/sh\nexit 0\n");
-				var sut = new RCloneCommand(root, Path.GetFileName(script));
+				var sut = new RCloneCommand(root, new RaiFile(script).NameWithExtension);
 
 				Assert.True(sut.TryResolveExecutable(out var resolved));
 				Assert.Equal(script, resolved);
@@ -80,7 +80,7 @@ namespace OsLib.Tests
 						$"@echo off\r\n> \"{log}\" echo %1\r\n>> \"{log}\" echo %2\r\necho ok\r\n")
 					: CreateExecutableScript(root, "rclone", "sh",
 						$"#!/bin/sh\nprintf '%s\\n' \"$1\" > \"{log}\"\nprintf '%s\\n' \"$2\" >> \"{log}\"\nprintf 'ok'\n");
-				var sut = new RCloneCommand(root, Path.GetFileName(script));
+				var sut = new RCloneCommand(root, new RaiFile(script).NameWithExtension);
 				var callingThreadId = Environment.CurrentManagedThreadId;
 
 				var result = await sut.RunSubcommandAsync("listremotes", "--config test.conf", TestContext.Current.CancellationToken);
@@ -88,7 +88,7 @@ namespace OsLib.Tests
 				Assert.Equal(0, result.ExitCode);
 				Assert.Contains("ok", result.Output);
 				Assert.NotEqual(callingThreadId, result.WorkerThreadId);
-				var lines = File.ReadAllLines(log);
+				var lines = new TextFile(log).Read().ToArray();
 				Assert.Equal("listremotes", lines[0]);
 				Assert.Equal("--config", lines[1]);
 			}

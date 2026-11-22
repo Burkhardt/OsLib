@@ -16,15 +16,15 @@ namespace OsLib.Tests
 			var root = Os.TempDir / "RAIkeep" / "oslib-tests" / "cli" / SanitizeSegment(testName);
 			Cleanup(root.Path);
 			root.mkdir();
-			return root.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+			return root.Path.TrimEnd(Os.DIR[0]);
 		}
 
 		private static void Cleanup(string root)
 		{
 			try
 			{
-				if (Directory.Exists(root))
-					Directory.Delete(root, recursive: true);
+				var directory = new RaiPath(root);
+				if (directory.Exists()) directory.rmdir(int.MaxValue, deleteFiles: true);
 			}
 			catch
 			{
@@ -41,7 +41,7 @@ namespace OsLib.Tests
 			if (string.IsNullOrWhiteSpace(value))
 				return "test";
 
-			var invalid = Path.GetInvalidFileNameChars();
+			var invalid = RaiPath.InvalidFileNameChars;
 			var cleaned = new string(value
 				.Select(ch => invalid.Contains(ch) || char.IsWhiteSpace(ch) ? '-' : ch)
 				.ToArray())

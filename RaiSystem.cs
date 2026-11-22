@@ -59,6 +59,10 @@ namespace OsLib     // aka OsLibCore
 	}
 	public class RaiSystem
 	{
+		/// <summary>Decode captured process output while leaving its lifetime with the command.</summary>
+		public static TextReader ReadOutput(Stream stream) =>
+			new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true);
+
 		string command = null;
 		string param = null;
 		string commandLine = null;
