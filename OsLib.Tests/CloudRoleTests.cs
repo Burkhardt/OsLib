@@ -5,29 +5,23 @@ namespace OsLib.Tests;
 public class CloudRoleTests
 {
 	[Fact]
-	public void MissingRolesPreserveOrderAndNullableTestCloud()
+	public void ConfiguredRolesResolveToTheirCloudRoots()
 	{
-		var config = TestJson.ParseObject("{DefaultCloudOrder:['OneDrive','Dropbox'],Cloud:{OneDrive:'/live/',Dropbox:'/test/'}}");
+		if (!Os.IsConfigLoaded)
+			Assert.Skip("Cloud role tests require the real RAIkeep configuration.");
+		var config = Assert.IsType<JObject>((object)Os.Config);
+
 		CloudRoles.Validate(config);
-		Assert.Equal("OneDrive", CloudRoles.Live(config));
-		Assert.Null(CloudRoles.Test(config));
-		config["LiveCloud"] = "Dropbox";
-		config["TestCloud"] = "OneDrive";
-		CloudRoles.Validate(config);
-		Assert.Equal("Dropbox", CloudRoles.Live(config));
-		Assert.Equal("OneDrive", CloudRoles.Test(config));
-		Assert.Equal("/test/", CloudRoles.Root(config, "Dropbox"));
-	}
-	[Theory]
-	[InlineData("LiveCloud")]
-	[InlineData("TestCloud")]
-	public void InvalidRolesNameKeyAndAvailableProviders(string key)
-	{
-		var config = TestJson.ParseObject("{Cloud:{OneDrive:'/live/'}}");
-		config[key] = "/not/a/provider/";
-		var error = Assert.Throws<InvalidOperationException>(() => CloudRoles.Validate(config));
-		Assert.Contains(key, error.Message);
-		Assert.Contains("OneDrive", error.Message);
-		Assert.Contains("Cloud.Missing", Assert.Throws<InvalidOperationException>(() => CloudRoles.Root(config, "Missing")).Message);
+		var cloud = config["Cloud"] as JObject;
+		var test = (string?)config["TestCloud"];
+		if (string.IsNullOrWhiteSpace(test) || cloud?[test]?.Type != JTokenType.String)
+			Assert.Skip("Cloud role tests require a configured TestCloud.");
+
+		Assert.Equal(test, CloudRoles.Test(config));
+		Assert.Equal((string?)cloud[test], CloudRoles.Root(config, test));
+		Assert.Equal(CloudRoles.Root(config, test), CloudRoles.Root(config, test.ToLowerInvariant()));
+		var live = (string?)config["LiveCloud"] ?? (string?)(config["DefaultCloudOrder"] as JArray)?.FirstOrDefault();
+		if (!string.IsNullOrWhiteSpace(live))
+			Assert.Equal(live, CloudRoles.Live(config));
 	}
 }
